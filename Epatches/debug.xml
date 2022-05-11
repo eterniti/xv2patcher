@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="Debug" enabled="debug" comment="This file enables miscellaneous debug patches">
+
+	<!-- Address 1.16 -->
+	<Patch name="Dprintf1Hook" type="hook" search_start="0x89D04C" search_up="0x8000000" >
+		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
+		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
+		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
+		<Instruction code="C3" comment="retn" />	
+		
+		<Hook value="DprintfPatched" />		
+	</Patch>
+
+	<!-- Address 1.16 -->
+	<Patch name="Dprintf2Hook" type="hook" search_start="0x89D068" search_up="0x8000000" >
+		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
+		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
+		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
+		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
+		<Instruction code="C3" comment="retn" />	
+		
+		<Hook value="DprintfPatched" />		
+	</Patch>
+	
+	<!-- Address 1.16 -->
+	<Patch name="Dprintf3Hook" type="hook" search_start="0x89D080" search_up="0x8000000" >
+		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
+		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
+		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
+		<Instruction code="C3" comment="retn" />	
+		
+		<Hook value="DprintfPatched" />		
+	</Patch>
+	
+	<!-- Address 1.10v2 -->
+	<Patch name="Dprintf4Hook" type="hook" search_start="0x6D3AD0" >
+		<Instruction code="48 89 54 24 10" comment="mov [rsp+10h], rdx" />
+		<Instruction code="4C 89 44 24 18" comment="mov [rsp+18h], r8" />
+		<Instruction code="4C 89 4C 24 20" comment="mov [rsp+20h], r9" />
+		<Instruction code="C3" comment="retn" />
+		
+		<Hook value="DprintfPatched2" />
+	</Patch>
+
+	<Patch name="LogOldOpenCpkFile" type="log" search_start="0x6793C" enabled="log_old_open_cpk_file" comment="Enables the log of the old OpenCpkFile, which is still used for some few files" >
+		<Instruction code="48 89 5C 24 10" comment="mov [rsp+10h], rbx" />
+		<Instruction code="48 89 74 24 18" comment="mov [rsp+18h], rsi" />
+		<Instruction code="55" comment="push rbp" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="41 54" comment="push r12" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="41 57" comment="push r15" />
+		<Instruction code="48 8D AC 24 A0 FC FF FF" comment="lea rbp, [rsp-360h]" />
+		<Instruction code="48 81 EC 60 04 00 00" comment="sub rsp, 460h" />
+		<Instruction code="45 33 E4" comment="xor r12d, r12d" />
+		<Instruction code="4C 8B F9" comment="mov r15, rcx" />
+			
+		<Log function="OldOpenCpkFile" when="before" value="unk1,file,unk2" types="ptr,cstr,ptr" select="010" extra="?,?,?" />
+		
+	</Patch>
+	
+	<!-- Adderss 1.10v2 -->
+	<Patch name="LogEncryption" type="log" search_start="0x814FC0" enabled="log_encryption" >
+		<Instruction code="40 55" comment="push rbp" />
+		<Instruction code="56" comment="push rsi" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="41 57" comment="push r15" />
+		<Instruction code="48 8D AC 24 40 FE FF FF" comment="lea rbp, [rsp-1C0h]" />
+		<Instruction code="48 81 EC C0 02 00 00" comment="sub rsp, 2C0h" />
+		<Instruction code="48 C7 44 24 30 FE FF FF FF" comment="mov qword ptr[rsp+30h], -2" />
+		<Instruction code="48 89 9C 24 F0 02 00 00" comment="mov [rsp+2F0h], rbx" />
+		
+		<Log function="aes_ctr_decrypt" when="after" ra="true" value="dst,src,size,key,key_size,iv" types="ptr,ptr,u32,ptr,u32,ptr" select="111111" extra="0x40,0x40,d,32:32,d,?" />
+	</Patch>	
+
+</EternityPatchFile>

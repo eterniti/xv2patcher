@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="RemoveAuraLimit" enabled="new_chara" comment="This file enables the removal of aura limits in the game (for chars, for skills everything is done by prebaked).">
+
+	<!-- Notes: these patches are expected to break in every update that adds one or more aura -->
+	<!-- In most cases, the only change needed to the patches is to change the instruction with the number of patches to match the number of auras -->
+	
+	<Patch name="RemoveAuraLimit1" type="nop" search_start="0xDF5F4" comment="signature based on 1.17" >
+		<Instruction code="0F BF 40 08" comment="mov eax, word ptr [rax+8]; eax = chara_link.aura_id" />
+		<Instruction code="83 F8 33" comment="cmp eax, 33h" />
+		<Instruction code="0F 4D C3" comment="cmovge eax, ebx" />
+		<Instruction code="8B D8" comment="mov ebx, eax" />		
+		<Instruction code="48 8B 6C 24 30" comment="mov rbx, [rsp+30h]" />
+		<Instruction code="48 8B 74 24 38" comment="mov rsi, [rsp+38h]" />
+		<Instruction code="8B C3" comment="mov eax, ebx" />
+		<Instruction code="48 8B 7C 24 40" comment="mov rdi, [rsp+40h]" />
+		
+		<Nop inst_index="2" size="3" />
+	</Patch>
+	
+	<Patch name="RemoveAuraLimit2" type="nop" search_start="0x311878" comment="signature based on 1.17" >
+		<Instruction code="83 FE 33" comment="cmp esi, 33h" />
+		<Instruction code="73 05" comment="jnb +5" />
+		<Instruction code="3B 75 08" comment="cmp esi, [rbp+8]" />		
+		<Instruction code="72 02" comment="jb +2" />		
+		<Instruction code="8B F7" comment="mov esi, edi" />
+		<Instruction code="39 7D 08" comment="cmp [rbp+8], edi" />
+		<Instruction code="0F 8E XXXXXXXX" comment="jle xxx" />
+		<Instruction code="8B 45 0C" comment="mov eax, [rbp+0Ch]" />
+		
+		<Nop inst_index="1" size="2" />
+	</Patch>
+	
+	<Patch name="RemoveAuraLimit3" type="nop" search_start="0x40645E" comment="signature based on 1.17" >
+		<Instruction code="74 0C" comment="je +0xC" />
+		<Instruction code="0F BF 49 08" comment="mov ecx, word ptr [rcx+8]; ecx = chara_link.aura_id" />
+		<Instruction code="83 F9 33" comment="cmp ecx, 33h" />
+		<Instruction code="0F 4D C8" comment="cmovge ecx, eax" />
+		<Instruction code="8B C1" comment="mov eax, ecx" />		
+		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
+		<Instruction code="5E" comment="pop rsi" />
+		<Instruction code="C3" comment="retn" />
+				
+		<Nop inst_index="3" size="3" />
+	</Patch>
+
+</EternityPatchFile>

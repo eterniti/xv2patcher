@@ -1,0 +1,1543 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- DON'T ENABLE THIS FILE!!!!!!!!!!!!!!! -->
+<!-- DON'T ENABLE THIS FILE!!!!!!!!!!!!!!! -->
+<!-- DON'T ENABLE THIS FILE!!!!!!!!!!!!!!! -->
+<EternityPatchFile name="Jungle" enabled="false" comment="experiments">	
+
+	<!--<Patch name="jun179" type="hook" search_start="0x2EF3F0" comment="addr 1.11" >
+		<Instruction code="4C 8B C9" />
+		
+		<Hook value="DebugSendAs3_2"  setup="SetupDebugSendAs3_2"/>	
+	</Patch>	-->
+	
+	<!--<Patch name="jun178" type="nop" search_start="0x4359DF" comment="addr 1.091" >
+		<Instruction code="7C 0C" />
+		
+		<Nop size="2" />
+	</Patch>-->
+	
+	<!--<Patch name="jun177" type="log" search_start="0x6B3BF8" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="called_by_trespass" value="rcx,rdx,r8d,r9d,sp20,sp28,sp30,sp38" types="ptr,u32,u32,u32,u32,u32,u32,u32" select="01011001" />
+	</Patch>-->
+	
+	<!--<Patch name="jun176" type="log" search_start="0x67D593" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="get_ec_from_index" value="index" types="u32" result="u64:0" />
+	</Patch>-->
+	
+	<!--<Patch name="jun175" type="log" search_start="0x67D3C0" comment="addr 1.091" >
+		<Instruction code="40 55 53 56 57 41 54 41 55" />
+		
+		<Log ra="true" when="before" function="calls_talk_function" value="this,edx,r8d,r9d,sp_20,cms,sp_30,sp_38,sp_40" types="ptr,u32,u32,u32,u32,u32,u32,u32,u32" select="011111111" />
+	</Patch>-->	
+	
+	<!--<Patch name="jun174" type="log" search_start="0x67D52F" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+	
+		<Log hook_type="call" when="before" function="get_talker" value="this" types="ptr" select="0" result="u64" />
+	</Patch>-->
+	
+	<!--<Patch name="jun173" type="log" search_start="0x683840" comment="addr 1.091" >
+		<Instruction code="48 8B C4 57 41 54 41 55" />
+		
+		<Log ra="true" when="before" function="talk_function" value="this,rdx,r8d,r9d,sp_20,cms,costume,sp_38,sp_40,sp_48" types="ptr,ptr,u32,u32,u32,u32,u32,u32,ptr,u32" select="0011111101" />
+	</Patch>-->
+	
+	<!--<Patch name="jun172" type="hook" search_start="0x683AB2" comment="1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Hook type="call" value="QDFunc2Patched" setup="SetupQDFunc2" />
+	</Patch>-->
+	
+	<!-- 1st call: not seen called. 2nd call: needs retest. 3rd: not seen called . 4th: moderate. 5th: less than 4th  6th: more or less same than 5th 7th: like 4? 
+		 8th: causes the portrait, but also causes ai controlled -->
+	<!--<Patch name="jun171" type="hook" search_start="0x693B6D" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Hook type="call" value="Test171" setup="Setup171" />
+	</Patch>-->
+	
+	<!--<Patch name="jun170" type="log" search_start="0x1C64E0" comment="addr 1.091" >
+		<Instruction code="48 89 5C 24 08" />
+		
+		<Log when="before" function="cnc_can_use_dual_skill" value="cnc_top,cms,costume,maybe_model_preset,dual_skill_id" types="ptr,u32,u32,u32,u32" extra="0x100,?,?,?,?" result="u32" result_extra="d" />
+	</Patch>-->
+	
+	<!--<Patch name="jun169" type="log" search_start="0x488CA0" comment="addr 1.091" >
+		<Instruction code="48 83 EC 28" />
+		
+		<Log ra="true" when="before" function="cms_id_to_partner_id"  value="cms" types="u32" result="u32" result_extra="d" />	
+	</Patch>-->
+	
+	<!--
+	--- raid test group
+	<Patch name="jun168" type="write" search_start="0x437118" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<Write value="B8 01 00 00 00" />
+	</Patch>
+	
+	<Patch name="jun169" type="write" search_start="0x437192" comment="addr 1.091" >
+		<Instruction code="75 09" />
+		
+		<Write value="9090" />
+	</Patch>
+	
+	<Patch name="jun170" type="write" search_start="0x43393A" comment="addr 1.091" >
+		<Instruction code="75 10"  />
+		
+		<Write value="EB" />
+	</Patch>-->
+	
+	<!--
+		0x1922DF -> gets voice... but not in skills
+		0x1DBB6C -> gets portrait
+		0x693b01 -> this one was the one that caused auto defense
+		0x192438 -> voice in skills
+	-->
+	
+	<!--<Patch name="jun167" type="write" search_start="0x192438" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="31 C0 909090" />
+	</Patch>-->
+	
+	<!--Patch name="jun166" type="hook" search_start="0x693b01" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Hook value="GetMobControlPatched" setup="SetupGetMobControl" />
+	</Patch>-->
+	
+	<!--<Patch name="jun165" type="write" search_start="0x693b01" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="31 C0 909090" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun164" type="write" search_start="0x1DBB6C" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="31 C0 909090" />
+	</Patch>
+	
+	<Patch name="jun163" type="hook" search_start="0x1922DF" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Hook type="call" value="UsesMobControlPatched" setup="SetupUsesMobControl" />
+	</Patch>-->
+	
+	<!--<Patch name="jun162" type="log" search_start="0x1D3B50" comment="addr 1.091" >
+		<Instruction code="40 55 56 57 41 54 41 55  41 56 41 57" />
+		
+		<Log ra="true" when="before" function="ChangeBody" value="core,char_idx1,char_idx2" types="ptr,u32,u32" select="011" extra="?,d,d" />
+	</Patch>-->
+	
+	<!-- This is where the event from pad to iggy is done -->
+	<!--<Patch name="jun161" type="log" search_start="0x30AA21" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Log hook_type="call" when="before" function="IggyMakeEventKey" value="rcx,rdx,r8,r9" types="ptr,u32,u32,u32" select="0111" extra="?,d,d,d" />	
+	</Patch>-->
+	
+	<!--<Patch name="jun160" type="log" search_start="0x20DF9F" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Log hook_type="call" when="after" function="GetPortraitCanvasUV" value="this,out,idx" types="ptr,ptr,u32" select="011" extra="?,0x80,d" />
+	</Patch>-->
+	
+	<!--<Patch name="jun159" type="log" search_start="0x20E03A" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Log hook_type="call" when="before" function="GetTexture" value="this,index" types="ptr,u32" select="01" />
+	</Patch>-->
+	
+	<!--<Patch name="jun158" type="write" search_start="0x160CC3" comment="addr 1.091" >
+		<Instruction code="48 8B D3" />
+		
+		<Write value="89 F2 90" />
+	</Patch>
+	
+	<Patch name="jun157" type="hook" search_start="0x160CC9" comment="addr 1.091" >
+		<Instruction code="E8" />
+		
+		<Hook type="call" value="AutoPortraitTransformHooked" setup="SetupAutoPortraitTransform" />		
+	</Patch>-->
+	
+	<!--<Patch name="jun156" type="log" search_start="0x160A20" comment="addr 1.091" >
+		<Instruction code="4C 8B DC" />
+		
+		<Log ra="true" when="before" function="mob_setup_portrait" value="this" types="u32:0xBC" />
+	</Patch>-->
+	
+	<!--<Patch name="jun155" type="hook" search_start="0x160C12" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Hook value="TestDialoguePortrait" setup="SetupSetupPortraitRender" />		
+	</Patch>-->
+	
+	<!--<Patch name="jun154" type="log" search_start="0x20D314" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Log hook_type="call" when="before" function="portrait_result_related" value="this,edx,r8" types="ptr,ptr,u32" select="001" />
+	</Patch>-->
+
+	<!--<Patch name="jun153" type="log" search_start="0x158BFC" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="mob_change_partset" value="this,edx,r8d,r9d" types="u32:0xBC,u32,u32,u32" />
+	</Patch>
+
+	<Patch name="jun153b" type="log" search_start="0x166567" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="mob_untransform" value="this,edx" types="u32:0xBC,u32" select="10" />
+	</Patch>
+	
+	<Patch name="jun153c" type="log" search_start="0x160C12" comment="addr 1.091" >
+		<Instruction code="FF 15" />
+		
+		<Log hook_type="call" when="before" function="portrait_setup" value="this,edx,r8" types="ptr,u32,ptr" select="010" />
+	</Patch>
+	
+	<Patch name="jun153d" type="log" search_start="0x150BE0" comment="addr 1.091" >
+		<Instruction code="4C 8B DC 55 41 55" />
+		
+		<Log ra="true" when="before" function="mob_portrait_render" value="this,rdx" types="u32:0xBC,ptr" select="10" />
+	</Patch>-->
+
+	<!--<Patch name="jun152" type="write" search_start="0x3BF745" comment="addr 1.091" >
+		<Instruction code="45 1B E4 41 83 E4 05" />
+		
+		<Write value="41 BC 05 00 00 00   90" />
+	</Patch>-->
+
+	<!--
+	
+	Free battle 1vs1: rcx -> this, rdx -> 1, r8 -> 1, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	Free battle 2vs2: rcx -> this, rdx -> 2, r8 -> 1, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	Free battle 3vs3: rcx -> this, rdx -> 3, r8 -> 1, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	Local battle:     rcx -> this, rdx -> 7, r8 -> 1, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	Training: (same as free battle 1vs1)
+	Paralell quest:   rcx -> this, rdx -> 5, r8 -> 1, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	Expert quest:	  rcx -> this, rdx -> 0, r8 -> 0, r9 -> (pointer), sp20 -> 0, sp28 -> (pointer), sp30 -> 0x67 (cac race), sp38 -> 0, sp40 -> 0, sp48 -> ptr
+	
+	-->
+	<!--<Patch name="jun151" type="log" search_start="0x528600" comment="addr 1.091" >
+		<Instruction code="48 8B C4 55 41 54 41 55  41 56 41 57 48 8D 68 88" />
+		
+		<Log when="before" function="charasele_ctor" value="this,rdx,r8,r9,sp20,sp28,sp30,sp38,sp40,sp48" types="ptr,u32,u32,ptr,u32,ptr,u32,u32,u32,ptr" select="0111111111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun150" type="log" search_start="0x591620" comment="addr 1.091" >
+		<Instruction code="48 89 4C 24 08" />
+		
+		<Log ra="true" when="before" function="popuppause_ctor" value="this" types="ptr" select="0" />
+	</Patch>-->
+	
+	<!--<Patch name="jun149" type="hook" search_start="0x6D4E30" comment="addr 1.091" >
+		<Instruction code="48 89 6C 24 18" />
+		
+		<Hook value="IsTeacherHooked" />
+	</Patch>-->
+	
+	<!--<Patch name="jun148" type="log" search_start="0x6D4E30" comment="addr 1.091" >
+		<Instruction code="48 89 6C 24 18" />
+		
+		<Log ra="true" when="before" function="is_teacher" value="teacher_id,cms_id,costume" types="u32,u32,u32" select="111" result="u32" extra="d,h,d" result_extra="d" />
+	</Patch>	-->
+	
+	<!--<Patch name="jun147" type="log" search_start="0x1FCD4E" comment="addr 1.091" >
+		<Instruction code="E8 XXXXXXXX" />
+	
+		<Log hook_type="call" when="after" function="checking_ttc_voice_alias" value="str,str2,size" types="vcstr,cstr,u64" select="110" />
+	</Patch>-->
+	
+	<!--<Patch name="jun146" type="log" search_start="0x6C2AC" comment="addr 1.091" >
+		<Instruction code="48 83 EC 38" />
+		
+		<Log ra="true" when="before" function="ABCDEF" value="this,path,r8" types="ptr,u64,cstr" select="001" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun143" type="log" search_start="0x1520D0" comment="addr 1.09" >
+		<Instruction code="48 8B C4 55 57 48 8D 68  A1 48 81 EC A8 00 00 00 " />
+		
+		<Log ra="true" when="before" function="untransform" value="cms,edx" types="u32:0xBC,u32" select="11" />	
+	</Patch>-->
+	
+	<!--<Patch name="jun142" type="log" search_start="0x152550" comment="addr 1.09" >
+		<Instruction code="40 57 41 54 41 55 41 56  41 57 48 83 EC 30" />
+		
+		<Log ra="true" when="before" function="change_partset" value="this,partset,r8,r9" types="ptr,u32,u32,u32" select="0111" />	
+	</Patch>-->
+	
+	<!-- This patch changes the default outfit of the "helper master" (the one that appears sometimes to help you in quests) -->
+	<!-- In the example below, it uses partset 0x14 (20) -->
+	<!-- Sadly, with the colorable outfit (partset 50), they don't apply the custom colors, so they get its default look  -->
+	<!-- Also, I have no idea of what skill set they get, but probably not the custom one -->
+	<!--<Patch name="jun141" type="write" search_start="0x68F87C" comment="addr 1.09" >
+		<Instruction code="E8 XXXXXXXX 44 8B C0 8B D3 48 8D 4E  40" />
+		
+		<Write value="B8 14 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun140" type="log" search_start="0x2AD1F0" comment="addr 1.09" >
+		<Instruction code="33 C0 83 C1 9C" />
+		
+		<Log when="before" ra="true" function="is_cac" value="cms" types="u32" select="1" />
+	</Patch>-->
+	
+	<!-- type: 0 -> top; 1 -> bottom; 2 -> gloves; 3 -> shoes; 4 -> accesories; 5-> super soul; 6 -> material item; 7 -> extra item; 8 -> battle item; 9 -> qq bang-->
+	<!--<Patch name="jun139" type="log" search_start="0x5910F0" comment="addr 1.09" >
+		<Instruction code="48 89 5C 24 08 57 48 83  EC 20" />
+		
+		<Log when="before" ra="true" function="get_item_info" value="this,type,item_id" types="u64:0,u32,u32" result="wstr" select="111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun137" type="hook" search_start="0x323250" >
+		<Instruction code="48 89 5C 24 08 57 48 83  EC 40" />
+		
+		<Hook value="TestFm" setup="TestFmSetup" />
+	</Patch>-->
+	
+	<!--<Patch name="jun136" type="write" search_start="0x13F5C9" comment="addr 1.08" >
+		<Instruction code="74 1A" />
+		
+		<Write value="EB" />
+	</Patch>-->
+	
+	<!-- test, mutate XG::Game::Battle::StageFile into XG::Game::Lobby::CMapFile and see if any difference  -->
+	<!--<Patch name="jun135" type="write" search_start="0x21B9D8" comment="addr 1.08" >	
+		<Instruction code="48 8D 0D 91 67 A9 00" comment="lea rcx, XG::Game::Battle::StageFile_vtable" />
+		
+		<Write inst_index="0" inst_offset="3" value="2952B800" />
+	</Patch>-->
+	
+	<!--<Patch name="jun134" type="log" search_start="0x3D1F00 " comment="addr 1.08" > 
+		<Instruction code="40 57 48 83 EC 30 48 C7  44 24 20 FE FF FF FF" />
+		
+		<Log when="before" ra="true" function="lobby_cmapfile_v008" value="this,file" types="ptr,cstr" select="01" />
+	</Patch>-->
+	
+	<!-- Stops the preload of lobby files (only for debugging -->
+	<!--<Patch name="jun133" type="write" search_start="0x457240" comment="addr 1.08" >
+		<Instruction code="4C 8B DC 49 89 73 20" />
+		
+		<Write value="C3" />
+	</Patch>-->
+	
+	<!--<Patch name="jun132" type="log" search_start="0x21C9C0 " comment="addr 1.08" > 
+		<Instruction code="40 57 48 83 EC 40" />
+		
+		<Log when="before" ra="true" function="stage_emm_related" value="this,file" types="ptr,cstr" select="01" />
+	</Patch>-->
+	
+	<!--<Patch name="jun131" type="log" search_start="0x2C9E70 " comment="addr 1.08" > 
+		<Instruction code="48 83 EC 38" />
+		
+		<Log when="before" ra="true" function="file_related" value="file,a2,a3" types="cstr,ptr,u32" select="100" />
+	</Patch>->
+	
+	<!--<Patch name="jun130" type="log" search_start="0x2CB680" comment="addr 1.08" > 
+		<Instruction code="4C 8B 41 18 4D 85 C0 74  1C" />
+		
+		<Log when="before" ra="true" function="file_related" value="a1,file" types="ptr,ptr" select="01" extra="?,0x60" />
+	</Patch>-->
+	
+	<!--<Patch name="jun129" type="log" search_start="0x2A24E0" comment="addr 1.08" > 
+		<Instruction code="48 85 C9 74 61 57 48 83  EC 20 4D 8B C8" />
+		
+		<Log when="before" ra="true" function="file_related" value="a1,a2,file" types="ptr,ptr,cstr" select="001" />
+	</Patch>-->
+	
+	<!--<Patch name="jun128" type="log" search_start="0x2C9260" comment="addr 1.08" > 
+		<Instruction code="40 55 53 56 57 48 8D 6C  24 C1" />
+		
+		<Log when="before" function="file_related" value="a1,file,a3,a4" types="ptr,cstr,u32,u32" select="0111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun127" type="log" search_start="0x2C90D0" comment="addr 1.08" > 
+		<Instruction code="40 53 55 56 57 41 56 41  57 48 81 EC 98 00 00 00" />
+		
+		<Log when="before" function="file_related" value="a1,a2,file,a4,a5" types="ptr,ptr,cstr,ptr,ptr" select="00100" />
+	</Patch>-->
+	
+	<!--<Patch name="jun126" type="log" search_start="0x2CB570" comment="addr 1.08" > 
+		<Instruction code="40 56 57 41 56 48 83 EC  40" />
+		
+		<Log when="before" function="file_related" value="obj,num" types="ptr,u32" select="01" />
+	</Patch>-->
+	
+	<!--<Patch name="jun125" type="log" search_start="0x2C9F10" comment="addr 1.08" > 
+		<Instruction code="48 8B D1 45 33 C0" />
+		
+		<Log when="before" ra="true" function="file_related" value="file" types="cstr" select="1" />
+	</Patch>-->
+	
+	<!--<Patch name="jun124" type="log" search_start="0x24E120" comment="addr 1.08" >
+		<Instruction code="40 55 56 41 54 41 55 48  83 EC 48" />
+		
+		<Log when="after" function="quest_related" value="this,quest,a3,a4,a5" types="ptr,ptr,u32,u32,u32" select="00000" />
+	</Patch>-->
+	
+	<!--<Patch name="jun123" type="write" search_start="0x270ED0" comment="addr 1.08" >
+		<Instruction code="48 89 5C 24 08" />
+		
+		<Write value="C3" />
+	</Patch>-->
+	
+	<!-- air N2 -->
+	<!--<Patch name="jun122" type="write" search_start="0x2B0154" comment="addr 1.08" >
+		<Instruction code="0F 85 B6 01 00 00" />
+		
+		<Write value="E9 B6 01 00 00   90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun121" type="write" search_start="0x2B46F9" comment="addr 1.08" >
+		<Instruction code="41 FF 50 48 85 C0 0F 84 8C 00 00 00" />
+		
+		<Write inst_index="0" inst_offset="6" value="9090 9090 9090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun116" type="hook" search_start="0x3FBBDB" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Hook type="call" value="CopyTsrFileContentsPatched" setup="SetupCopyTsrFileContents" />
+	</Patch>-->
+	<!--<Patch name="jun116" type="log" search_start="0x3FBBDB" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="after" function="string_copy" value="dst,src,size" types="ptr:0,ptr,u32" select="111" extra="0x60,0x60,d" />
+	</Patch>-->
+	
+	<!--<Patch name="jun115" type="log" search_start="0x39F1BC" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="iiiiiii" value="a0" types="u64" select="1" result="u32" result_extra="d" />
+	</Patch>
+	
+	<Patch name="jun114" type="hook" search_start="0x3FA600" comment="addr 1.08" >
+		<Instruction code="4C 8B DC 56 57 41 56 48  81 EC 80 00 00 00" />
+		
+		<Hook value="CLobbyScriptFileLoader_ctor_patched" setup="Setup_CLobbyScriptFileLoader_ctor" />
+	</Patch>
+	
+	<Patch name="jun113" type="hook" search_start="0x03A8A70" comment="addr 1.08" >
+		<Instruction code="40 53 48 83 EC 20 8B 42  08 48 8B D9" />
+		
+		<Hook value="get_const_global_value_hooked" setup="setup_get_const_global_value" />
+	</Patch>
+	
+	<Patch name="jun112" type="hook" search_start="0x3B0300" comment="addr 1.08" >
+		<Instruction code="48 89 5C 24 08 48 89 6C  24 10 48 89 74 24 18" />
+		
+		<Hook value="exists_const_global_patched" setup="setup_exists_const_global" />
+	</Patch>-->
+	
+	<!--<Patch name="jun111" type="log" search_start="0x38C2D0" comment="addr 1.08" >
+		<Instruction code="40 57 48 83 EC 50 48 C7  44 24 20 FE FF FF FF" />
+		
+		<Log when="after" ra="true" function="LLLLLL" value="this" types="u32:0x70" />
+	</Patch>-->
+	
+	<!--<Patch name="jun110" type="hook" search_start="0x3EDDD0" comment="addr 1.08" >
+		<Instruction code="48 89 5C 24 10 48 89 6C  24 18" />
+		
+		<Hook value="jun110" setup="setupjun110" />
+	</Patch>
+	
+	<Patch name="jun109" type="hook" search_start="0x3E9BB0" comment="addr 1.08" >
+		<Instruction code="48 89 4C 24 08 57 48 83  EC 40" />		
+		
+		<Hook value="CLobbyScript_ctor_Patched" setup="SetupCLobbyCtor" />
+	</Patch>-->
+	
+	<!--<Patch name="jun108" type="log" search_start="0x3E9BB0" comment="addr 1.08" >
+		<Instruction code="48 89 4C 24 08 57 48 83  EC 40" />
+		
+		<Log when="before" ra="true" function="CLobbyScript_ctor" value="this" types="u64" />
+	</Patch>-->
+	
+	<!--<Patch name="jun107" type="hook" search_start="0x3F14A0" comment="addr 1.08" >
+		<Instruction code="40 55 56 57 41 54 41 55  41 56 41 57" />
+		
+		<Hook value="jun107" setup="setupjun107" />
+	</Patch>-->
+	
+	<!--<Patch name="jun106" type="log" search_start="0x3F14A0" comment="addr 1.08" >
+		<Instruction code="40 55 56 57 41 54 41 55  41 56 41 57" />
+		
+		<Log when="before" ra="true" function="eeeeeeeee" value="a0,a1,a2" types="u32:0x68,u64,u64" />
+	</Patch>-->
+	
+	<!--<Patch name="jun105" type="log" search_start="0x3B2F60" comment="addr 1.08" >
+		<Instruction code="48 83 EC 38 48 C7 44 24  20 FE FF FF FF" />
+		
+		<Log when="before" ra="true" function="create_get_VCLobbySetupMatchingMenu_singleton" value="" />
+	</Patch>-->
+	
+	<!--<Patch name="jun104" type="log" search_start="0x02B9420" comment="addr 1.08" >
+		<Instruction code="48 89 5C 24 08 48 89 74  24 10 57 48 83 EC 20" />
+		
+		<Log when="after" function="get_msg_text" value="obj,entry,a2" select="011" types="ptr,wstr,u64" result="wstr" />
+	</Patch>-->	
+	
+	<!-- FREEZER -->	
+	<!--<Patch name="jun103b" type="write" search_start="0x3D4059" comment="addr 1.08" >
+		<Instruction code="74 14" />
+		<Instruction code="83 FB FF" />
+		<Instruction code="74 0F" />
+		
+		<Write inst_index="0" value="9090 XXXXXX 9090" />
+	</Patch>	-->
+	<!--<Patch name="jun103" type="hook" search_start="0x3B1610" comment="addr 1.08" >
+		<Instruction code="48 89 4C 24 08 55 56 57" />
+		
+		<Hook value="VCControlCtorPatched" setup="SetupVCControlCtor" />
+	</Patch>
+	<Patch name="jun104" type="write" search_start="0x3AE8DE" comment="addr 1.08" >
+		<Instruction code="B8 00 00 00 00" />
+		<Instruction code="0F 44 F0" />
+		
+		<Write value="B8 01 00 00 00    89 C6 90" />
+	</Patch>
+	<Patch name="jun117" type="write" search_start="0x408689" comment="addr 1.08" >
+		<Instruction code="8B 87 F0 00 00 00" />
+		
+		<Write value="B8 05 00 00 00 90" />
+	</Patch>-->
+	<!-- Next alone: causes the FREEZER_ATTACK_END_DEMO. Next followed by next: causes the FREEZER_ATTACK_START_DEMO-->
+	<!-- Note: they will happen in an infinite loop, this needs a proper patch in the dll that unpatches itself -->
+	<!--<Patch name="jun118" type="write" search_start="0x3BE2C3" comment="addr 1.08" >	
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="B8 01 00 00 00" />
+	</Patch>
+	<Patch name="jun119" type="write" search_start="0x3BE2D7" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="B8 00 00 00 00" />
+	</Patch>-->
+	<!-- this one for the statue -->
+	<!--<Patch name="jun120" type="write" search_start="0x3BF091" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="B8 04 00 00 00" />
+	</Patch>-->
+	<!-- END OF FREEZER -->
+	
+	<!-- air -->
+	<!--<Patch name="jun102" type="write" search_start="0x2AF6E9" comment="addr 1.08" >
+		<Instruction code="C7 43 18 02 00 00 00 48 83 C4 20 5B C3" />
+		
+		<Write inst_index="0" inst_offset="3" value="01" />
+	</Patch>-->
+	
+	<!--<Patch name="jun101" type="write" search_start="0x1F4670" comment="addr 1.08" >
+		<Instruction code="40 53 55 56 57 41 56 48  81 EC 30 01 00 00" />
+		
+		<Write value="b8 01 00 00 00 C3" />
+	</Patch>-->
+	
+	<!--<Patch name="jun99" type="write" search_start="0x216AC9" comment="addr 1.08" >
+		<Instruction code="74 0F 83 C0 F7 83 F8 06" />
+		
+		<Write value="XX08 XXXXF9 XXXX08" />
+	</Patch>
+	
+	<Patch name="jun100" type="write" search_start="0x216B40" comment="addr 1.08" >
+		<Instruction code="83 C0 F2 83 F8 01 76 0C" />
+		
+		<Write value="XXXXF9 XXXX08" />
+	</Patch>-->
+	
+	<!--<Patch name="jun97" type="log" search_start="0x14D889" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log hook_type="call" when="before" function="Command" value="a1,cmd" types="ptr,u32" select="01" />
+	</Patch>	
+	
+	<Patch name="jun98" type="log" search_start="0x1266E0" comment="addr 1.08" >
+		<Instruction code="40 56 57 41 56 48 83 EC  20" />
+		
+		<Log when="before" function="AI_special" value="this,a1,a2" types="ptr,ptr,u32:0x28" select="001" />
+	</Patch>-->	
+	
+	
+	<!--<Patch name="jun96" type="notify" search_start="0x1165B0" comment="addr 1.08" >
+		<Instruction code="40 57 48 83 EC 20" />
+		
+		<Notify value="Setup_BattleEventMob_Hensin" />
+	</Patch>
+	
+	<Patch name="jun95" type="hook" search_start="0x1BE267" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="EB 03 49 8B C6 4B 89 84 E5 B0 1C 00 00" />
+		
+		<Hook type="call" value="Battle_Mob_Ctor_Patched" setup="Setup_Battle_Mob_Ctor" />
+	</Patch>
+	
+	<Patch name="jun94" type="hook" search_start="0x1266E0" comment="addr 1.08" >
+		<Instruction code="40 56 57 41 56 48 83 EC  20 49 8B 40 10 49 8B F8" />
+		
+		<Hook value="AISpecialBehaviourPatched" setup="SetupAISpecialBehaviour" />
+	</Patch>-->
+	
+	<!--<Patch name="jun91" type="log" search_start="0x1266E0" comment="addr 1.08" >
+		<Instruction code="40 56 57 41 56 48 83 EC  20 49 8B 40 10 49 8B F8" />
+		
+		<Log ra="true" function="skill_related" when="after" value="this,a1,a2" types="ptr,ptr,ptr" select="111" extra="0x20,0x20,0x200" result="u32" />
+	</Patch>-->
+	
+	<!--<Patch name="jun92" type="write" search_start="0x1276D0" comment="addr 1.08" >
+		<Instruction code="8B 42 28 83 C0 FB 83 F8  5B" />
+		
+		<Write value="B8 08 00 00 00 C3" />
+	</Patch>-->
+	
+	<!--<Patch name="jun93" type="log" search_start="0x118970" comment="addr 1.08" >
+		<Instruction code="8B 41 28 89 41 2C 33 C0  89 81 CC 00 00 00" />
+		
+		<Log ra="true" function="skill_related" when="before" value="previous,new" types="u32:0x28,u32" select="11" />
+	</Patch>-->
+	
+	<!--<Patch name="jun90" type="log" search_start="0x514077" comment="addrr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="8B 87 1C 02 00 00 83 F8  FF 74 67" />
+		
+		<Log hook_type="call" function="send_version_string" when="before" value="obj,num,version" types="ptr,u32,wstr" select="001" />
+	</Patch>-->
+	
+	<!--<Patch name="jun89" type="log" module="iggy_w64.dll" search_start="0x46EF0" >
+		<Instruction code="48 89 5C 24 08 48 89 6C  24 10" />
+		
+		<Log function="string_related" ra="true" when="before" value="a1,a2,string,length,a5,a6" types="ptr,u64,ptr,u64,u64,u64" select="111111" result="u64" />
+	
+	</Patch>-->
+	
+	<!--<Patch name="jun87" type="write" search_start="0x61A61A" comment="addr 1.08" >
+		<Instruction code="BA 0A 00 00 00" comment="mov edx, 0xA" />
+		<Instruction code="33 C9" comment="xor ecx, ecx" />
+		<Instruction code="41 B8 00 00 00 06" comment="mov r8d, 6000000h" />
+		
+		<Write value="XX 14 XX XX XX    XX XX     XX XX XX XX XX 10" />
+	</Patch>-->
+	
+	<!-- this fixed the css crash -->
+	<!--<Patch name="jun88" type="write" search_start="0x61A62C" comment="addr 1.08" >
+		<Instruction code="BA 00 03 00 00" comment="mov edx, 0x300" />
+		<Instruction code="B9 01 00 00 00" comment="mov ecx, 1" />
+		<Instruction code="41 B8 00 00 00 01" comment="mov r8d, 1000000h" />
+		
+		<Write value="XX XX 06 XX XX    XX XX     XX XX XX XX XX XX" />
+	</Patch>-->
+	
+	<!--<Patch name="jun86" type="write" search_start="0xF3470" comment="addr 1.08" >
+		<Instruction code="74 75 48 85 DB 74 70" />
+		
+		<Write value="9090 XXXXXX 9090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun85" type="log" search_start="0xF1E10" comment="addr 1.08" >
+		<Instruction code="4C 8B 41 40 48 83 C1 10  4C 3B C1 74 4F" />
+		
+		<Log function="ererere" when="before" value="a1" types="u64" select="1" />
+	</Patch>-->
+	
+	<!--<Patch name="jun84" type="write" search_start="0x61E7FC" comment="addr 1.08" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="31 C0 909090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun83" type="log" search_start="0xF08D0" comment="addr 1.08" >
+		<Instruction code="4C 8B DC 53 48 83 EC 50  33 C0 4D 8D 43 C8" />
+		
+		<Log ra="true" function="crash_function" when="before" value="a1" types="ptr" select="0" />
+	</Patch>-->
+	
+	<!-- fixes colors too but only on roster -->	
+	<!--<Patch name="jun82" type="write" search_start="0x27C642" comment="addr 1.08" >
+		<Instruction code="FF XXXXXXXXXX 48 8B  47 30 0F 57 DB 4C 8B 0F" />
+		
+		<Write value="909090909090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun81" type="log" search_start="0x27E360" comment="addr 1.08" >
+		<Instruction code="40 55 56 57 41 54 41 55  41 56 41 57 48 83 EC 50" />
+		
+		<Log ra="true" function="colors_related" when="before" value="a1,a2,a3" types="ptr,ptr,ptr" select="000" />
+	</Patch>-->
+	
+	<!--<Patch name="jun80" type="write" search_start="0x278BEE" comment="addr 1.08" >
+		<Instruction code="FF XXXXXXXXXX 48 C7 45 DF 0F 00 00 00" />
+		
+		<Write value="488D4018" />
+	</Patch>-->
+	
+	<!--<Patch name="jun78" type="write" search_start="0x27E4CD" comment="addr 1.08" >
+		<Instruction code="FF 90 98 01 00 00 90 48  8B 54 24 40" />
+		
+		<Write value="909090909090" />
+	</Patch>
+	
+	<Patch name="jun79" type="write" search_start="0x27E50D" comment="addr 1.08" >
+		<Instruction code="FF 90 98 01 00 00 FF C5  49 83 C7 02" />
+		
+		<Write value="909090909090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun76" type="write" search_start="0x27DFF0" comment="addr 1.08" >
+		<Instruction code="4C 8B DC 55 56 57 41 54  41 55 41 56 41 57" />
+		
+		<Write value="C3" />
+	</Patch>-->
+	
+	<!-- This fixed cacsx2m colors (breaks real cacs) -->
+	<!--<Patch name="jun77" type="write" search_start="0x27E360" comment="addr 1.08" >
+		<Instruction code="40 55 56 57 41 54 41 55  41 56 41 57 48 83 EC 50" />
+		
+		<Write value="C3" />
+	</Patch>-->
+	
+	<!--<Patch name="jun75" type="write" search_start="0x44B04C" comment="addr 1.08" >
+		<Instruction code="77 26 48 63 C1 48 8D 15  A8 4F BB FF" />
+		
+		<Write inst_offset="3" value="9090 909090 90909090909090 90909090909090 909090 9090" />
+	</Patch> -->
+	
+	<!--<Patch name="jun74" type="hook" search_start="0x288C90" comment="addr 1.08" >
+		<Instruction code="33 C0 83 C1 9C 83 F9 13 0F 96 C0 C3" />
+		
+		<Hook value="abcdefg" />	
+	</Patch> -->
+	
+	<!--<Patch name="jun73" type="hook" search_start="0x2B1EF0" comment="addr 1.08" >
+		<Instruction code="40 53 48 83 EC 20 83 F9 1B 7C 0B B8 01 00 00 00 48 83 C4 20 5B C3 33 DB 83 F9 1A" />
+		
+		<Hook value="Testttttt" setup="TestttSetup" />
+	
+	</Patch> -->
+	
+	<!--<Patch name="jun73_log" type="log" search_start="0x2B1EF0" comment="addr 1.08" >
+		<Instruction code="40 53 48 83 EC 20 83 F9 1B 7C 0B B8 01 00 00 00 48 83 C4 20 5B C3 33 DB 83 F9 1A" />
+		
+		<Log function="Testttttt" when="before" ra="true" value="a1" types="u32" select="1" result="u32" />
+	
+	</Patch>-->
+	
+	<!--<Patch name="jun72" type="write" search_start="0x2B1EF0" comment="addr 1.08" enabled="false" >
+		<Instruction code="40 53 48 83 EC 20 83 F9 1B 7C 0B B8 01 00 00 00 48 83 C4 20 5B C3 33 DB 83 F9 1A" />
+		
+		<Write value="48 31 C0 48 83 F9 13 77 02 FF C0 C3" />
+	
+	</Patch> 
+
+	<Patch name="jun71" type="nop" search_start="0x1CCAB0" enabled="false" >
+		<Instruction code="41 83 F8 07 72 03" />
+		
+		<Nop size="6" />
+	</Patch>	-->
+	
+	<!--<Patch name="jun70" type="log" search_start="0x4F7E00" comment="addr 1.07" >
+		<Instruction code="48 8B C4 55 41 54 41 55  41 56 41 57 48 8D 68 88" />
+		
+		<Log function="chasel_ctor" when="before" value="a1,a2,a3,a4,a5,a6,a7,a8,a9,a10" types="u64,u64,u64,u64,u64,u64,u64,u64,u64,u64" select="1111111111" />
+	</Patch>
+	
+	<Patch name="jun71" type="write" search_start="0x3964EE" comment="addr 1.07" >
+		<Instruction code="44 8B C6" />
+		
+		<Write value="45 31 C0" />
+	</Patch>-->
+	
+	<!--Patch name="jun69" type="write" search_start="0x4E1FA9" comment="addr 1.04.1 v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="48 31 C0 9090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun68" type="write" search_start="0x1D960B" >
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun67" type="log" search_start="0x4E1FF1" comment="addr 1.04.1 v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="EB 05" />
+		
+		<Log hook_type="call" function="called_by_chasel_v_0080" when="before" value="str1" types="cstr" select="1" extra="?" />
+	</Patch>-->
+	
+	<!--<Patch name="jun66" type="write" search_start="0x187132" >
+		<Instruction code="8B 83 68 12 00 00" />
+		
+		<Write value="b8 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!-- begin: patches to make tokitoki city playable -->
+	<!--<Patch name="jun63" type="write" search_start="0x1EE049" >
+		<Instruction code="C7 44 24 20 00 00 A0 41" />
+		<Instruction code="C7 44 24 30 00 00 A0 C1" />
+		
+		<Write value="XX XX XX XX 00 00 FA 42      XX XX XX XX 00 00 c8 42" />
+		
+	</Patch>
+	
+	<Patch name="jun64" type="write" search_start="0x1EE0E3" >
+		<Instruction code="C7 44 24 28 00 00 A0 C1" />
+		<Instruction code="C7 44 24 38 00 00 A0 41" />		
+		
+		<Write value="XX XX XX XX 00 00 c8 42    XX XX XX XX 00 00 FA 42" />
+		
+	</Patch>
+	
+	<Patch name="jun65" type="write" search_start="0x1EE15E" >
+		<Instruction code="C7 44 24 28 00 00 A0 41" />		
+		<Instruction code="C7 44 24 38 00 00 A0 C1" />
+		
+		<Write value="XX XX XX XX 00 00 FA 42      XX XX XX XX 00 00 c8 42" />
+		
+	</Patch>-->
+	<!--end patches to make tokitoki city playable -->
+	
+	
+	<!--<Patch name="jun62" type="write" search_start="0x1A4E3D" >
+		<Instruction code="E8 XXXXXXXX" />
+				
+		<Write value="b8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun61" type="write" search_start="0x170F72" >
+		<Instruction code="8B 8B 68 12 00 00" />
+				
+		<Write value="b9 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun60" type="nop" search_start="0x192298" comment="1.04.1 v2" >
+		<Instruction code="83 F8 22" comment="cmp eax, 22h" />
+		<Instruction code="0F 4D C3" comment="cmovge eax, ebx" />
+		<Instruction code="8B D8" comment="mov ebx, eax" />		
+		
+		<Nop inst_index="1" size="3" />
+	</Patch>
+	
+	<Patch name="jun61" type="nop" search_start="0x35A048" comment="1.04.1 v2" >
+		<Instruction code="83 FE 22" comment="cmp esi, 22h" />
+		<Instruction code="73 05" comment="jnb +5" />
+		<Instruction code="3B 75 08" comment="cmp esi, [rbp+8]" />		
+		
+		<Nop inst_index="1" size="2" />
+	</Patch>-->
+	
+	<!--<Patch name="jun59" type="write" search_start="0x1A4CFD" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="FF C0 83 F8 18" />
+		
+		<Write value="b8 40 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun58" type="write" search_start="0x18EB02" >
+		<Instruction code="44 0F BF 48 3A" />
+		<Instruction code="44 03 CB" />
+		
+		<Write value="41 b9 30 00 00 00 90 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun57" type="write" search_start="0x186CCB" >
+		<Instruction code="8B 83 68 12 00 00" />
+		<Instruction code="8B EE" />
+		
+		<Write value="B8 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun56" type="write" search_start="0x17C530" >
+		<Instruction code="8B 83 68 12 00 00" />
+		<Instruction code="83 E8 0B 83 F8 01 0F 86  F2 00 00 00" />
+		<Instruction code="8B 87 68 12 00 00" />
+		
+		<Write value="B8 30 00 00 00 90   XX XX XX XX XX XX XX XX XX XX XX XX  B8 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun55" type="write" search_start="0x17A82C" >
+		<Instruction code="8B 81 68 12 00 00" />
+		<Instruction code="85 C0" />
+		
+		<Write value="B8 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun54" type="write" search_start="0x172079" comment="search addr is 1.04.v2" >
+		<Instruction code="8B 93 68 12 00 00" />
+		<Instruction code="83 FA 02" />
+		
+		<Write value="BA 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun53" type="write" search_start="0x171AC1" comment="search addr is 1.04.v2" >
+		<Instruction code="8B 97 68 12 00 00" />
+		<Instruction code="48 8B CF" />
+		
+		<Write value="BA 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun52" type="write" search_start="0x171300" comment="search addr is 1.04.v2" >
+		<Instruction code="8B 81 68 12 00 00" />
+		<Instruction code="C3" />
+		
+		<Write value="B8 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun51" type="write" search_start="0x170F72" comment="search addr is 1.04.v2" >
+		<Instruction code="8B 8B 68 12 00 00" />
+		<Instruction code="98 2B C8" />
+		
+		<Write value="B9 30 00 00 00 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun50" type="write" search_start="0x63EBEA" comment="search addr is 1.04.v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="83 F8 04 7C 1A" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun49" type="nop" search_start="0x63920C" comment="search addr is 1.04.v2" >
+		<Instruction code="B8 64 00 00 00 C3 B8 65  00 00 00 C3" />
+		<Instruction code="B8 66 00 00 00 C3 B8 C8  00 00 00 C3" />
+		<Instruction code="B8 2C 01 00 00 C3 B8 2D  01 00 00 C3" />
+		<Instruction code="B8 2E 01 00 00 C3 B8 90  01 00 00 C3" />
+		<Instruction code="B8 91 01 00 00 C3 B8 92  01 00 00 C3 B8 93 01 00 00 C3" />
+		<Nop/>
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun48" type="write" search_start="0x604C65" comment="search addr is 1.04.v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="8B D0 8B CB" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun47" type="write" search_start="0x5EE835" comment="search addr is 1.04.v2" >
+		<Instruction code="FF C0 48 FF C2 49 83 C0  08 48 83 FA 07 7C DC 48 8B 5C 24 30 48 8B 74  24 38 48 83 C4 20 5F C3" />
+		<Instruction code="8B 81 C0 00 00 00 89 07" />
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write inst_index="2" value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun46" type="write" search_start="0x264B48" comment="search addr is 1.04.v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="83 F8 09 77 7E" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun45" type="write" search_start="0x1F72B3" comment="search addr is 1.04.v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="44 8B C8 44 8B 86 E8 00  00 00 8B 96 E4 00 00 00 48 8B CB" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun44" type="write" search_start="0x1D960B" comment="search addr is 1.04.v2" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="44 8B C8 44 8B 45 94 41  8B D7 49 8B 8D 38 14 00 00" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun43" type="write" search_start="0x1D5ED0" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="8B D0 48  89 5C 24 40 41 8B 87 C0 0D 00 00 89 44 24 38" />
+		
+		<Write value="B8 30 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun42" type="write" search_start="0x1CE12D" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="48 8B CF 44 8B F8" />
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="8B E8" />
+		<Instruction code="48 8B 0D XXXXXXXX" />
+		<Instruction code="83 79 0C 01" />
+		
+		<Write value="B8 0A 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun41" type="write" search_start="0x1A2D0C" >
+		<Instruction code="FF E1   B8 01 00 00 00   48 83 C4 28 C3    B8 02 00 00 00    48 83 C4 28 C3     B8 03 00 00 00   48 83 C4  28 C3    33 C0 48 83 C4 28 C3" />		
+		<Write      value="XX XX   XX 00 XX XX XX   XX XX XX XX XX    XX 00 XX XX XX    XX XX XX XX XX     XX 00 XX XX XX" />
+	</Patch>-->
+	
+	<!--<Patch name="jun40" type="write" search_start="0x18D2BC" >
+		<Instruction code="49 8B 06 C7 80 EC 23 00  00 00 00 A0 42 E9 B0 03 00 00 66 83 F9 25" />
+		
+		<Write inst_index="0" inst_offset="9" value="00 00 70 41" />
+	</Patch>-->
+	
+	<!--<Patch name="jun39" type="write" search_start="0x387101" >
+		<Instruction code="C7 46 08 00 00 34 43 49  8B CD 0F 1F 44 00 00" />
+		
+		<Write inst_index="0" inst_offset="3" value="00 00 80 7f" />
+	</Patch>-->	
+	
+	<!--Patch removed (replaced by better) in 0.85 -->
+	<Patch name="ResultPortraitsHook" type="hook" search_start="0x1FE8C0" enabled="false">
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="48 8D 1C 40" comment="lea rbx, [rax+rax*2]" />
+		<Instruction code="48 C1 E3 07" comment="shl rbx, 7" />
+		<Instruction code="8B 84 0B A8 05 00 00" comment="mov eax, [rbx+rcx+5A8h]" />
+		<Instruction code="89 84 0B 80 06 00 00" comment="mov [rbx+rcx+680h], eax" />
+		<Instruction code="8B 44 24 58" comment="mov eax, [rsp+58h]" />
+		
+		<Hook value="ResultPortraitsPatched" setup="ResultPortraitsSetup" />
+	</Patch>
+	
+	<!--<Patch name="jun38" type="write" search_start="0x1D97A5" >
+		<Instruction code="41 8B 86 B0 00 00 00" />
+		<Instruction code="83 E0 01 89 45 C0 49 8B  CE" />
+		
+		<Write value="b8 01 00 00 00 9090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun37" type="write" search_start="0x1FC3E8" >
+		<Instruction code="45 85 DB 74 0A" />
+		<Write value="90 90 90 90 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun36" type="log" search_start="0x4E0680" >
+	
+		<Instruction code="40 55 53 41 55 48 8D 6C  24 B0 48 81 EC 50 01 00 00" />
+		<Instruction code="48 8B 05 XXXXXXXX" />
+		<Instruction code="48 33 C4 48 89 45 F8 4C 8B EA 48  8B D9 BA 01 00 00 00" />
+		
+		<Log function="jun36" when="before" value="arg1,arg2" types="ptr,ptr" select="10" extra="0x5C0,?" />
+	
+	</Patch>-->	
+	
+	<!--<Patch name="jun35" type="write" search_start="0x16f782" >
+			<Instruction code="FF 15 XXXXXXXX" />
+		<Instruction code="85 C0 75 29 44 8B C3 49  8B D5 48 8B CD" />
+		
+		<Write value="b8 00 00 00 00 90" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="auto_generate_portraited_for_everyone" type="write" search_start="0x201326"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 74 7B 44 8B 83 0C  01 00 00 41 83 F8 FF" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun31" type="write" search_start="0x250A2A"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 0F 85 8F 01 00 00 48 8D 55 30" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>
+	
+	<Patch name="jun32" type="write" search_start="0x264D56"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 0F 85 18 01 00 00  41 8B CF E8 " />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>
+	
+	<Patch name="jun33" type="write" search_start="0x264D56"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 0F 85 14 03 00 00  85 DB 0F 88 0C 03 00 00" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>
+	
+	<Patch name="jun34" type="write" search_start="0x264D56"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 0F 85 14 03 00 00  85 DB 0F 88 0C 03 00 00" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>-->
+	
+	
+	<Patch name="apply_body_shape_log" type="log" search_start="0x27E0F0" enabled="false" >
+		<Instruction code="48 8B C4 57 41 54 41 55  41 56 41 57 48 83 EC 70" />
+		<Instruction code="48 C7 40 88 FE FF FF FF  48 89 58 08 48 89 68 10" />
+		<Instruction code="48 89 70 18 0F 29 70 C8  0F 28 F3 41 8B D8" />
+		
+		<!-- There is a fourth paramter, a float... (xmmm3) but the log doesn't support float params currently -->
+		<Log function="apply_body_shape" when="before" value="model,body_shape,zero" types="u32:8:0x90,s32,u32" select="111" extra="h,d,d" />
+	</Patch>
+	
+	<!--<Patch name="jun27" type="write" search_start="0x165632"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="83 CA FF 48 8B CE 85 C0 48 8B 06 74 2C" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun28" type="write" search_start="0x16580D"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 0F 84 80 00 00 00 48 8B 8F 70 02 00 00" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun27" type="write" search_start="0x295D33"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 75 07 33 C0 E9 46  04 00 00 49 83 7D 38 00" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>
+	
+	<Patch name="jun28" type="write" search_start="0x293EAD"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="48 8B CE 85 C0 74 07" />
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="EB 05" />
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Write value="b8 01 00 00 00" />
+	</Patch>-->
+	
+	<!--<Patch name="jun28" type="write" search_start="0x4D90E6"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="33 FF 85 C0 0F 85 5D 01  00 00 8D 53 02" />
+		
+		<Write value="48 31 C0  9090" />
+	</Patch>
+	
+	<Patch name="jun29" type="write" search_start="0x4D90E6"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 74 2C 45 33 F6 83  CA FF" />
+		
+		<Write value="48 31 C0  9090" />
+	</Patch>
+	
+	<Patch name="jun30" type="write" search_start="0x4D90E6"  >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="85 C0 74 21 44 89 64 24  20 45 8B CF" />
+		
+		<Write value="48 31 C0  9090" />
+	</Patch>-->
+	
+	<!--<Patch name="jun26" type="write" search_start="0x457560" enabled="false" >
+		<Instruction code="41 81 F9 E6 00 00 00 0F  87 0F 02 00 00" />
+		
+		<Write value="XX XX XX 01" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun25" type="log" search_start="0x292022" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="0F 10 00 F2 0F 10 48 10  F2 0F 11 4C 24 30" />
+		<Instruction code="F3 0F 10 7C 24 34" />
+		
+		<Log hook_type="call" function="cac_stats" when="after" value="arg1,arg2,arg3" types="ptr,ptr,ptr" select="011" extra="0x20,0x20,0x40" />
+	</Patch>	
+	
+	<Patch name="jun24" type="log" search_start="0x291FE3" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="F3 0F 10 85 40 01 00 00" />
+		<Instruction code="0F 57 F6" />
+		<Instruction code="0F 2E C6" />
+		<Instruction code="74 10" />
+		
+		<Log hook_type="call" function="jun24" when="after" value="arg1,arg2" types="ptr,ptr" select="01" extra="0x40,0x40" />
+	</Patch>-->
+	
+	<!--<Patch name="jun21" type="log" search_start="0x4BA160" >
+	
+		<Instruction code="48 89 5C 24 08 48 89 6C  24 10 48 89 74 24 18 57" />
+		<Instruction code="48 83 EC 20 48 8B F2 48  8B E9 BF 04 00 00 00 33 DB" />
+		<Instruction code="48 8B 06" />
+		
+		<Log function="jun21" when="before" value="arg1,arg2" types="ptr,ptr" select="01" extra="?,?" />
+	
+	</Patch>
+	
+	<Patch name="jun22" type="log" search_start="0x4BA160" >
+	
+		<Instruction code="48 89 5C 24 08 48 89 74  24 10 57 48 83 EC 20 48" />
+		<Instruction code="8B F1 BF 04 00 00 00 33  DB" />
+		<Instruction code="0F 1F 80 00 00 00 00" />
+		
+		<Log function="jun22" when="before" value="arg1" types="ptr:0x198" select="1" extra="?" />
+	
+	</Patch>
+	
+	<Patch name="jun23" type="log" search_start="0x4BA160" >
+	
+		<Instruction code="48 89 5C 24 08 48 89 74  24 10 57 48 83 EC 20 48" />
+		<Instruction code="8B F1 BF 04 00 00 00 33  DB" />
+		<Instruction code="0F 1F 80 00 00 00 00" />
+		
+		<Log function="jun23" when="before" value="arg2" types="ptr:0x198" select="1" extra="?" />
+	
+	</Patch>-->
+	
+	<!--<Patch name="jun20" type="write" search_start="0x1AF27F" >
+		<Instruction code="48 81 C2 A8 05 00 00 41  83 C9 FF" />
+		<Instruction code="41 B8 E5 00 00" />
+		
+		<Write inst_index="1" value="XX XX F0" />
+	</Patch>-->
+	
+	<!--<Patch name="jun19" type="write" search_start="0x63FE40" >
+		<Instruction code="81 FA A0 00 00 00" comment="cmp edx, 0A0h" />
+		<Instruction code="72 03" />
+		<Instruction code="33 C0" />
+		<Instruction code="C3" />
+		<Instruction code="41 83 F8 20" />
+		<Instruction code="73 F7" />
+		
+		<Write value="81 FA 00 0A" />
+	</Patch>-->
+	
+	<!--<Patch name="limit_check" type="log" search_start="0x63FE40" >
+		<Instruction code="81 FA A0 00 00 00" comment="cmp edx, 0A0h" />
+		<Instruction code="72 03" />
+		<Instruction code="33 C0" />
+		<Instruction code="C3" />
+		<Instruction code="41 83 F8 20" />
+		<Instruction code="73 F7" />
+		
+		<Log function="limit_check" when="before" ra="true" value="obj,chara_or_slot_idx,costume" types="ptr,u32,u32" select="011" extra="?,h,h" />
+	</Patch>-->
+	
+	<!--Patch name="create_save_peek" type="log" search_start="0x120150" >
+		<Instruction code="48 8B C4 55 41 54 41 55  41 56 41 57 48 8D A8 F8 F4 FF FF 48 81 EC E0 0B  00 00 48 C7 44 24 60 FE FF FF FF" />
+		
+		<Log function="create_save" when="before" ra="true" value="obj,unk2,unk3,unk4" types="u64:0:0x38,u64,u64,u64" select="1000" extra="h,?,?,?" />
+	</Patch>-->	
+	
+	<!--<Patch name="bac_bcm_test" type="write" search_start="0x2C9C01" >
+		<Instruction code="FF 50 28" />
+		<Instruction code="48 8B C8" />
+		<Instruction code="44 8B 43 10" />
+		<Instruction code="48 8B 53 18" />
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="84 C0" />
+		<Instruction code="0F 84 45 03 00 00" />
+		
+		<Write inst_index="3" value="48C7C001000000  9090" comment="mov rax, 1; nop; nop" />
+	</Patch>-->
+	
+	<!--<Patch name="ohzaruu_test" type="write" search_start="0xB70588" >
+		<Instruction code="4F 42 42 00 4F 53 47 00 4F 53 4E 00 33 33 B3 3F" />
+		
+		<Write value="42 39 35" />
+	</Patch>-->
+	
+	
+	
+	<!--<Patch name="jun18" type="log" search_start="0x50AA74" >
+		<Instruction code="48 89 4C 24 08 53 48 83 EC 30 48 C7 44 24 20 FE FF FF FF 48 8B D9 E8 XXXXXXXX 90 48 8D 05 XXXXXXXX 48 89 03 C6 83 60 01 00 00 01" />
+		<Instruction code="C7 83 64 01 00 00 00 00  00 00 48 8D 8B 68 01 00 00 BA 01 00 00 00 E8 XXXXXXXX 90 48 8B 0D XXXXXXXX E8 XXXXXXXX 90 48 8D 05 XXXXXXXX" />
+		<Instruction code="48 89 03 48 C7 83 90 01  00 00 00 00 00 00 33 D2" />
+		
+		<Log function="iggy_base_ctor" when="before" ra="true" value="a,b,size" types="u64,u64,u64"  select="001" extra="?,?,h" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun17" type="log" search_start="0x291AC0" >
+		<Instruction code="4057" />
+		<Instruction code="48 83 EC 30" />
+		<Instruction code="48 C7 44 24 20 FE FF FF FF" />
+		<Instruction code="48 89 5C 24 40" />
+		<Instruction code="48 89 74 24 48" />
+		<Instruction code="48 63 DA" />
+		
+		<Log function="psc_func2" when="after" value="buf,num_specs" types="ptr,u64" select="11" extra="?,h" />
+	</Patch>-->
+	
+	<!-- Crash better located here -->
+	<!--<Patch name="jun16" type="log" search_start="0x292FD0" >
+		<Instruction code="48 89 5C 24 10" />
+		<Instruction code="48 89 6C 24 18" />
+		<Instruction code="56 57 4156" />
+		<Instruction code="48 83 EC 20" />
+		<Instruction code="48 8B 41 08" />
+		<Instruction code="45 33 F6" />
+		
+		<Log function="psc_func1" when="after" value="obj" types="ptr" select="0" extra="?" />
+	</Patch>-->
+
+	<!-- Ok, the crash happens somewhere in this function or its subfunctions -->
+	<!--<Patch name="jun15" type="log" search_start="0x292C10" >	
+		<Instruction code="4154 4155 4156" />
+		<Instruction code="48 83 EC 70" />
+		<Instruction code="4C 8B F1" />
+		<Instruction code="BA 01 00 00 00" />
+		<Instruction code="48 8B 09" />
+		<Instruction code="E8 XXXXXXXX" />
+		
+		<Log function="mmm" when="before" value="unk" types="u64" select="0" extra="?" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun14" type="write" search_start="0x293049" >
+		<Instruction code="B8 10 00 00 00" />
+		<Instruction code="48 F7 E3" />
+		<Instruction code="48 0F 40 C1" />
+		<Instruction code="45 33 C9" />
+		<Instruction code="48 8B C8" />
+		<Instruction code="33 D2" />
+		<Instruction code="FF 15 XXXXXXXX" />
+		
+		<Write inst_index="0" inst_offset="1" value="00 01" />
+	</Patch>-->
+	
+	<!--<Patch name="jun13" type="log" search_start="0x293049" >
+		<Instruction code="B8 10 00 00 00" />
+		<Instruction code="48 F7 E3" />
+		<Instruction code="48 0F 40 C1" />
+		<Instruction code="45 33 C9" />
+		<Instruction code="48 8B C8" />
+		<Instruction code="33 D2" />
+		<Instruction code="FF 15 XXXXXXXX" />
+		
+		<Log inst_index="6" function="mmm" when="before" value="size" types="u64" select="1" extra="h" />
+	</Patch>-->
+	
+	<!--<Patch name="jun9" type="log" search_start="0x2CFF70" >	
+		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" />
+		<Instruction code="48 8D AC 24 00 FE FF FF" />
+		<Instruction code="48 81 EC 00 03 00 00" />
+		<Instruction code="48 C7 45 20 FE FF FF FF" />
+		
+		<Log function="mmm" when="after" value="file,unk2,size" types="cstr,ptr,u32" select="111" extra="?,h,h" />		
+	</Patch>-->
+	
+	<!--<Patch name="jun11" type="hook" search_start="0x2CB5E0" >
+		<Instruction code="48 89 5C 24 18" />
+		<Instruction code="48 89 54 24 10" />
+		<Instruction code="55 56 57 4154 4155 4156 4157" />
+		<Instruction code="48 83 EC 20" />
+		<Instruction code="4C 8B 29" />
+		<Instruction code="49 8B F0" />
+		<Instruction code="49 8B 5D 08" />
+		<Instruction code="49 8D 45 08" />
+		<Instruction code="4C 8B E2" />
+		
+		<Hook value="mmm2" setup="mmm2_setup"  />
+	</Patch>-->
+	
+	<!--<Patch name="jun12" type="log" search_start="0x2CB654" >
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="85 C0" />
+		<Instruction code="74 51" />
+		<Instruction code="79 54" />
+		<Instruction code="48 8B 5B 10" />
+		<Instruction code="80 7B 19 00" />
+		
+		<Log hook_type="call" function="mmm3" when="before" value="dst,src,size" types="cstr,cstr,u64" select="111" extra="?,?,h" />
+	</Patch>-->
+	
+	<!--<Patch name="jun10" type="write" search_start="0x2D0075" >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="48 8B 5C 24 48" />
+		<Instruction code="48 3B 5C 24 50" />
+		<Instruction code="0F 84 D2 04 00 00" />
+		
+		<Write inst_index="3" value="90 90 90 90 90 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun8" type="write" search_start="0x2C9F5A" >
+		<Instruction code="E9 XX XX XX XX" />
+		<Instruction code="45 33 C9" />
+		<Instruction code="4C 8D 05 XX XX XX XX" />
+		<Instruction code="48 8D 15 XX XX XX XX" />
+		<Instruction code="33 C9" />
+		<Instruction code="FF 15 XX XX XX XX" />
+		<Instruction code="B9 01 00 00 00" />
+		
+		<Write inst_index="3" value="48 31 D2  90 90 90 90" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="unlock_log" type="log" search_start="0x4D8B00" >
+		<Instruction code="48 8B C4" />
+		<Instruction code="55 4154 4155 4156 4157" />
+		<Instruction code="48 8B EC" />
+		<Instruction code="48 83 EC 60" />
+		<Instruction code="48 C7 45 D0 FE FF FF FF" />
+		<Instruction code="48 89 58 08" />
+		<Instruction code="48 89 70 18" />
+		
+		<Log function="unlock_check" when="before" value="this,id,costume" types="ptr,u32,u32" select="011" extra="?,h,h" />
+	
+	</Patch>-->
+	
+	
+	<!--<Patch name="unlock_test" type="write" search_start="0x4DA1AC" >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="44 8B C0" />
+		<Instruction code="8D 53 71" />
+		
+		<Write value="41 B8 01 00 00 00    9090" comment="mov r8d, 1; nop; nop;" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun5" type="log" search_start="0x4D7976" >
+		<Instruction code="41 B8 66 0D 00 00" />
+		<Instruction code="E8 XX XX XX XX" />		
+		
+		<Log inst_index="1" hook_type="call" function="mmm" when="after" ra="true" value="unk1,unk2,unk3,unk4" types="u64,u64,u64,u64" select="1111" extra="h,h,h,h" />
+	</Patch>
+	
+	<Patch name="jun6" type="write" search_start="0x4D7976" >
+		<Instruction code="41 B8 66 0D 00 00" />
+		<Instruction code="E8 XX XX XX XX" />		
+		
+		<Write value=" XX XX 44 0D 00 00" />
+	</Patch>
+	
+	<Patch name="jun7" type="write" search_start="0x4D7AB9" >
+		<Instruction code="44 8D 42 43" />
+		<Instruction code="E8 XX XX XX XX" />	
+		<Instruction code="90" />
+		<Instruction code="48 8D 8F E8 0F 00 00" />
+		
+		<Write value="XX XX XX 42" />	
+	</Patch>-->
+	
+	<Patch name="jun1" type="log" search_start="0x671B4" enabled="false" >
+		<Instruction code="48 89 5C 24 08" />
+		<Instruction code="48 89 6C 24 10" />
+		<Instruction code="48 89 74 24 18" />
+		<Instruction code="57" />
+		<Instruction code="48 83 EC 40" />
+		
+		<Log function="CpkGetFileInfo" when="before" ra="true" value="cpk_object,file,ret_info,ret_bool" types="ptr,cstr,ptr,u32:0" select="0100" extra="0x30,?,0x40,d" />
+	</Patch>
+	
+	<!--<Patch name="jun2" type="write" search_start="0x67231" >
+		<Instruction code="48 83 23 00" />
+		
+		<Write value="90 90 90 90" />
+	</Patch>-->
+	
+	<!--<Patch name="jun3" type="log" search_start="0x6BFBC" >
+		<Instruction code="48 89 5C 24 08" />
+		<Instruction code="57" />
+		<Instruction code="48 83 EC 30" />
+				
+		<Log function="maybe_read" when="after" ra="true" value="unk1,unk2,path,offset,size,buf,size_too" types="ptr,ptr,cstr,u32,u64,ptr,u64" select="0011111" extra="?,?,?,h,h,?,h" />
+	</Patch>-->
+	
+	<!--<Patch name="jun4" type="log" search_start="0x6A23C" >
+		<Instruction code="48 8B C4" />
+		<Instruction code="48 89 58 08" />
+		<Instruction code="48 89 70 10" />
+				
+		<Log function="cpk_do_open_file" when="before" ra="true" value="unk1,path,unk3,unk4,unk5,unk6,unk7" types="ptr,cstr,ptr,ptr,ptr,ptr,ptr" select="0100000" extra="?,?,?,h,h,?,h" />
+	</Patch>-->
+	
+	<!--<Patch name="igg1" type="log" enabled="false" module="iggy_w64.dll" search_start="0x5E6A0" >
+		<Instruction code="48 83 EC 38" />
+		<Instruction code="8B 44 24 60" />
+		<Instruction code="89 44 24 28" />
+		
+		<Log function="iggy_log_func" when="before" value="unk1,unk2,unk3,source_file,line" types="u64,u64,u64,cstr,u64" select="11111" extra="ha,ha,ha,?,d" />
+	</Patch>
+	
+	<Patch name="igg2" type="log" enabled="false" module="iggy_w64.dll" search_start="0x58B9E" >
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="EB 1F" />
+		<Instruction code="48 8B 84 24 98 00 00 00" />
+		
+		<Log function="iggy_memmove_section" hook_type="call" when="before" value="dst,src,size" types="ptr,ptr,u64" select="011" extra="?,?,h" />
+	</Patch>-->
+	
+	<!--<Patch name="LogEncryption2" type="log" search_start="0x1013C0" enabled="log_encryption" >
+		<Instruction code="48 89 5C 24 20" comment="mov [rsp+020h], rbx" />
+		<Instruction code="48 89 54 24 10" comment="mov [rsp+010h], rdx" />
+		<Instruction code="55" comment="push rbp" />
+		<Instruction code="56" comment="push rsi" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="41 54" comment="push r12" />
+		<Instruction code="41 55" comment="push r13" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="41 57" comment="push r15" />
+		<Instruction code="8B 02" comment="mov eax, [rdx]" />
+		<Instruction code="48 8D 1D XX XX XX XX" comment="lea rbx, XXXXXXXX" />
+		<Instruction code="31 41 30" comment="xor [rcx+30h], eax" />
+				
+		<Log function="aes_decrypt2" ra="true" when="before" value="unk1,unk2" types="ptr,ptr" select="11" extra="32:32,32:32" />
+	</Patch>-->
+	
+	<!--<Patch name="LogEncryption3" type="log" search_start="0x69FE60" enabled="log_encryption" >
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+020h], rbx" />
+		<Instruction code="48 89 6C 24 10" comment="mov [rsp+010h], rdx" />
+		<Instruction code="48 89 74 24 18" comment="push rbp" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="41 54" comment="push r12" />
+		<Instruction code="41 55" comment="push r13" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="41 57" comment="push r15" />
+		
+				
+		<Log function="aes_decrypt2" ra="true" when="before" value="unk1,unk2,unk3,unk4" types="u64,u64,u64,u64" select="1111" extra="h,h,h,h" />
+	</Patch> -->
+	
+	<!--<Patch name="igg3" type="log" module="iggy_w64.dll" search_start="0x232F0" >
+		<Instruction code="48 89 5C 24 18" />
+		<Instruction code="57" />
+		
+		<Log function="iggy_as3name" ra="true" when="after" value="unk1,unk2,name" types="ptr,ptr,cstr" select="111" extra="0x80,0x80,?" />	
+	</Patch>-->
+	
+	<!--<Patch name="igg4" type="log" search_start="0xCF8B2" >
+		<Instruction code="C2 00 00" />
+		<Instruction code="CC CC CC CC CC CC CC CC CC CC CC CC CC" />
+		<Instruction code="48 83 EC 28" />
+		
+		<Log function="iggy_trace" ra="true" when="after" value="unk1,unk2,unk3,unk4" types="u64,u64,u64,u64" select="1111" extra="?,?,?,?" />	
+	</Patch>-->
+	
+	<!-- Deleted release patches -->
+	
+	<!--<Patch name="NotifyLFFunc1" type="notify" search_start="0x73288" >
+		<Instruction code="48 8B C4" comment="mov rax, rsp"/>
+		<Instruction code="48 89 58 08" comment="mov [rax+8], rbx" />
+		<Instruction code="48 89 68 10" comment="mov [rax+10h], rbp" />
+		<Instruction code="48 89 70 18" comment="mov [rax+18h], rsi" />
+		<Instruction code="48 89 78 20" comment="mov [rax+20h], rdi" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="33 DB" comment="xor ebx, ebx" />
+		<Instruction code="49 8B F9" comment="mov rdi, r9" />
+		<Instruction code="49 8B E8" comment="mov rbp, r8" />
+		<Instruction code="48 8B F2" comment="mov  rsi, rdx" />
+		
+		<Notify value="NotifyLFFunc1" />
+	</Patch>
+	
+	<Patch name="NotifyLFFunc2" type="notify" search_start="0x6A738" >
+		<Instruction code="48 8B C4" comment="mov rax, rsp" />
+		<Instruction code="48 89 58 08" comment="mov [rax+8], rbx" />
+		<Instruction code="48 89 70 20" comment="mov [rax+20h], rsi" />
+		<Instruction code="57 " comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="48 83 60 10 00" comment="and qword ptr [rax+10h], 0" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="48 8D 48 10" comment="lea  rcx, [rax+10h]" />
+		<Instruction code="48 83 CE FF" comment="or rsi, 0FFFFFFFFFFFFFFFFh" />
+		<Instruction code="48 8B DA" comment="mov rbx, rdx" />
+		<Instruction code="48 89 32" comment="mov [rdx], rsi" />
+		
+		<Notify value="NotifyLFFunc2" />
+	</Patch>-->
+
+</EternityPatchFile>

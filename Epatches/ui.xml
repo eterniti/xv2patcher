@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="UIPatches" comment="This file enables patches related with UI" >
+
+	<!-- Addresses 1.08 unless stated otherwise -->	
+	
+	<!-- ui_enemy_portrait group -->
+	<!-- Signature 1.11. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
+	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x23CAE9" >
+		<Instruction code="83 F9 01" comment="cmp ecx, 1" />
+		<Instruction code="75 29" comment="jnz +0x29" />
+		<Instruction code="48 63 45 04" comment="movsxd rax, [rbp+4]" />
+		<Instruction code="83 F8 11" comment="cmp eax, 11h " />
+		<Instruction code="77 20" comment="ja +0x20" />
+		<Instruction code="8B 8C 87 XXXXXXXX" comment="mov ecx, [rdi+rax*4+XXXXXXXX]"/>
+		
+		<Notify inst_index="5" inst_offset="3" value="OnLocatePortraitEnemyForEmbSwitchTable" />
+	</Patch>
+	
+	<!-- Signature 1.11. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a bittest condition. -->
+	<Patch name="PortraitEnemyForAutoGen" enabled="ui_enemy_portrait" type="write" search_start="0x23CB54" >
+		<Instruction code="83 F8 11" comment="cmp eax, 11h " />
+		<Instruction code="77 BE" comment="ja -0x42" />
+		<Instruction code="B9 00 C2 02 00" comment="mov ecx, 2C200h" />
+		<Instruction code="0F A3 C1" comment="bt ecx, eax" />
+				
+		<!-- Change bittest 0x2C200 (case 9, 14, 15 & 17) to 0x2FF80 (case 7-15 & 17) -->
+		<Write inst_index="2" inst_offset="1" value="80 FF 02 00" />
+	</Patch>
+	
+	<!-- Signature 1.11 -->
+	<Patch name="ShowTheRedRing" enabled="ui_enemy_portrait" type="notify" search_start="0x23C7D6" >
+		<Instruction code="4A 8B 8C F7 XXXXXXXX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
+		<Instruction code="4C 8B C5" comment="mov r8, rbp" />
+		<Instruction code="4C 2B C1" comment="sub r8, rcx" />
+		<Instruction code="BA 34 00 00 00" comment="mov edx, 34h" />
+			
+		<Notify inst_index="0" inst_offset="4" value="ShowTheRedRing" />
+	</Patch>
+	<!-- end of ui_enemy_portrait group -->
+	
+	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x224106" comment="signature 1.14" >
+		<Instruction code="4C 8D 8C 24 B0 00 00 00" comment="lea r9, [rsp+B0h]" />
+		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
+		<Instruction code="4C 8D 44 24 60" comment="lea r8, [rsp+60h]" />
+		<Instruction code="49 8B D7" comment="mov rdx, r15" />
+		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+		<Instruction code="E8 XXXXXXXX" comment="call battle_ui function" />
+		<Instruction code="48 63 7C 24 60" comment="movsxd rdi, [rsp+60h]" />
+		<Instruction code="83 FF FF" comment="cmp edi, -1" />
+	
+		<Notify inst_index="5" value="OnLocateToggleBattleUIPatch" />
+	</Patch>
+	
+	<!-- Warning: signature of this is this big because too many functions start like this -->
+	<Patch name="HookPopupPauseCtor" type="hook" search_start="0x5CA250" comment="address 1.14" > 
+		<Instruction code="48 89 4C 24 08" comment="mov [rsp+8], rcx" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 40" comment="sub rsp, 40h" />
+		<Instruction code="48 C7 44 24 30 FE FF FF FF" comment="mov qword ptr[rsp+30h], -2" />
+		<Instruction code="48 89 5C 24 58" comment="mov [rsp+58h], rbx" />
+		<Instruction code="48 89 6C 24 60" comment="mov [rsp+60h], rbp" />
+		<Instruction code="48 89 74 24 68" comment="mov [rsp+68h], rsi" />
+		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
+		<Instruction code="BA 02 00 00 00" comment="mov edx, 2" />
+		<Instruction code="44 8D 42 0D" comment="lea r8d, [rdx+0Dh]" />
+		
+		<Hook value="PopupPauseCtorHooked" setup="SetupPopupPauseCtor" />
+	</Patch>
+	
+	<!-- Notice: the purpose of this patch is to gather the return address of the call to the popup pause ctor done in battle mode, to distinguish them from other pause menus -->
+	<!-- So, the instruction returned is the one AFTER the call -->	
+	<Patch name="LocatePopupPauseBattleRA" type="notify" search_start="0x1F510E" comment="address 1.15" >
+		<Instruction code="48 8B C8" comment="mov rcx, rax" />
+		<Instruction code="E8 XXXXXXXX" comment="call popup_pause_ctor" />
+		<Instruction code="EB 03" comment="jmp +3" />
+		<Instruction code="49 8B C6" comment="mov rax, r14" />
+		<Instruction code="48 89 43 XX" comment="mov [rbx+XXh], rax" />
+		<Instruction code="C6 05 XXXXXXXX 00" comment="mov XXXXXXXX, 0" />
+		<Instruction code="48 8B 8B XXXX 00 00" comment="mov rcx, [rbx+XXXXXh]" />
+		<Instruction code="48 85 C9" comment="test rcx, rcx" />
+			
+		<Notify inst_index="2" value="OnPopupPauseBattleRALocated" />
+	</Patch>
+	
+</EternityPatchFile>
+	

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="BacBcmProtectionDestruction" enabled="bac_bcm" comment="This file removes the game protection of bac/bcm files, which prevents them from being modded." >	
+
+	<Patch name="bac_bcm_check_remove" type="write" search_start="0x2C9C01" comment="Removal of boolean function" >
+		<Instruction code="FF 50 28" comment="call qword ptr [rax+28h]" />
+		<Instruction code="48 8B C8" comment="mov rcx, rax" />
+		<Instruction code="44 8B 43 10" comment="mov r8d, [rbx+10h]" />
+		<Instruction code="48 8B 53 18" comment="mov rdx, [rbx+18h]" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="84 C0" comment="test al, al" />
+		<Instruction code="0F 84 45 03 00 00" comment="jz +0x345" />
+		
+		<Write inst_index="3" value="48C7C001000000  9090" comment="mov rax, 1; nop; nop" />
+	</Patch>
+
+</EternityPatchFile>

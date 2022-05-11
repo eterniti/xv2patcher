@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="NewChara" enabled="new_chara" comment="This file enables the new characters patch">
+
+<!-- The group of patches to make new slots are divided into two main parts. -->
+
+<!-- Part1: patching the comunication with the ActionScript3 
+
+The native and AS3 communicate with each other using a documented standard way (ActionScript external interface)
+There are communications in both ways, native->as3 and as3->native
+
+The native->as3 communication is done through a buffer (in the AS3 side) which has a default size of 5194 bytes (0x144A)
+The native part passes the index of the buffer, and the value to set (more or less).
+Each part of the buffer fulfills a role, which can be seen in the ReceiveType_* variables in CharaSele.as
+
+The first part of the patch takes place mostly in the .dll, as things need to be computed at run time. The xml role here
+will be to just find the patches.
+
+These patches consist in patching several calls to the most high level routines that communicate the data to the as3 side 
+(thsese routine are methods of some parent class of the native "chasel" object). 
+The patches consist in fixing the indexes to match the new layout after CharacterMax change. 
+Also, the size must be patched.
+
+-->
+
+<!-- 1.16: The way of handling part 1 has changed.
+	
+	All (except exceptions) PatchReceiveType have been removed, and replaced by 3 patches (PatchReceiveTypeInt, PatchReceiveTypeFlag and PatchReceiveTypeString)
+	These 3 patches use the resolve_target hook type, which mean that the whole function will be hooked, instead of the specfific call.
+	The code in the DLL will handle the mapping	to the new values using some logic that involves the return address of the function.
+	Exceptions: for some specific cases, exeptions are needed, which are handled in the old way. As of 1.16, there is two exceptions.
+
+-->
+
+	<!-- Signature 1.17 -->
+	<!-- Note: if there were a change in the r8d parameter, this means that charasele.iggy changed and the .dll side has to be updated too to match -->
+	<Patch name="ChaselMainPatch" type="Hook" search_start="0x4F0F42" comment="Takes place in chasel_ctor." >
+		<Instruction code="41 B8 4F 46 00 00" comment="mov r8d, 464Fh; r8d = ReceiveType_Num" />
+		<Instruction code="E8 XXXXXXXX" comment="call base::ctor" />
+		<Instruction code="90" comment="nop" />
+		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, chasel_vtable" />
+		<Instruction code="48 89 07" comment="mov [rdi], rax; this->vtable = chasel_vtable" />
+		<Instruction code="48 8D 8F F0 01 00 00" comment="lea rcx, [rdi+1F0h]" />
+		
+		<Hook type="call" inst_index="1" value="ChaselMainPatch" setup="CharaSetup" />
+	</Patch>
+
+
+	<!-- Signature 1.17 -->
+	<Patch name="PatchReceiveTypeInt" type="hook" search_start="0x4F2418" comment="Takes place in chasel_func14" >
+		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
+		<Instruction code="8D 97 10 21 00 00" comment="lea edx, [rdi+2110h]" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+		<Instruction code="E8 XXXXXXXX" comment="call send_int" />
+		<Instruction code="E9 07020000" comment="jmp +0x207" />
+		
+		<Hook type="resolve_target" inst_index="3" value="AS3SendInt_Hook" setup="AS3SendIntSetup" />
+	</Patch>	
+	
+	<!-- Signature 1.17 -->
+	<Patch name="PatchReceiveTypeFlag" type="hook" search_start="0x4F4B8E" comment="Takes place in chasel_func7" >
+		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+		<Instruction code="8D 96 28 21 00 00" comment="lea edx, [rsi+2128h]" />
+		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />
+		<Instruction code="83 CA FF" comment="or edx, -1" />
+		
+		<Hook type="resolve_target" inst_index="3" value="AS3SendFlag_Hook" setup="AS3SendFlagSetup"/>
+	</Patch>
+	
+	<!-- Signature 1.17 -->
+	<Patch name="PatchReceiveTypeString" type="hook" search_start="0x4F612C" comment="Takes place in chasel_func13." >
+		<Instruction code="8D 97 00 FE FF FF" comment="lea edx, [rdi-200h]" />
+		<Instruction code="4C 8B C0" comment="mov r8, rax" />
+		<Instruction code="49 8B CF" comment="mov rcx, r15" />
+		<Instruction code="E8 XXXXXXXX" comment="call send_string" />
+		<Instruction code="49 8B 87 88 03 00 00" comment="mov rax, [r15+388h]" />
+		
+		<Hook type="resolve_target" inst_index="3" value="AS3SendString_Hook" setup="AS3SendStringSetup" />
+	</Patch>	
+	
+	<!-- Begin: exceptional handling -->
+	<!-- Signature 1.17 -->
+	<Patch name="PatchReceiveTypeUnlockVar" type="hook" search_start="0x4F62B1" comment="Takes place in chasel_func6" >
+		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+		<Instruction code="8D 93 10 01 00 00" comment="lea edx, [rbx+110h]" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="48 8B 5C 24 30" comment="mov rbx, [rsp+30h]" />
+		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
+		<Instruction code="5F" comment="pop rdi" />
+		<Instruction code="E9 XXXXXXXX" comment="jmp send_flag" />
+		
+		<Hook type="call" inst_index="6" value="PatchReceiveTypeUnlockVar" />
+	</Patch>
+	<!-- Signature updated in 1.17 -->
+	<Patch name="PatchReceiveTypeCharaSelected" type="hook" search_start="0x4F4B8B" comment="Takes place in chasel_func7" >
+		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+		<Instruction code="8D 96 28 21 00 00" comment="lea edx, [rsi+2128h]" />
+		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />
+		<Instruction code="83 CA FF" comment="or edx, -1" />
+		
+		<Hook type="call" inst_index="3" value="PatchReceiveTypeCharaSelected" />
+	</Patch>
+	<!-- End: exceptional handling -->
+	
+	<!-- Patch added in 1.10v2. Signature 1.14 -->
+	<Patch name="NoNewStarIconInCharsAfter160" type="write" search_start="0x7477AE" >
+		<Instruction code="41 8B C2" comment="mov eax, r10d" />
+		<Instruction code="8B D0" comment="mov edx, eax" />
+		<Instruction code="41 8B C9" comment="mov ecx, r9d" />
+		<Instruction code="C1 E2 06" comment="shl edx, 6" />
+		<Instruction code="2B CA" comment="sub ecx, edx" />
+		<Instruction code="44 0F B6 C1" comment="mov r8d, cl" />
+		<Instruction code="8B C8" comment="mov ecx, eax" />
+		<Instruction code="49 8B 94 CB 70 05 00 00" comment="mov rdx, [r11+rcx*8+570h]" />
+		<Instruction code="4C 0F A3 C2" comment="bt rdx, r8" />
+		<Instruction code="41 0F 92 C2" comment="setb r10" />
+		<Instruction code="41 8B C2" comment="mov eax, r10d" />
+		<Instruction code="C3" comment="ret" />
+		<Instruction code="33 C0" comment="xor eax, eax" />
+		
+		<!-- Replace the xor eax, eax, with a mov eax, edx. Since edx is guaranteed to be >= 160, it is non-zero, thus condition reverted -->
+		<Write inst_index="12" value="89 D0" />
+	</Patch>
+	
+
+	
+<!-- Part 2: modifying the C++ object layout 
+
+(Note: part of the info in this comment may be outdated)
+
+The object that takes care about Character Selection in the native side is a C++ object with an allocation size of 0x2900 bytes.
+The object has +29 methods (4 of them virtual), including the constructor and the virtual destructor.
+The count doesn't include the methods of base classes (virtual methods or not), which are numerous (the object is estimated to be 
+***at least*** the third one in the hierarchy)
+
+Object layout:
+Offset 0 -> vtable pointer
+4-1AF -> base classes properties
+1B0-18BF -> this class properties
+
+The most important field for our purposes is the one located at offset 0x5E0. 
+The field there is a fixed array of ***256*** structures/objects, each one being 32 bytes (so the field takes the range 0x5E0-0x25DF).
+
+Because the array size is the default number of max slots (256), we need to increase this field somehow to match our new number of slots.
+There are two ways to solve this:
+
+- Method 1: increase the space for the fixed array, by displacing all other fields offsets (and also increasing the C++ object memory)
+Pros: it will only use the memory needed, not a single byte wasted.
+Cons: this would require an insane amount of patches, as all fields offset accesses >= 13D8 would have to be modified. It would be difficult 
+to maintain, and too prone to errors.
+
+- Method 2: After increasing the C++ object memory, reallocate the fixed array to the old end (to offset 0x2900), and fix its references,
+leaving the space 0x5E0-0x15DF as dead/unused.
+
+- Pros: much easier and faster to implement than 1. More safe because it is less prone to mistakess.
+- Cons: ~3KB of memory will be wasted.
+
+Method 2 will be used. Its simplicity well worths to waste 3K of memory.
+
+Half of the implementation can be done in the xml. Only the C++ object increase, and array resize must be done in the .dll because the new size must be computed at runtime.
+
+-->
+
+	<!-- Signature updated in 1.17 -->
+	<!-- Don't forget to update the size in the dll code too on signature change -->
+	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x34BAEC" >
+		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
+		<Instruction code="41 83 C8 FF" comment="or r8d, 0FFFFFFFFh" />
+		<Instruction code="33 D2" comment="xor edx, edx" />
+		<Instruction code="B9 00290000" comment="mov ecx, 2900h" />
+		<Instruction code="FF 15 XXXXXXXX" comment="call operator new" />
+		<Instruction code="4C 8B D0" comment="mov r10, rax" />
+		
+		<Notify inst_index="3" inst_offset="1" value="IncreaseChaselMemory" />
+	</Patch>
+	
+	<!-- Signature updated in 1.17 -->
+	<Patch name="IncreaseChaselSlotsArray" type="hook" search_start="0x4F1129" comment="Takes place in chasel_ctor." >
+		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
+		<Instruction code="4C 89 6C 24 20" comment="mov [rsp+20h], r13" />
+		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
+		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
+		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<Hook type="call" inst_index="5" value="IncreaseChaselSlotsArray" setup="SetupIncreaseChaselSlotsArray" />
+	</Patch>
+	
+	<!-- Signature updated in 1.17-->
+	<Patch name="IncreaseChaselSlotsArray2" type="hook" search_start="0x4F1B87" comment="Takes place in chasel_func15, the function with most of the destructor implementation." >
+		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
+		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
+		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
+		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="90" comment="nop" />
+		
+		<Hook type="call" inst_index="4" value="IncreaseChaselSlotsArray2" setup="SetupIncreaseChaselSlotsArray2" />
+	</Patch>
+	
+	<!-- The following two patches signature are identical to the above two one, that is not an error -->
+	<Patch name="ModifyArrayOffset1" type="write" search_start="0x4F1129" comment="Takes place in chasel_ctor." >
+		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
+		<Instruction code="4C 89 6C 24 20" comment="mov [rsp+20h], r13" />
+		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
+		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
+		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<!-- It is important to update this when the size of the object change -->
+		<Write inst_index="0" inst_offset="3" value="00 29" />
+	</Patch>
+	
+	<Patch name="ModifyArrayOffset2" type="write" search_start="0x4F1B87" comment="Takes place in chasel_func15, the function with most of the destructor implementation." >
+		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
+		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
+		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
+		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="90" comment="nop" />
+		
+		<!-- It is important to update this when the size of the object change -->
+		<Write inst_index="0" inst_offset="3" value="00 29" />
+	</Patch>
+	
+	<!-- Signature updated in 1.17 -->
+	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x4F59FD" comment="Takes place in chasel_func5." >
+		<Instruction code="48 8D 96 E0 05 00 00" comment="lea rdx, [rsi+5E0h]" />
+		<Instruction code="49 8B DE" comment="mov rbx, r14" />
+		<Instruction code="89 6C 24 28" comment="mov [rsp+28h], ebp" />
+		<Instruction code="48 C1 E3 05" comment="shl rbx, 5" />
+		<Instruction code="48 8D 8E 10 28 00 00" comment="lea rcx, [rsi+2810h]" />
+		<Instruction code="48 03 D3" comment="add rdx, rbx" />
+		<Instruction code="48 C7 44 24 20 00 00 00 00" comment="mov qword ptr[rsp+20h], 0" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 83 BC 33 F0 05 00 00 00" comment="cmp qword ptr [rbx+rsi+5F0h], 0" />
+		
+		<!-- It is important to update this when the size of the object change -->
+		<Write value="XXXXXX00290000 XXXXXX XXXXXXXX XXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXX XXXXXXXXXX XXXXXXXX1029"  /> 
+	</Patch>
+	
+	<!-- Added in version 1.10v2. 
+	     This patch exists because their compiler wrote 0x5E0, as 0x2F << 5. This patch is likely to be gone in the future if the address (0x5E0) changes and
+	     compiler is unable to do such fancy things with other number -_-  
+		 
+		 IMPORTANT: while this patch exists, remember to update the reference to the size of the chasel object in chara_patch_asm.S too
+	-->
+	<Patch name="ModifyArrayOffset4" type="notify" search_start="0x530FC5" comment="Takes place in chasel_func5, just after ModifyArrayOffset3_Multi">
+		<Instruction code="4D 8D 46 2F" comment="lea r8, [r14+2Fh]" />
+		<Instruction code="49 C1 E0 05" comment="shl r8, 5" />
+		<Instruction code="4C 03 C6" comment="add r8, rsi" />
+		<Instruction code="49 83 78 18 08" comment="cmp qword ptr [r8+18h], 8" />
+		<Instruction code="72 03" comment="jb +3" />
+		
+		<Notify value="ModifyArrayOffset4" />
+	</Patch>
+	
+</EternityPatchFile>

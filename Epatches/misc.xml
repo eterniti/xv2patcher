@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="MiscPatches" comment="This file contains miscelaneous patches" >	
+
+	<!-- All addreses are 1.08 unless stated otherwise -->		
+	
+	<Patch name="PatchGameVersionString" type="hook" search_start="0x4F7D65" comment="sinature 1.16" >
+		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, '%ls'; comment=version_string" />
+		<Instruction code="E8 XX XX XX XX" />
+		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
+		<Instruction code="BA 04 00 00 00" comment="mov edx, 4" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="E8 XX XX XX XX" comment="call send_method" />
+		
+		<Hook type="call" inst_index="5" value="PatchGameVersionString" setup="SetupPatchGameVersionString" />
+	</Patch>
+	
+	<Patch name="Pollution, go away!" enabled="excessive_air_contamination" type="write" search_start="0x2AF6D4" >
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, contaminator_singleton" />
+		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, string" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="33 C0" comment="xor eax, eax" />
+		<Instruction code="C7 43 18 02 00 00 00" comment="mov dword ptr [rbx+18h], 2" />
+		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
+		<Instruction code="5B" comment="pop rbx" />
+		<Instruction code="C3" comment="ret" />
+		
+		<Write inst_index="4" inst_offset="3" value="01" />
+	</Patch>
+	
+	<Patch name="Pollution, go away2!" type="write" enabled="excessive_air_contamination" search_start="0x2B0154" >
+		<Instruction code="0F 85 B6 01 00 00" comment="jne +0x1B6" />
+		<Instruction code="4C 8B C2" comment="mov r8, rdx" />
+		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, string" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, contaminator_singleton" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B D8" comment="mov rbx, rax" />
+		
+		<Write value="E9 B6 01 00 00   90" />
+	</Patch>	
+	
+	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x256870" comment="address 1.17" >
+		<Instruction code="40 53" comment="push rbx" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="83 F9 36" comment="cmp ecx, 36h" />
+		<Instruction code="7C 0B" comment="jl +0xB" />
+		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
+		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
+		
+		<Hook value="Function73" setup="SetupFunction73" />	
+	</Patch>
+	
+	<Patch name="UnlockCheck138" type="hook" search_start="0x2F802B" comment="addr 1.15.1" >	
+		<Instruction code="B9 08 00 00 00" comment="mov ecx, 8" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="75 XX" comment="jnz +XX" />
+		<Instruction code="8D 50 01" comment="lea edx, [rax+1]" />
+		
+		<Hook type="resolve_target" inst_index="1" value="Function138" setup="SetupFunction138" />	
+	</Patch>
+	
+	<!--<Patch name="UnlockCheckE74" type="notify" search_start="0x2F3963" comment="addr 1.13v2" >
+		<Instruction code="83 3D XXXXXXXX 0E" comment="cmp varE74, 0xE" />
+		<Instruction code="7C 20" comment="jl 20" />
+		<Instruction code="BB 01 00 00 00" comment="mov ebx, 1" />
+		<Instruction code="8B C3" comment="mov eax, ebx" />
+		
+		<Notify inst_index="0" inst_offset="2" value="OnE74Located" />
+	</Patch>-->
+	
+	<!-- Address 1.15 -->
+	<Patch name="UnlimitedItemInfo" type="hook" search_start="0x5E83E0" comment="Takes place in get_item_information" >
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, XXXXXXXX" />
+		<Instruction code="8B 1C C1" comment="mov ebx, [rcx+rax*8]" />
+		
+		<Hook value="GetItemInfoPatched" setup="SetupGetItemInfo" />
+	</Patch>
+	
+	<!-- Address 1.15 -->
+	<Patch name="GetUnknownItemAddress" type="notify" search_start="0x5E8421" comment="Takes place in get_item_information" >
+		<Instruction code="8B D3" comment="mov edx, ebx" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdx" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B 5C 24 30" comment="mov rbx, [rsp+30h]" />
+		<Instruction code="48 8B C8" comment="mov rcx, rax" />
+		<Instruction code="48 85 C9" comment="test rcx, rcx" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, 'Unknown Item Information'" />
+		<Instruction code="48 0F 45 C1" comment="cmovnz rax, rcx" />
+		
+		<Notify inst_index="6" inst_offset="3" value="OnUnknownItemAddressLocated" />
+	</Patch>
+	
+	<!-- Address 1.15 -->
+	<Patch name="LocateGameLanguageVar_Item" type="notify" search_start="0x2FB826" >
+		<Instruction code="C7 05 XXXXXXXX 09 00 00 00" comment="mov game_language, 9" />
+		<Instruction code="E9 XXXXXXXX" comment="jmp +XXXXXXXX" />
+		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, 'schinese'" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
+		<Instruction code="E8 XXXXXXXX" comment="call strcmp" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="75 0F" comment="jnz +0x0F" />
+		<Instruction code="C7 05 XXXXXXXX 0A 00 00 00" comment="mov game_language, 0xA" />
+		
+		<Notify inst_index="0" inst_offset="2" value="OnGameLanguageLocated_Item" />
+	</Patch>
+	
+	<!-- Signature 1.16 -->
+	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x15154A" >
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="E8 XXXXXXXX" comment="call Mob_Untransform" />
+		<Instruction code="48 8B 87 XXXX 00 00" comment="mov rax, [rdi+XXXXh]" />
+		<Instruction code="89 A8 XXXX 00 00" comment="mov [rax+XXh], ebp" />
+		<Instruction code="FF C6" comment="inc esi" />
+		<Instruction code="48 83 C3 08" comment="add rbx, 8" />
+		<Instruction code="48 81 FB 68 38 00 00" comment="cmp rbx, 3868h" />
+		
+		<Hook type="call" inst_index="2" value="PatchUntransform" setup="SetupUntransform" />
+	</Patch>
+	
+	<!-- Signature 1.15 -->
+	<Patch name="PatchUntransformCutScenes2" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x15F6F8" >
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="E8 XXXXXXXX" comment="call Mob_Untransform" />
+		<Instruction code="33 D2" comment="xor edx, edx" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XXXXXXXX" />
+		<Instruction code="48 8D 97 A0 09 00 00" comment="lea rdx, [rdi+9A0h]" />
+		<Instruction code="41 83 C9 FF" comment="or r9d, 0FFFFFFFFh" />
+		
+		<Hook type="call" inst_index="2" value="PatchUntransform" />
+	</Patch>
+	
+	<!-- Signature 1.16 -->
+	<Patch name="MultiSelectExpert_CS_Ctor" type="hook" enabled="enable_multiselect_expert" search_start="0x33D3D9" >
+		<Instruction code="44 8B 44 24 50" comment="mov r8d, [rsp+50h]" />
+		<Instruction code="41 8B D5" comment="mov edx, r13d" />
+		<Instruction code="49 8B CA" comment="mov rcx, r10" />
+		<Instruction code="E8 XXXXXXXX" comment="call chasel_ctor" />		
+		
+		<Hook type="call" inst_index="3" value="ChaselCtorHooked" setup="SetupChaselCtor" />
+	</Patch>	
+	
+	<!-- This patch has been replaced in v 1.15. It is not longer possible to change the value "2" of num_allies, 
+	     because the optimizer reuses later the register to forge a "1" constant -->
+	<!-- The commented patch is the old 1.14 implementation, it will be left here in case the code reverts in the future -->
+	<!--
+	<Patch name="MultiSelectExpert_Locate_NumAllies" type="notify" enabled="enable_multiselect_expert" search_start="0x3DFBBC" >
+		<Instruction code="41 BF 02 00 00 00" comment="mov r15d, 2; num allies" />
+		<Instruction code="4C 89 7D C0" comment="mov [rbp-40h], r15" />
+		<Instruction code="41 8B D7" comment="mov edx, r15d" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Menu::BattleSpecManager::singleton" />
+		<Instruction code="E8 XXXXXXXX" />
+		<Instruction code="89 45 BC" comment="mov [rbp-44h], eax" />
+		
+		<Notify inst_index="0" inst_offset="2" value="OnNumAlliesLocated" />		
+	</Patch>-->
+	
+	<!-- These two patches replace the functionality of the previous patch -->
+	
+	<Patch name="MultiSelectExpert_Patch_NumAllies1" type="hook" enabled="enable_multiselect_expert" search_start="0x3E3052" comment="addr 1.15" >
+		<Instruction code="41 BC 02 00 00 00" comment="mov r12d, 2" />
+		<Instruction code="4C 89 65 C0" comment="mov [rbp-40h], r12" />
+		<Instruction code="41 8B D4" comment="mov edx, r12d" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, BattleSpecManager singleton" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<Hook type="call" inst_index="4" value="SetupAlliesPatched" setup="SetupSetupAllies" />
+	</Patch>
+	
+	<!-- This patch has same signature as above.
+		 WARNING: if rbp-40 change, the implementation of SetupAlliesPatched in the dll must change -->
+	<Patch name="MultiSelectExpert_Patch_NumAllies2" type="write" enabled="enable_multiselect_expert" search_start="0x3E3052" comment="addr 1.15" >
+		<Instruction code="41 BC 02 00 00 00" comment="mov r12d, 2" />
+		<Instruction code="4C 89 65 C0" comment="mov [rbp-40h], r12" />
+		<Instruction code="41 8B D4" comment="mov edx, r12d" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, BattleSpecManager singleton" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<!-- mov edx, r12d -> mov rdx, rbp -->
+		<Write inst_index="2" value="48 89 EA" />
+	</Patch>
+	
+	<!-- The below patch is MANDATORY for the whole patcher, as the patcher may have other uses for the main core singleton -->
+	<!-- DON'T DELETE/DISABLE the patch below.
+	
+	<!-- when/if this patch gets broken, the cockpit parameter of the structure may have changed -->
+	<Patch name="LocateBattleCoreMainSystem_singleton" type="notify" search_start="0x71B782" comment="addr 1.14" >
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XG::Game::Battle::Core::MainSystem::singleton" />
+		<Instruction code="48 8B 98 F8 40 00 00" comment="mov rbx, singleton->cockpit" />
+		<Instruction code="48 85 DB" comment="test rbx, rbx" />
+		<Instruction code="74 1F" comment="jz +0x1F" />
+		
+		<Notify inst_index="0" inst_offset="3" value="SetupBattleCoreMainSystem_singleton" />
+	</Patch>
+	
+	<!-- This patch is used by more than one functionality -->
+	<!-- This will also be called from derived class for ohzaru mob -->
+	<Patch name="PatchMobDtor" type="hook" search_start="0xA2170" comment="signature based on 1.17" >
+		<Instruction code="40 57" comment="push rdi" />
+		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
+		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
+		<Instruction code="48 89 5C 24 48" comment="mov [rsp+48h], rbx" />
+		<Instruction code="48 8B F9" comment="mob rdi, rcx" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, XXXXXXXX" />
+		<Instruction code="48 89 01" comment="mov [rcx], rax" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="90" comment="nop" />
+		<Instruction code="4C 8B 87 88 39 00 00" comment="mov r8, [rdi+3988h]" />
+		
+		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
+	</Patch>
+
+</EternityPatchFile>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="BattleTimer" enabled="battle_timer" comment="This file enables battle timer patch">
+
+	<!-- On signature change, whatch out the offset of the constant in first instruction. x64 specific registers increase instruction length by one, like it happened in 1.09->1.10v2 -->
+	<Patch name="BattleTimer" type="notify" search_start="0x3CD096" comment="Signature based on 1.11" >
+	
+		<Instruction code="41 C7 46 08 00 00 34 43" comment="mov dword ptr [r14+8], 43340000h; 180.0" />
+		<Instruction code="EB 04" comment="jmp + 4" />
+		<Instruction code="41 89 76 08" comment="mov [r14+8], esi" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		
+		<Notify inst_index="0" inst_offset="4" value="BattleTimer" />
+	
+	</Patch>
+
+</EternityPatchFile>

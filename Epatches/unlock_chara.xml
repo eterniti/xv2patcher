@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="UnlockChara" comment="This file enables the unlock of characters without modifying save data or any other files.">
+
+	<!-- Signature updated in 1.17 -->
+	<Patch name="UnlockCharaMods" type="hook" search_start="0x4F629A" enabled="unlock_chara_mods" >
+		<Instruction code="44 8B 81 3C 04 00 00" comment="mov r8d, [rcx+43Ch]" />
+		<Instruction code="8B DA" comment="mov ebx, edx" />
+		<Instruction code="8B 91 38 04 00 00" comment="mov edx, [rcx+438h]" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+		
+		<Hook type="call" inst_index="4" value="UnlockCharaMods" setup="SetupCheckUnlockFunction" />
+	</Patch>
+	
+	<!-- This patch has same signature as above. It is important that this patch is below the previous one. -->
+	<Patch name="UnlockCharaAll" type="write" search_start="0x4F629A" enabled="unlock_chara_all" >
+		<Instruction code="44 8B 81 3C 04 00 00" comment="mov r8d, [rcx+43Ch]" />
+		<Instruction code="8B DA" comment="mov ebx, edx" />
+		<Instruction code="8B 91 38 04 00 00" comment="mov edx, [rcx+438h]" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+		
+		<Write inst_index="4" value="41 B8 01 00 00 00    9090" comment="mov r8d, 1; nop; nop;" />
+	</Patch>
+
+</EternityPatchFile>

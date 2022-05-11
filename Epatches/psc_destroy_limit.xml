@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- This file used to fix a 16 bits limit (64KB) in psc files. At some point (probably in 1.08) Dimps has finally realized the bug. 
+	 Patch disabled. -->
+
+<EternityPatchFile name="PscDestroyLimit" enabled="false" comment="This file removes the 16 bits limit on PSC files">
+
+	<Patch name="PscInitHook" type="hook" search_start="0x2B36A0" comment="Dimps, dimps, dimps, stop using 16 bits variables.">
+		<Instruction code="40 53" comment="push rbx" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="80 39 21" comment="cmp byte ptr [rcx], 21h; if file already parsed" />
+		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
+		<Instruction code="0F 84 8C 00 00 00" comment = "jz +0x8C" />
+		<Instruction code="48 FF C1" comment="inc rcx" />
+		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, #PSC#" />
+		<Instruction code="41 B8 03 00 00 00" comment="mov r8d, 3" />
+		<Instruction code="FF 15 XXXXXXXX" comment="call strncmp" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="75 72" comment="jnz +0x72" />
+		<Instruction code="B8 FE FF 00 00" comment="mov eax, 0FFFEh" />
+		<Instruction code="66 3B 43 04" comment="cmp ax, [rbx+4]; if (hdr->endianess_check != 0xFFFE)" />
+		<Instruction code="75 67" comment="jnz +0x67" />
+		<Instruction code="0F B7 4B 08" comment="movzx ecx, word ptr [rbx+8]; ecx = hdr->num_entries" />
+		<Instruction code="45 33 D2" comment="xor r10d, r10d" />
+		<Instruction code="0F B7 C1" comment="movzx eax, cx" />
+		<Instruction code="66 03 C0" comment="add ax, ax" />
+		
+		<Hook value="PscInitReplacement" />
+	</Patch>
+
+</EternityPatchFile>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="FreezerEventOffline" enabled="fs_event_offline" comment="This file enables the freezer event happening totally offline">	
+	<!-- All addresses are 1.08 unless stated otherwise -->
+	
+	<Patch name="Hook_Lobby_VCControl_Singleton_ctor" type="hook" search_start="0x3B1610" >
+		<Instruction code="48 89 4C 24 08" comment="mov [rsp+8], rcx" />
+		<Instruction code="55 56 57" comment="push rbp, rsi, rdi" />
+		<Instruction code="48 83 EC 40" comment="sub rsp, 40h" />
+		<Instruction code="48 C7 44 24 30 FE FF FF FF" comment="mov qword ptr[rsp+30h], -2" />
+		<Instruction code="48 89 5C 24 70" comment="mov [rsp+70h], rbx" />
+		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, XG::Game::Lobby::VcControl::Singleton::vtable" />
+		<Instruction code="48 89 01" comment="mov [rcx], rax" />
+		<Instruction code="48 8D 79 50" comment="lea rdi, [rcx+50h]" />
+		<Instruction code="48 89 7C 24 68" comment="mov [rsp+68h], rdi" />
+		<Instruction code="33 ED" comment="xor ebp, ebp" />
+		<Instruction code="48 89 2F" comment="mov [rdi], rbp" />
+		<Instruction code="48 89 6F 08" comment="mov [rdi+8], rbp" />
+		
+		<Hook value="VCControl_Ctor_Patched" setup="SetupFsEventOffline" />
+	</Patch>
+	
+	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3BE2BC" >
+		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
+		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="74 18" comment="jz freeza_start_demo" />
+		
+		<Hook type="call" inst_index="1" value="IsDemoEventHappeningPatched" setup="SetupIsDemoEventHappening" />		
+	</Patch>
+	
+	<!-- The signature of this patch is similar to previous (instruction index changes) -->
+	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3BE2BC" >
+		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
+		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="74 18" comment="jz freeza_start_demo" />
+		
+		<Hook type="call" inst_index="5" value="IsFreezerEventEndingPatched" setup="SetupIsFreezerEventEnding" />		
+	</Patch>
+	
+	<!-- This happens in the function that inits the fs event structure (which is called from VCControl ctor) 
+		 Probably a sub-class/struct of the VCControl object -->
+	<Patch name="LocateSetIsFsEventHappening" type="notify" search_start="0x428A7A" comment="signature 1.15" >
+		<Instruction code="48 89 5C 24 58" comment="mov [rsp+58h], rbx" />
+		<Instruction code="E8 XXXXXXXX" comment="call is_logged_in" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="74 14" comment="jz +14" />
+		<Instruction code="83 FB FF" comment="cmp ebx, -1" />
+		<Instruction code="74 0F" comment="jz +F" />
+		<Instruction code="C7 87 14 01 00 00 01 00  00 00" comment="mov object->is_freezer_event_happening = 1" />
+		<Instruction code="BE 01 00 00 00" comment="mov esi, 1" />
+		
+		<Notify inst_index="3" value="OnSetIsFsEventHappeningLocated" />
+	</Patch>
+	
+	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x36E4B6" comment="signature 1.17.2" >
+		<Instruction code="B8 00 00 00 00" comment="mov eax, 0" />
+		<Instruction code="0F 44 F8" comment="cmovz edi, eax" />
+		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
+		<Instruction code="89 46 08" comment="mov [rsi+8], eax" />
+		<Instruction code="89 7E 0C" comment="mov [rsi+0Ch], edi" />
+		
+		<Notify value="OnPatchLobbyScriptIsOpenedEventLocated" />
+	</Patch>
+	
+	<!-- WARNING: a change in the signature below may need to update the DLL.
+		 The DLL will replace one callback by another -->
+	<Patch name="LocatePatchOpenQuestCallback" type="notify" search_start="0x44640F" comment="addr 1.11" >
+		<Instruction code="8B 87 00 01 00 00" comment="mov eax, [rdi+100h]; eax = quest menu type" />
+		<Instruction code="83 F8 05" comment="cmp eax, expert_mission menu type" />
+		<Instruction code="75 09" comment="jnz +9" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, callback_for_expert_mission" />
+		<Instruction code="EB 13" comment="jmp +0x13" />
+		<Instruction code="83 F8 11" comment="cmp eax, LEQ menu type (fs event)" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, callback_for_leq_mission" />
+		<Instruction code="74 07" comment="jz +7" />
+		
+		<Notify inst_index="3" inst_offset="3" value="OnPatchOpenQuestCallbackLocated" />
+	</Patch>
+	
+	<Patch name="HookGetStatueType" type="hook" search_start="0x3BF08B" >
+		<Instruction code="FF 50 70" comment="call qword ptr [rax+70h]" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+		<Instruction code="E8 XXXXXXXX" comment="call GetStatueType" />
+		<Instruction code="8B F0" comment="mov esi, eax" />
+		<Instruction code="8D 48 FF" comment="lea ecx, [rax-1]" />
+		<Instruction code="F7 C1 FC FF FF FF" comment="test ecx, 0xFFFFFFFC" />
+		<Instruction code="0F 85 93 01 00 00" comment="jnz +0x193" />
+		
+		<Hook type="call" inst_index="2" value="GetStatueTypePatched" setup="SetupGetStatueType" />
+	</Patch>
+	
+	<Patch name="LocateGetResistancePoints" type="notify" search_start="0x2A0070" >
+		<Instruction code="48 83 EC 28" comment="sub rsp, 28h" />
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, resistance_points_encoded" />
+		<Instruction code="3B 05 XXXXXXXX" comment="cmp rax, resistance_points_encoded2" />
+		<Instruction code="75 0E" comment="jnz abort" />
+		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, resistance_points_encoded" />
+		<Instruction code="33 C1" comment="xor eax, ecx" />
+		<Instruction code="48 83 C4 28" comment="add rsp, 28h" />
+		<Instruction code="C3" comment="ret" />
+		<Instruction code="FF 15 XXXXXXXX" comment="call abort" />
+		
+		<Notify value="SetupGetResistancePoints" />
+	</Patch>
+	
+	<!-- Important: if signature breaks, check if assignment of resistance points to edi register changes to another register, the code in the DLL will modify edi -->
+	<!-- Address: 1.16. Signature common -->
+	<Patch name="HookAddResistancePoints" type="hook" search_start="0x6831A1" >
+		<Instruction code="F3 48 0F 2C C0" comment="cvttss2si rax, xmm0; rax = resistance points integer after multiplier" />
+		<Instruction code="B9 00 00 00 00" comment="mov ecx, 0" />
+		<Instruction code="0F 44 C1" comment="cmovz eax, ecx" />
+		<Instruction code="8B F8" comment="mov edi, eax; edi = resistance points " />
+		<Instruction code="8B C8" comment="mov ecx, eax" />
+		<Instruction code="E8 XXXXXXXX" comment="call add_resistance_points" />
+		<Instruction code="49 8B 06" comment="mov rax, [r14]" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+		
+		<Hook type="call" inst_index="5" value="AddResistancePointsPatched" setup="SetupAddResistancePoints" />
+	</Patch>
+	
+	<!-- This function is not longer needed, as we now have a better way of giving the medals -->
+	<!-- There are multiple functions with this signature. Atm, we'll fix this by having the DLL check the expected address for current version -->	
+	<!--<Patch name="LocateChangeMedals" type="notify" search_start="0x699D90" >
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="8B D9" comment="mov ebx, ecx" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov ecx, XG::Game::GameData::singleton" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B C8" comment="mov rcx, rax" />
+		<Instruction code="48 8B F8" comment="mov rdi, rax" />
+		<Instruction code="E8 XXXXXXXX" comment="call get_medals" />
+		
+		<Notify value="OnChangeMedalsLocated" />
+	</Patch>-->
+	
+	<Patch name="LocateQuestFunction" type="notify" search_start="0x286D15" comment="addr 1.15" >
+		<Instruction code="44 89 4C 24 20" comment="mov [rsp+20h], r9d" />
+		<Instruction code="53 55 56  41 55" comment="push rbx, rbp, rsi, r13" />
+		<Instruction code="48 83 EC 48" comment="sub rsp, 48h" />
+		<Instruction code="41 8B D9" comment="mov ebx, r9d" />
+		<Instruction code="45 8B E8" comment="mov r13d, r8d" />
+		<Instruction code="48 8B EA" comment="mov rbp, rdx" />
+		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
+		
+		<Notify value="OnQuestFunctionLocated" />
+	</Patch>
+
+</EternityPatchFile>

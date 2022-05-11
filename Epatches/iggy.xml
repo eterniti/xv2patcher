@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<EternityPatchFile name="IggyPatches" comment="This file contains patches for iggy" >	
+
+	<!-- Added in version 1.08, signature updated in 1.13v2 
+	     Note: in 1.13v2, the value they used is identical to the default ini setting, so it looks they applied same fix.
+	-->
+	<Patch name="ModifyGDrawSetting2A" enabled="gdraw_limits_patch" type="notify" search_start="0x6A1DFC" >
+		<Instruction code="BA 00 06 00 00" comment="mov edx, 0x600" />
+		<Instruction code="B9 01 00 00 00" comment="mov ecx, 1" />
+		<Instruction code="41 B8 00 00 00 01" comment="mov r8d, 1000000h" />
+		<Instruction code="E8 XXXXXXXX" comment="call set_gdraw_setting" />
+		<Instruction code="BA A0 0F 00 00" comment="mov edx, 0xFA0" />
+		
+		<Notify inst_index="0" inst_offset="1" value="ModifyGDrawSetting2A" />
+	</Patch>
+	
+	<!-- Added in version 1.08 -->
+	<Patch name="PatchExternalAS3Callback" enabled="new_chara" type="hook" search_start="0x61BDA0" >
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="48 89 74 24 10" comment="mov [rsp+10], rsi" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="49 8B F8" comment="mov rdi, r8" />
+		<Instruction code="48 8B F2" comment="mov rsi, rdx" />
+		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="74 13" comment="jz +13" />
+		
+		<Hook value="ExternalAS3CallbackPatched" setup="SetupExternalAS3Callback" />	
+	</Patch>
+
+</EternityPatchFile>
