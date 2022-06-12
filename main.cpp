@@ -1010,13 +1010,20 @@ static bool load_dll(bool critical)
 			}
 			else
 			{
-				UPRINTF("Failed to get original function: %s\n", export_name);			
-				return false;
+				if (Utils::IsWine())
+				{
+					DPRINTF("Failed to get original function: %s --- ignoring error because running under wine.\n", export_name);
+					continue;
+				}
+				else
+				{
+					UPRINTF("Failed to get original function: %s\n", export_name);			
+					return false;
+				}
 			}
 		}
 		
-		uint8_t *my_func = (uint8_t *)GetProcAddress(myself, export_name);
-		
+		uint8_t *my_func = (uint8_t *)GetProcAddress(myself, export_name);		
 		
 		if (!my_func)
 		{
