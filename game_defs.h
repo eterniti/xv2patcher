@@ -88,10 +88,10 @@ struct Battle_Mob
 	int32_t unk_interface_var; // 03A0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
 	uint8_t unk_3A4[0x4A8-0x3A4];
 	Battle_Command *battle_command; // 04A8
-	uint8_t unk_4B0[0x1F54-0x4B0]; 
-	int32_t loaded_var; // 1F54 ; if >= 0, char is loaded
-	uint8_t unk_1D18[0x2104-0x1F58];
-	int32_t trans_control; // 2104
+	uint8_t unk_4B0[0x1F64-0x4B0]; 
+	int32_t loaded_var; // 1F64 ; if >= 0, char is loaded
+	uint8_t unk_1D18[0x2114-0x1F68];
+	int32_t trans_control; // 2114
 	// ...
 	
 	inline bool IsCac() const
@@ -114,8 +114,8 @@ CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x164);
 CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x260);
 CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3A0);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4A8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x1F54);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x2104);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x1F64);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x2114);
 
 struct Battle_HudCharInfo
 {

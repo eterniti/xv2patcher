@@ -168,13 +168,18 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x260: skills -->
-	<!-- 0x4A8: battle_command -->
-	<Patch name="CheckBattleMobAlign5" type="notify" search_start="0xA12BE" comment="takes place in constructor, address 1.17.1" >
+	<!-- 0x260: skills -->	
+	<Patch name="CheckBattleMobAlign5" type="notify" search_start="0xA4B0C" comment="takes place in constructor, address 1.18" >
 		<Instruction code="BD 09 00 00 00" comment="mov ebp, 9" />
 		<Instruction code="8B CD" comment="lea ecx, ebp" />
 		<Instruction code="48 8D 86 60 02 00 00" comment="lea rax, [rsi+260h]" />
-		<Instruction code="0F 1F 40 00" comment="large nop" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!-- 1.18: This patch was split from CheckBattleMobAlign5 to avoid the multiple bytes nop from breaking the signature all the time -->
+	<!-- 0x4A8: battle_command -->
+	<Patch name="CheckBattleMobAlign55" type="notify" search_start="0xA4B20" comment="takes place in constructor, a bit below above patch, address 1.18" >	
 		<Instruction code="4C 89 28" comment="mov [rax], r13d; loop_start label" />
 		<Instruction code="44 89 68 08" comment="mov [rax+8], r13d" />
 		<Instruction code="48 8D 40 10" comment="lea rax, [rax+10h]" />
@@ -194,12 +199,12 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x201C: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xA573F" comment="addr 1.17.1" >
-		<Instruction code="83 BF 04 21 00 00 0C" comment="cmp dword ptr [rdi+2104h], 0Ch" />
-		<Instruction code="75 5A" comment="jnz +0x5A" />
-		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
-		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
+	<!-- 0x2114: trans_control -->
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xA8FAA" comment="addr 1.18" >
+		<Instruction code="83 BF 14 21 00 00 0C" comment="cmp dword ptr [rdi+2104h], 0Ch" />
+		<Instruction code="75 54" comment="jnz +0x54" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
 		<Instruction code="FF 90 D0 04 00  00" comment="call qword ptr [rax+4D0h]" />
 		
 		<Notify value="NULL" />	

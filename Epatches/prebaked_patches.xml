@@ -90,37 +90,37 @@
 		<Hook type="call" value="UseAutobattlePortrait" />
 	</Patch>-->
 	
-	<!-- Signature is 1.17.2 -->
-	<Patch name="CusAuraMapPatch" type="notify" search_start="0xE16A8" comment="This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes." >
-		<Instruction code="83 F8 1A" comment="cmp eax, 1Ah; if cus aura id is greater than 25" />
-		<Instruction code="0F 87 F5 00 00 00" comment="ja end_switch" />
+	<!-- Signature is 1.18 -->
+	<Patch name="CusAuraMapPatch" type="notify" search_start="0xE37E8" comment="This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes." >
+		<Instruction code="83 F8 1B" comment="cmp eax, 1Bh; if cus aura id is greater than 27" />
+		<Instruction code="0F 87 FF 00 00 00" comment="ja end_switch" />
 		<Instruction code="48 63 C8" comment="movsxd rcx, eax" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, XXXXXXXX" />
 		<Instruction code="8B 94 88 XX XX XX XX" comment="mov edx, ds:XXXXXXXX[rax+rcx*4]; edx = switch jump relative" />
 		<Instruction code="48 03 D0" comment="add rdx, rax" />
 		<Instruction code="FF E2" comment="jmp rdx; jump to case" />
 		<Instruction code="BB 05 00 00 00" comment="mov ebx, 5; real_aura = 5" />
-		<Instruction code="E9 D5 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 DF 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 06 00 00 00" comment="mov ebx, 6; real_aura = 6" />
-		<Instruction code="E9 CB 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 D5 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 07 00 00 00" comment="mov ebx, 7; real_aura = 7" />
-		<Instruction code="E9 C1 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 CB 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 0F 00 00 00" comment="mov ebx, 0xF; real_aura = 0xF" />
-		<Instruction code="E9 B7 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 C1 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 0D 00 00 00" comment="mov ebx, 0xD; real_aura = 0xD" />
-		<Instruction code="E9 AD 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 B7 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 0E 00 00 00" comment="mov ebx, 0xE; real_aura = 0xE" />
-		<Instruction code="E9 A3 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 AD 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 12 00 00 00" comment="mov ebx, 0x12; real_aura = 0x12" />
-		<Instruction code="E9 99 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 A3 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 13 00 00 00" comment="mov ebx, 0x13; real_aura = 0x13" />
-		<Instruction code="E9 8F 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 99 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 18 00 00 00" comment="mov ebx, 0x18; real_aura = 0x18" />
-		<Instruction code="E9 85 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 8F 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 19 00 00 00" comment="mov ebx, 0x19; real_aura = 0x19" />
-		<Instruction code="EB 7E" comment="jmp end_switch" />
+		<Instruction code="E9 85 00 00 00" comment="jmp end_switch" />
 		<Instruction code="BB 14 00 00 00" comment="mov ebx, 0x14; real_aura = 0x14" />
-		<Instruction code="EB 77" comment="jmp end_switch" />
+		<Instruction code="EB 7E" comment="jmp end_switch" />
 			
 		<Notify value="CusAuraMapPatch" />
 	</Patch>
@@ -241,16 +241,13 @@
 		<Hook value="CusAuraPatchInt3" />
 	</Patch> -->	
 	
-	<!-- Signature is 1.17 -->
-	<Patch name="CusAuraPatchTeleport" type="notify" search_start="0xA6F56" comment="This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes." >
+	<!-- Signature is 1.18 -->
+	<Patch name="CusAuraPatchTeleport" type="notify" search_start="0xAA7A1" comment="This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes." >
 		<Instruction code="39 83 XXXXXXXX" comment="cmp [rbx+XXXXh], eax" />
-		<Instruction code="0F 85 EC 08 00 00" comment="jne no_teleport" />
-		<Instruction code="41 0F BA E4 09" comment="bt r12d, 9" />
-		<Instruction code="73 0E" comment="jnb +0xE" />
-		<Instruction code="8B 43 64" comment="mov eax, [rbx+64h]" />
-		<Instruction code="83 E0 01" comment="and eax, 1" />
-		<Instruction code="84 C0" comment="test al, al" />
-		<Instruction code="0F 84 D7 08 00 00" comment="jz no_teleport" />		
+		<Instruction code="74 0A" comment="je teleport" />
+		<Instruction code="E9 0F 09 00 00" comment="jmp no_teleport" />
+		<Instruction code="48 8B 74 24 50" comment="mov rsi, [rsp+50h]" />
+		<Instruction code="41 0F BA E7 09" comment="bt r15d, 9" />
 	
 		<Notify value="CusAuraPatchTeleport" />
 	</Patch>
@@ -337,12 +334,12 @@
 		<Notify value="ApplyConditionalRemoveHairAccessories" />
 	</Patch>
 	
-	<!-- Signature 1.17 -->
-	<Patch name="TestNum144" type="hook" enabled="test_144" search_start="0xDAA1F" >
+	<!-- Signature 1.18 -->
+	<Patch name="TestNum144" type="hook" enabled="test_144" search_start="0xDED20" >
 		<Instruction code="66 83 F9 FF" comment="cmp cx, -1" />
 		<Instruction code="8D 14 19" comment="lea edx, [rcx+rbx]" />
 		<Instruction code="0F 4E D1" comment="cmovle edx, ecx" />
-		<Instruction code="49 8B 4D 00" comment="mov rcx, [r13+0]" />
+		<Instruction code="49 8B 0C 24" comment="mov rcx, [r12]" />
 		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob_ChangePartset" />
 		
 		<Hook type="call" inst_index="4" value="ChangePartsetPatched" setup="SetupChangePartset" />	
@@ -374,11 +371,11 @@
 		<Hook type="call" value="TtcFilesAlias" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
+	<!-- Signature 1.18 -->
 	<!-- This patch is complex in the dll side. Any change in signature needs a review of the code in the dll -->
-	<Patch name="AnyDualSkillPatch" type="notify" search_start="0x1CD658" >
+	<Patch name="AnyDualSkillPatch" type="notify" search_start="0x12F34B" >
 		<Instruction code="F6 83 B0 00 00 00 01" comment="test byte ptr[rbx+0xB0], 1; if mob->IsCac()" />
-		<Instruction code="0F 85 B4 00 00 00" comment="jnz +0xB4" />
+		<Instruction code="0F 85 B1 00 00 00" comment="jnz +0xB4" />
 		<Instruction code="48 8D 8B B0 0A 00 00" comment="lea rcx, [rbx+0AB0h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="85 C0" comment="test eax, eax" />

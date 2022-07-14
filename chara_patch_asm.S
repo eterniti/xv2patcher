@@ -71,7 +71,7 @@ ret2:
 	
 ForceTeleport:
 
-	mov ecx, [rbx+0x2104]
+	mov ecx, [rbx+0x2114]
 	cmp ecx, 4095
 	ja default_teleport
 	lea rdx, force_teleport[rip]
@@ -90,7 +90,7 @@ ForceTeleport:
 	
 default_teleport:
 
-	cmp  [rbx+0x2104], eax
+	cmp  [rbx+0x2114], eax
 	jne no_teleport
 
 teleport:	

@@ -15,8 +15,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
-// 1.17: 25-> 26
-#define BEHAVIOUR_MAX	26 
+// 1.18: 26-> 27
+#define BEHAVIOUR_MAX	27 
 
 typedef void * (*IggyBaseCtorType)(void *, int32_t, int32_t);
 typedef void *(* ChaselDtorType)(void *, uint32_t);
@@ -881,6 +881,7 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[24] = 0x15;
 	cus_aura_lookup[25] = 0x27;
 	cus_aura_lookup[26] = 0x30;
+	cus_aura_lookup[27] = 0x34;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -1180,7 +1181,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xFE)); // buf+0xFE -> the address of end of switch	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x108)); // buf+0x108 -> the address of end of switch	
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1263,7 +1264,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr1, (uint64_t)(buf+0xC)); // buf+0xC -> address return for teleport
+	PatchUtils::Write64(ret_addr1, (uint64_t)(buf+0x12)); // buf+0x12 -> address return for teleport
 	
 	uint64_t *ret_addr2 = (uint64_t *)(ft_addr+0x4E);
 	if (*ret_addr2 != 0xFEDCBA987654321)
@@ -1272,7 +1273,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x8F8)); // buf+0x8F8 -> address return for no teleport   
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x91C)); // buf+0x91C -> address return for no teleport   
 }
 
 PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)
@@ -1527,7 +1528,7 @@ PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xC1)); // buf+0xC1 -> address return for any dual skill
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xBE)); // buf+0xBE -> address return for any dual skill
 }
 
 

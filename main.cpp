@@ -5,6 +5,7 @@
 #include "PatchUtils.h"
 #include "Mutex.h"
 #include "DBXV2/QsfFile.h"
+#include "DBXV2/IdbFile.h"
 #include "xv2patcher.h"
 #include "chara_patch.h"
 #include "stage_patch.h"
@@ -145,7 +146,7 @@ extern "C"
 static bool xv1_cpk_exists = false;
 static bool unlock_bgm1 = false;
 static bool unlock_bgm2 = false;
-static bool u73 = false;
+static bool test_mode = false;
 static bool mode_6 = true;
 
 typedef int (* Type73)(int arg0);
@@ -167,16 +168,31 @@ static bool patch_num_allies = false; // Added for game 1.15
 
 PUBLIC bool XV1CpkExists()
 {
-	ini.GetBooleanValue("Patches", "abcdefh_g_doesnt_exist", &u73, false);
-	xv1_cpk_exists = Utils::FileExists(myself_path + std::string(CONTENT_ROOT) + "cpk/data_d4_5_xv1.cpk");
+	static uint8_t pw_sha1[20] = {
+		0x1A, 0x34, 0xC4, 0xB9, 0xD5, 0x36, 0xAE, 0xF3, 0x2C, 0x5A, 
+		0x6C, 0xFA, 0x1A, 0x2D, 0x82, 0x58, 0x08, 0x12, 0xA7, 0x87
+	};
+	
+	std::string pw;
+	uint8_t sha1[20];
+	ini.GetStringValue("Patches", "test_mode_pw", pw);
+	
+	if (pw.length() > 0)
+	{
+		Utils::Sha1(pw.c_str(), pw.length(), sha1);
+		test_mode = (memcmp(sha1, pw_sha1, sizeof(sha1)) == 0); 
+	}
+	
+	if (test_mode)	
+		xv1_cpk_exists = Utils::FileExists(myself_path + std::string(CONTENT_ROOT) + "cpk/data_d4_5_xv1.cpk");
 	
 	unlock_bgm1 = Utils::FileExists(myself_path + std::string(CONTENT_ROOT) + "cpk/data_d2_bgm1.cpk");
-	unlock_bgm1 = (unlock_bgm1 && u73);
+	unlock_bgm1 = (unlock_bgm1 && test_mode);
 	
 	unlock_bgm2 = Utils::FileExists(myself_path + std::string(CONTENT_ROOT) + "cpk/data_d7_bgm2.cpk");
-	unlock_bgm2 = (unlock_bgm2 && u73);
+	unlock_bgm2 = (unlock_bgm2 && test_mode);
 	
-	return (xv1_cpk_exists || u73 || unlock_bgm1 || unlock_bgm2);
+	return (xv1_cpk_exists || test_mode || unlock_bgm1 || unlock_bgm2);
 }
 
 PUBLIC void SetupFunction73(Type73 orig)
@@ -195,7 +211,7 @@ PUBLIC int Function73(int arg0)
 	int ret = func73(arg0);
 	//DPRINTF("Arg = 0x%x, ret=0x%x\n", arg0, ret);	
 	
-	if (u73 && pE74)
+	if (test_mode && pE74)
 	{
 		static bool done = false;
 		
@@ -226,9 +242,9 @@ PUBLIC int Function73(int arg0)
 			return 1;
 	}
 	
-	if (u73)
+	if (test_mode)
 	{	
-		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C)
+		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E)
 			return 1;
 	}
 	
@@ -263,9 +279,9 @@ PUBLIC int Function138(int arg0)
 			return 1;
 	}
 	
-	if (u73)
+	if (test_mode)
 	{	
-		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20)
+		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21)
 			return 1;
 	}
 	
@@ -1215,6 +1231,38 @@ static void qsf_crash_fix()
 	}
 }
 
+static bool idb_check_visitor(const std::string &path, bool, void *)
+{
+	if (Utils::EndsWith(path, ".idb"))
+	{
+		size_t size = Utils::GetFileSize(path);
+		if (size != (size_t)-1 && size > sizeof(IDBHeader))
+		{
+			size -= sizeof(IDBHeader);
+			
+			if ((size % sizeof(IDBEntryNew)) != 0)
+			{
+				std::string partial_path = path.substr(std::string(myself_path + CONTENT_ROOT).length());
+				std::string msg = "The file \"" + partial_path + "\" is not compatible with this version of the game (idb format changed in 1.18).\n\nAbort load? If you press no, a crash or undefined behavior can happen in game.";
+				
+				if (MessageBoxA(NULL, msg.c_str(), "xv2patcher", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+				{
+					exit(0);
+				}
+				
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
+static void idb_check()
+{
+	Utils::VisitDirectory(myself_path + CONTENT_ROOT + "data/system/item/", true, false, false, idb_check_visitor);
+}
+
 static void start()
 {
 #ifdef DINPUT
@@ -1228,7 +1276,7 @@ static void start()
 	float version = Utils::GetExeVersion(myself_path+EXE_PATH);
 	DPRINTF("Running on game version %.3f\n", version);
 	
-	if (version != 0.0 && fabs(version - MINIMUM_GAME_VERSION) >= 0.00001)
+	if (version != 0.0 && version < (MINIMUM_GAME_VERSION - 0.00001))
 	{
 		UPRINTF("This game version (%.3f) is not compatible with this version of the patcher.\nMin version required is: %.3f\n", version, MINIMUM_GAME_VERSION);
 		exit(-1);
@@ -1248,6 +1296,7 @@ static void start()
 	
 	load_patches();	
 	qsf_crash_fix();
+	idb_check();
 }
 
 static void IggySetTraceCallbackUTF8Patched(void *, void *param)

@@ -110,13 +110,13 @@
 		<Notify inst_index="0" inst_offset="2" value="OnGameLanguageLocated_Item" />
 	</Patch>
 	
-	<!-- Signature 1.16 -->
-	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x15154A" >
+	<!-- Signature 1.18 -->
+	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x1606F8" >
 		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call Mob_Untransform" />
 		<Instruction code="48 8B 87 XXXX 00 00" comment="mov rax, [rdi+XXXXh]" />
-		<Instruction code="89 A8 XXXX 00 00" comment="mov [rax+XXh], ebp" />
+		<Instruction code="44 89 B0 XXXX 00 00" comment="mov [rax+XXh], r14d" />
 		<Instruction code="FF C6" comment="inc esi" />
 		<Instruction code="48 83 C3 08" comment="add rbx, 8" />
 		<Instruction code="48 81 FB 68 38 00 00" comment="cmp rbx, 3868h" />
@@ -204,7 +204,7 @@
 	
 	<!-- This patch is used by more than one functionality -->
 	<!-- This will also be called from derived class for ohzaru mob -->
-	<Patch name="PatchMobDtor" type="hook" search_start="0xA2170" comment="signature based on 1.17" >
+	<Patch name="PatchMobDtor" type="hook" search_start="0xA5990" comment="signature based on 1.18" >
 		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -214,9 +214,18 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="4C 8B 87 88 39 00 00" comment="mov r8, [rdi+3988h]" />
+		<Instruction code="4C 8B 87 38 3A 00 00" comment="mov r8, [rdi+3A38h]" />
 		
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
+	</Patch>
+	
+	<Patch name="StopControllerNotConnected" type="nop" enabled="stop_controller_not_connected" search_start="0x13F2C4" comment="signature 1.18" >
+		<Instruction code="FF 15 XXXXXXXX" comment="call XG::Drv::Pad::GetStatus" />
+		<Instruction code="83 F8 01" comment="cmp eax, 1" />
+		<Instruction code="75 10" comment="jne device_not_connected_sequence" />
+		<Instruction code="48 8B C3" comment="mov rax, rbx" />
+		
+		<Nop inst_index="2" size="2" />
 	</Patch>
 
 </EternityPatchFile>

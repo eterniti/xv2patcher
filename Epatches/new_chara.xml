@@ -102,7 +102,7 @@ Also, the size must be patched.
 		<Instruction code="83 CA FF" comment="or edx, -1" />
 		
 		<Hook type="call" inst_index="3" value="PatchReceiveTypeCharaSelected" />
-	</Patch>
+	</Patch>	
 	<!-- End: exceptional handling -->
 	
 	<!-- Patch added in 1.10v2. Signature 1.14 -->
