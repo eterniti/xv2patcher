@@ -16,13 +16,13 @@
 
 #define CONTENT_ROOT	"../"
 
-#define MINIMUM_GAME_VERSION	1.18f
+#define MINIMUM_GAME_VERSION	1.19f
 
 #define SLOTS_FILE         		"data/XV2P_SLOTS.x2s"
 #define SLOTS_FILE_STAGE		"data/XV2P_SLOTS_STAGE.x2s"
 #define SLOTS_FILE_STAGE_LOCAL	"data/XV2P_SLOTS_STAGE_LOCAL.x2s"
 
-#define XV2_PATCHER_VERSION	"3.8"
+#define XV2_PATCHER_VERSION	"3.9"
 
 typedef void (* IGGYSetTraceCallbackType)(void *callback, void *param);
 typedef void (* IGGYSetWarningCallbackType)(void *callback, void *param);

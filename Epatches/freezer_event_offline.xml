@@ -2,30 +2,32 @@
 <EternityPatchFile name="FreezerEventOffline" enabled="fs_event_offline" comment="This file enables the freezer event happening totally offline">	
 	<!-- All addresses are 1.08 unless stated otherwise -->
 	
-	<Patch name="Hook_Lobby_VCControl_Singleton_ctor" type="hook" search_start="0x3B1610" >
+	<!-- Signature 1.19 -->
+	<Patch name="Hook_Lobby_VCControl_Singleton_ctor" type="hook" search_start="0x372EB0" >
 		<Instruction code="48 89 4C 24 08" comment="mov [rsp+8], rcx" />
-		<Instruction code="55 56 57" comment="push rbp, rsi, rdi" />
+		<Instruction code="55 56 57 41 56 41 57" comment="push rbp, rsi, rdi, r14, r15" />
 		<Instruction code="48 83 EC 40" comment="sub rsp, 40h" />
 		<Instruction code="48 C7 44 24 30 FE FF FF FF" comment="mov qword ptr[rsp+30h], -2" />
-		<Instruction code="48 89 5C 24 70" comment="mov [rsp+70h], rbx" />
+		<Instruction code="48 89 9C 24 80 00 00 00" comment="mov [rsp+80h], rbx" />
 		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
 		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, XG::Game::Lobby::VcControl::Singleton::vtable" />
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
-		<Instruction code="48 8D 79 50" comment="lea rdi, [rcx+50h]" />
-		<Instruction code="48 89 7C 24 68" comment="mov [rsp+68h], rdi" />
+		<Instruction code="4C 8D 79 50" comment="lea r15, [rcx+50h]" />
+		<Instruction code="4C 89 7C 24 78" comment="mov [rsp+78h], r15" />
 		<Instruction code="33 ED" comment="xor ebp, ebp" />
-		<Instruction code="48 89 2F" comment="mov [rdi], rbp" />
-		<Instruction code="48 89 6F 08" comment="mov [rdi+8], rbp" />
+		<Instruction code="49 89 2F" comment="mov [r15], rbp" />
+		<Instruction code="49 89 6F 08" comment="mov [r15+8], rbp" />
 		
 		<Hook value="VCControl_Ctor_Patched" setup="SetupFsEventOffline" />
 	</Patch>
 	
-	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3BE2BC" >
-		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+	<!-- Signature 1.19 -->
+	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3830A1" >
+		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
 		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
-		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -35,12 +37,12 @@
 	</Patch>
 	
 	<!-- The signature of this patch is similar to previous (instruction index changes) -->
-	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3BE2BC" >
-		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3830A1" >
+		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
 		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
-		<Instruction code="48 8D 8F 68 02 00 00" comment="lea rcx, [rdi+268h]" />
+		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -76,8 +78,8 @@
 	
 	<!-- WARNING: a change in the signature below may need to update the DLL.
 		 The DLL will replace one callback by another -->
-	<Patch name="LocatePatchOpenQuestCallback" type="notify" search_start="0x44640F" comment="addr 1.11" >
-		<Instruction code="8B 87 00 01 00 00" comment="mov eax, [rdi+100h]; eax = quest menu type" />
+	<Patch name="LocatePatchOpenQuestCallback" type="notify" search_start="0x3D5DCB" comment="addr 1.19" >
+		<Instruction code="8B 86 00 01 00 00" comment="mov eax, [rsi+100h]; eax = quest menu type" />
 		<Instruction code="83 F8 05" comment="cmp eax, expert_mission menu type" />
 		<Instruction code="75 09" comment="jnz +9" />
 		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, callback_for_expert_mission" />

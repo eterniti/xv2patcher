@@ -1528,7 +1528,7 @@ PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xBE)); // buf+0xBE -> address return for any dual skill
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xBD)); // buf+0xBD -> address return for any dual skill
 }
 
 

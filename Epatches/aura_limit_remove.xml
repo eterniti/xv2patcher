@@ -3,7 +3,7 @@
 
 	<!-- Notes: these patches are expected to break in every update that adds one or more aura -->
 	<!-- In most cases, the only change needed to the patches is to change the instruction with the number of patches to match the number of auras -->
-	<!-- Note: starting from game version 1.18, the number of areas in the patch has been masked to reduce the possibility of the patch signature getting broken by updates -->
+	<!-- Note: starting from game version 1.18, the number of auras in the patch has been masked to reduce the possibility of the patch signature getting broken by updates -->
 	
 	<Patch name="RemoveAuraLimit1" type="nop" search_start="0xDF5F4" comment="signature based on 1.17" >
 		<Instruction code="0F BF 40 08" comment="mov eax, word ptr [rax+8]; eax = chara_link.aura_id" />

@@ -204,7 +204,7 @@
 	
 	<!-- This patch is used by more than one functionality -->
 	<!-- This will also be called from derived class for ohzaru mob -->
-	<Patch name="PatchMobDtor" type="hook" search_start="0xA5990" comment="signature based on 1.18" >
+	<Patch name="PatchMobDtor" type="hook" search_start="0xA7A20" comment="signature based on 1.19" >
 		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -214,7 +214,7 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="4C 8B 87 38 3A 00 00" comment="mov r8, [rdi+3A38h]" />
+		<Instruction code="4C 8B 87 68 3A 00 00" comment="mov r8, [rdi+3A68h]" />
 		
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
 	</Patch>

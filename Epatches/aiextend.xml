@@ -199,9 +199,9 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x2114: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xA8FAA" comment="addr 1.18" >
-		<Instruction code="83 BF 14 21 00 00 0C" comment="cmp dword ptr [rdi+2104h], 0Ch" />
+	<!-- 0x2148: trans_control -->
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xAB03A" comment="addr 1.19" >
+		<Instruction code="83 BF 48 21 00 00 0C" comment="cmp dword ptr [rdi+2148h], 0Ch" />
 		<Instruction code="75 54" comment="jnz +0x54" />
 		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
 		<Instruction code="48 8B CE" comment="mov rcx, rsi" />

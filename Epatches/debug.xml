@@ -37,8 +37,8 @@
 		<Hook value="DprintfPatched" />		
 	</Patch>
 	
-	<!-- Address 1.10v2 -->
-	<Patch name="Dprintf4Hook" type="hook" search_start="0x6D3AD0" >
+	<!-- Address 1.19 -->
+	<Patch name="Dprintf4Hook" type="hook" search_start="0x161F90" >
 		<Instruction code="48 89 54 24 10" comment="mov [rsp+10h], rdx" />
 		<Instruction code="4C 89 44 24 18" comment="mov [rsp+18h], r8" />
 		<Instruction code="4C 89 4C 24 20" comment="mov [rsp+20h], r9" />

@@ -22,7 +22,9 @@
 		<Hook value="ApplyCacMatsPatched" setup="ApplyCacMats_Setup" />
 	</Patch>
 	
-	<!-- Added in patcher 1.5 (game 1.08). Signature changed for first time in 1.13v2-->
+	<!-- Added in patcher 1.5 (game 1.08). Signature changed for first time in 1.13v2. -->
+	<!-- Signature changed in 1.19. Keeping old one here in case of a revert -->
+	<!--
 	<Patch name="FixPCTransColorPortrait" type="write" search_start="0x15D40A" comment="addr 1.13v2" >
 		<Instruction code="42 8D 14 2B" comment="lea edx, [rbx+r13]" />
 		<Instruction code="85 D2" comment="test edx, edx" />
@@ -32,8 +34,20 @@
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
 		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::ChangePartSet" />
 		
-		<!-- r9: -1 to 0 -->
+		!-- r9: -1 to 0 --
 		<Write inst_index="3" value="45 31 C9 90" />
+	</Patch>-->
+	
+	<!-- New signature since 1.19. Current: 1.19 -->
+	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xB84E1" >
+		<Instruction code="BA 64 00 00 00" comment="mov edx, 64h" />
+		<Instruction code="41 83 C9 FF" comment="or r9d, FFFFFFFF" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
+		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::ChangePartSet" />
+		
+		<!-- r9: -1 to 0 -->
+		<Write inst_index="1" value="45 31 C9 90" />
 	</Patch>
 
 </EternityPatchFile>

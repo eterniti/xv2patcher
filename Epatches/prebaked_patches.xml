@@ -371,11 +371,11 @@
 		<Hook type="call" value="TtcFilesAlias" />
 	</Patch>
 	
-	<!-- Signature 1.18 -->
+	<!-- Signature 1.19 -->
 	<!-- This patch is complex in the dll side. Any change in signature needs a review of the code in the dll -->
-	<Patch name="AnyDualSkillPatch" type="notify" search_start="0x12F34B" >
+	<Patch name="AnyDualSkillPatch" type="notify" search_start="0x130E83" >
 		<Instruction code="F6 83 B0 00 00 00 01" comment="test byte ptr[rbx+0xB0], 1; if mob->IsCac()" />
-		<Instruction code="0F 85 B1 00 00 00" comment="jnz +0xB4" />
+		<Instruction code="0F 85 B0 00 00 00" comment="jnz +0xB0" />
 		<Instruction code="48 8D 8B B0 0A 00 00" comment="lea rcx, [rbx+0AB0h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="85 C0" comment="test eax, eax" />
