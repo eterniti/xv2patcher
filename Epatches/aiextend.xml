@@ -200,11 +200,11 @@
 	</Patch>
 	
 	<!-- 0x2148: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xAB03A" comment="addr 1.19" >
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xAB20F" comment="addr 1.19.1" >
 		<Instruction code="83 BF 48 21 00 00 0C" comment="cmp dword ptr [rdi+2148h], 0Ch" />
-		<Instruction code="75 54" comment="jnz +0x54" />
-		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
-		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="75 XX" comment="jnz +0xXX" />
+		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
 		<Instruction code="FF 90 D0 04 00  00" comment="call qword ptr [rax+4D0h]" />
 		
 		<Notify value="NULL" />	
