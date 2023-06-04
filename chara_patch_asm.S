@@ -23,43 +23,22 @@ ret1:
 	
 GetCABehaviour11:
 
+	mov edx, [rbx+0x21BC]
 	cmp edx, 4095
 	ja orig2
 	lea rcx, cus_aura_bh11_lookup[rip]
 	movsx rdx, edx
 	movzx ecx, BYTE PTR [rcx+rdx]
-	cmp ecx, 25
+	cmp ecx, 29 # must match behaviour max in Xv2PreBakedFile
 	ja orig2
 	mov edx, ecx
 	
 orig2:
 
-	cmp edx, 2
-	jl ret2
-	
-	cmp edx, 3
-	jle lab_E0
-	
-	cmp edx, 0xD
-	je lab_E0
-	
-	cmp edx, 0x16
-	je lab_E0
-	
-	cmp edx, 0x17
-	jne ret2
-	
-	mov DWORD PTR [rbx+0xDC], 0x1C2
-	mov DWORD PTR [rbx+0xE0], 0x1C3
-	jmp ret2
-	
-lab_E0:
+	lea eax, [rdx-2]
+	cmp eax, 0x1A	
 
-	mov DWORD PTR [rbx+0xDC], 0xE0
-	mov DWORD PTR [rbx+0xE0], 0xE1
-
-ret2:
-
+# return to B5A9A (1.20)
 	mov rcx, 0x123456789ABCDEF
 	jmp rcx
 	.p2align 4,,15
@@ -71,7 +50,7 @@ ret2:
 	
 ForceTeleport:
 
-	mov ecx, [rbx+0x2148]
+	mov ecx, [rbx+0x21BC]
 	cmp ecx, 4095
 	ja default_teleport
 	lea rdx, force_teleport[rip]
@@ -90,7 +69,7 @@ ForceTeleport:
 	
 default_teleport:
 
-	cmp  [rbx+0x2148], eax
+	cmp  [rbx+0x21BC], eax
 	jne no_teleport
 
 teleport:	

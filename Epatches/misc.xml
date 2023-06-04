@@ -39,10 +39,10 @@
 		<Write value="E9 B6 01 00 00   90" />
 	</Patch>	
 	
-	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x256870" comment="address 1.17" >
+	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x265660" comment="address 1.20" >
 		<Instruction code="40 53" comment="push rbx" />
 		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
-		<Instruction code="83 F9 36" comment="cmp ecx, 36h" />
+		<Instruction code="83 F9 3F" comment="cmp ecx, 3Fh" />
 		<Instruction code="7C 0B" comment="jl +0xB" />
 		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
 		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
@@ -204,7 +204,7 @@
 	
 	<!-- This patch is used by more than one functionality -->
 	<!-- This will also be called from derived class for ohzaru mob -->
-	<Patch name="PatchMobDtor" type="hook" search_start="0xA7A20" comment="signature based on 1.19" >
+	<Patch name="PatchMobDtor" type="hook" search_start="0xAC650" comment="signature based on 1.20.1" >
 		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -214,7 +214,7 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="4C 8B 87 68 3A 00 00" comment="mov r8, [rdi+3A68h]" />
+		<Instruction code="4C 8B 87 80 3B 00 00" comment="mov r8, [rdi+3B80h]" />
 		
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
 	</Patch>

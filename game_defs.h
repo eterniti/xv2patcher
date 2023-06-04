@@ -65,6 +65,7 @@ CHECK_FIELD_OFFSET(Battle_Command, bcm, 0xDC0);
 
 // (Game object) XG::Game::Battle::Mob
 // Size: 0x2850 (1.08)
+// Update 1.20: +4 displacement of multiple fields that had been stable for long time (e.g. hp F8 -> FC)
 struct Battle_Mob
 {
 	void **vtbl; // 0000
@@ -75,23 +76,24 @@ struct Battle_Mob
 	uint8_t unk_B1[0xB8-0xB1];
 	uint32_t default_partset; // 00B8 (the initial partset)
 	uint32_t cms_id; // 00BC
-	uint8_t unk_C0[0xF8-0xC0];
-	float hp; // 00F8
-	uint32_t unk_FC; 
-	uint32_t unk_100;
-	float ki;	// 0104
-	uint8_t unk_108[0x164-0x108];
-	float stamina; // 0164
-	uint8_t unk_168[0x260-0x168];
+	uint8_t unk_C0[0xFC-0xC0];
+	float hp; // 00FC
+	uint32_t unk_100; 
+	uint32_t unk_104;
+	float ki;	// 0108
+	uint8_t unk_10C[0x168-0x10C];
+	float stamina; // 0168
+	uint8_t unk_16C[0x260-0x16C];
 	SkillSlot skills[SKILL_NUM]; // 0260
 	uint8_t unk_2F0[0x3A0-0x2F0]; 
 	int32_t unk_interface_var; // 03A0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
 	uint8_t unk_3A4[0x4A8-0x3A4];
 	Battle_Command *battle_command; // 04A8
-	uint8_t unk_4B0[0x1F94-0x4B0]; 
-	int32_t loaded_var; // 1F94 ; if >= 0, char is loaded
-	uint8_t unk_1D18[0x2148-0x1F98];
-	int32_t trans_control; // 2148
+	uint8_t unk_4B0[0x2004-0x4B0]; 
+	int32_t loaded_var; // 2004 ; if >= 0, char is loaded
+	uint8_t unk_2008[0x21BC-0x2008];
+	int32_t trans_control; // 21BC
+	// ...
 	// ...
 	
 	inline bool IsCac() const
@@ -108,15 +110,16 @@ CHECK_FIELD_OFFSET(Battle_Mob, is_cpu, 0x50);
 CHECK_FIELD_OFFSET(Battle_Mob, flags, 0xB0);
 CHECK_FIELD_OFFSET(Battle_Mob, default_partset, 0xB8);
 CHECK_FIELD_OFFSET(Battle_Mob, cms_id, 0xBC);
-CHECK_FIELD_OFFSET(Battle_Mob, hp, 0xF8);
-CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x104);
-CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x164);
+CHECK_FIELD_OFFSET(Battle_Mob, hp, 0xFC);
+CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x108);
+CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x168);
 CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x260);
 CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3A0);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4A8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x1F94);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x2148);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2004);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x21BC);
 
+// 1.20. size 0x180 -> 0x190
 struct Battle_HudCharInfo
 {
 	uint32_t unk_00;
@@ -128,7 +131,7 @@ struct Battle_HudCharInfo
 	
 	uint8_t unk_30[0x3C-0x30];
 	uint32_t cms_entry2; // 03C  WHY there is another one?
-	uint8_t unk_40[0x180-0x40];
+	uint8_t unk_40[0x190-0x40];
 	
 	inline const char16_t *GetName() const
 	{
@@ -136,7 +139,7 @@ struct Battle_HudCharInfo
 	}
 	
 };
-CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x180);
+CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x190);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, is_cac, 4);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, index, 8);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry, 0xC);
@@ -206,19 +209,22 @@ struct AIBehaviourSpecial
 
 // (Game object)
 // Size unknown
+// 1.20.1 mob, 0x10 -> 0x28
+// 1.20.1 ai_decision, 0x28 -> 0x40
+// 1.20.1 type, 0x154 -> 0x174
 struct AIDef
 {
-	uint8_t unk_00[0x10]; 
-	Battle_Mob *mob; // 0010
-	uint8_t unk_18[0x28-0x18]; 
-	uint32_t ai_decision; // 0028
-	uint8_t unk_2C[0x154-0x2C]; 
-	uint32_t type;	// 0x154 - A number between [0-10], both included. Seem to be 2 when long range attack? or maybe means a single-step attack.
+	uint8_t unk_00[0x28]; 
+	Battle_Mob *mob; // 0028
+	uint8_t unk_30[0x40-0x30]; 
+	uint32_t ai_decision; // 0040
+	uint8_t unk_44[0x174-0x44]; 
+	uint32_t type;	// 0x174 - A number between [0-10], both included. Seem to be 2 when long range attack? or maybe means a single-step attack.
 	//...
 };
-CHECK_FIELD_OFFSET(AIDef, mob, 0x10);
-CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x28);
-CHECK_FIELD_OFFSET(AIDef, type, 0x154);
+CHECK_FIELD_OFFSET(AIDef, mob, 0x28);
+CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x40);
+CHECK_FIELD_OFFSET(AIDef, type, 0x174);
 
 // (Game object)
 // Size 0x180

@@ -244,7 +244,7 @@ PUBLIC int Function73(int arg0)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30)
+		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32)
 			return 1;
 	}
 	
@@ -281,7 +281,7 @@ PUBLIC int Function138(int arg0)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22)
+		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23)
 			return 1;
 	}
 	

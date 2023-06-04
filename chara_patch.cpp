@@ -882,6 +882,8 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[25] = 0x27;
 	cus_aura_lookup[26] = 0x30;
 	cus_aura_lookup[27] = 0x34;
+	cus_aura_lookup[28] = 0x35;
+	cus_aura_lookup[29] = 0x37;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -1181,7 +1183,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x108)); // buf+0x108 -> the address of end of switch	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x119)); // buf+0x119 -> the address of end of switch	
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1193,14 +1195,14 @@ PUBLIC void CusAuraPatchBH11(uint8_t *buf)
 	PatchUtils::Write64((uint64_t *)(buf+2), g11_addr);
 	PatchUtils::Write16((uint16_t *)(buf+10), 0xE1FF); // jmp rcx
 	
-	uint64_t *ret_addr = (uint64_t *)(g11_addr+0x62);
+	uint64_t *ret_addr = (uint64_t *)(g11_addr+0x2B);
 	if (*ret_addr != 0x123456789ABCDEF)
 	{
 		UPRINTF("Internal error in CusAuraPatchBH11\n");
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x43)); // buf+0x43 -> address to return to
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xC)); // buf+0xC -> address to return to
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1273,7 +1275,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x91C)); // buf+0x91C -> address return for no teleport   
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x919)); // buf+0x919 -> address return for no teleport   
 }
 
 PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)
@@ -1300,7 +1302,7 @@ void SetBcsHairColorPatched(void *pthis, Battle_Mob *mob, uint64_t unk, const ch
 	}
 	
 	uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-	SetBcsColorType SetBcsColor = (SetBcsColorType) vtable[0x3E8/8];
+	SetBcsColorType SetBcsColor = (SetBcsColorType) vtable[0x400/8];
 	
 	if (hair_color >= 0)
 	{
@@ -1321,7 +1323,7 @@ PUBLIC void ApplyBcsHairColorPatch(uint8_t *addr)
 	// Second patch, replace edx=60 by rdx=rdi=Battle_Mob ptr 
 	PatchUtils::Write32(addr+0x1D, 0x90FA8948); // mov rdx, rdi; nop
 		
-	// Third patch, hook the method 0x3E8	
+	// Third patch, hook the method 0x400	
 	PatchUtils::Write16(addr+0x21, 0xE890);
 	PatchUtils::HookCall(addr+0x21+1, nullptr, (void *)SetBcsHairColorPatched);
 	
@@ -1341,7 +1343,7 @@ PUBLIC void ApplyBcsHairColorPatch2(uint8_t *addr)
 	PatchUtils::Write32(addr+0x1A, 0x90DA8948); // mov rdx, rbx; nop
 	PatchUtils::Write8(addr+0x1A+4, 0x90);
 		
-	// Third patch, hook the method 0x3E8	
+	// Third patch, hook the method 0x400	
 	PatchUtils::Write16(addr+0x23, 0xE890);
 	PatchUtils::HookCall(addr+0x23+1, nullptr, (void *)SetBcsHairColorPatched);
 	
@@ -1388,7 +1390,7 @@ void RemoveAccessoriesPatched(void *pthis, Battle_Mob *mob)
 	if (do_call)
 	{
 		uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x380/8];
+		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x398/8];
 		
 		RemoveAccessories(pthis, 5); // 5 = hair part
 	}
@@ -1406,7 +1408,7 @@ PUBLIC void ApplyConditionalRemoveHairAccessories(uint8_t *addr)
 	PatchUtils::Write32(addr+28, 0x90DA8948); // mov rdx, rbx; nop
 	PatchUtils::Write8(addr+28+4, 0x90);
 	
-	// Fourth patch, hook the method +0x370
+	// Fourth patch, hook the method +0x398
 	PatchUtils::Write16(addr+33, 0xE890);
 	PatchUtils::HookCall(addr+33+1, nullptr, (void *)RemoveAccessoriesPatched);
 }
