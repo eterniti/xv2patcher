@@ -131,7 +131,7 @@ Also, the size must be patched.
 
 (Note: part of the info in this comment may be outdated)
 
-The object that takes care about Character Selection in the native side is a C++ object with an allocation size of 0x2900 bytes.
+The object that takes care about Character Selection in the native side is a C++ object with an allocation size of 0x2910 bytes.
 The object has +29 methods (4 of them virtual), including the constructor and the virtual destructor.
 The count doesn't include the methods of base classes (virtual methods or not), which are numerous (the object is estimated to be 
 ***at least*** the third one in the hierarchy)
@@ -152,7 +152,7 @@ Pros: it will only use the memory needed, not a single byte wasted.
 Cons: this would require an insane amount of patches, as all fields offset accesses >= 13D8 would have to be modified. It would be difficult 
 to maintain, and too prone to errors.
 
-- Method 2: After increasing the C++ object memory, reallocate the fixed array to the old end (to offset 0x2900), and fix its references,
+- Method 2: After increasing the C++ object memory, reallocate the fixed array to the old end (to offset 0x2910), and fix its references,
 leaving the space 0x5E0-0x15DF as dead/unused.
 
 - Pros: much easier and faster to implement than 1. More safe because it is less prone to mistakess.
@@ -164,13 +164,15 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 
 -->
 
-	<!-- Signature updated in 1.17 -->
+	<!-- Signature updated in 1.21 -->
 	<!-- Don't forget to update the size in the dll code too on signature change -->
-	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x34BAEC" >
+	<!-- If size changes, patches below that have "It is important to update this when the size of the object change" need to have the size changed too -->
+	<!-- Remember size is also in chara_patch_asm.S, in ModifyArrayOffset4Asm function -->
+	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x393D85" >
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
 		<Instruction code="41 83 C8 FF" comment="or r8d, 0FFFFFFFFh" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 00290000" comment="mov ecx, 2900h" />
+		<Instruction code="B9 10290000" comment="mov ecx, 2910h" />
 		<Instruction code="FF 15 XXXXXXXX" comment="call operator new" />
 		<Instruction code="4C 8B D0" comment="mov r10, rax" />
 		
@@ -211,7 +213,7 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<Write inst_index="0" inst_offset="3" value="00 29" />
+		<Write inst_index="0" inst_offset="3" value="10 29" />
 	</Patch>
 	
 	<Patch name="ModifyArrayOffset2" type="write" search_start="0x4F1B87" comment="Takes place in chasel_func15, the function with most of the destructor implementation." >
@@ -223,24 +225,26 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Instruction code="90" comment="nop" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<Write inst_index="0" inst_offset="3" value="00 29" />
+		<Write inst_index="0" inst_offset="3" value="10 29" />
 	</Patch>
 	
-	<!-- Signature updated in 1.17 -->
-	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x4F59FD" comment="Takes place in chasel_func5." >
+	<!-- Signature updated in 1.21 -->
+	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x5B400D" comment="Takes place in chasel_func5." >
 		<Instruction code="48 8D 96 E0 05 00 00" comment="lea rdx, [rsi+5E0h]" />
+		<Instruction code="48 C7 44 24 30 00 00 00 00" comment="mov qword ptr[rsp+30h], 0" />
+		<Instruction code="48 8D 8E 10 28 00 00" comment="lea rcx, [rsi+2810h]" />
 		<Instruction code="49 8B DE" comment="mov rbx, r14" />
 		<Instruction code="89 6C 24 28" comment="mov [rsp+28h], ebp" />
 		<Instruction code="48 C1 E3 05" comment="shl rbx, 5" />
-		<Instruction code="48 8D 8E 10 28 00 00" comment="lea rcx, [rsi+2810h]" />
-		<Instruction code="48 03 D3" comment="add rdx, rbx" />
-		<Instruction code="48 C7 44 24 20 00 00 00 00" comment="mov qword ptr[rsp+20h], 0" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="48 03 D3" comment="add rdx, rbx" />	
+		<Instruction code="48 C7 44 24 20 00 00 00 00" comment="mov qword ptr[rsp+20h], 0" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="48 83 BC 33 F0 05 00 00 00" comment="cmp qword ptr [rbx+rsi+5F0h], 0" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<Write value="XXXXXX00290000 XXXXXX XXXXXXXX XXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXX XXXXXXXXXX XXXXXXXX1029"  /> 
+		<!-- 2910 = size of object, 2920 = size of object + 0x10 -->
+		<Write value="XXXXXX10290000 XXXXXXXXXXXXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXX XXXXXXXX XXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXXXXXX XXXXXXXX2029"  /> 
 	</Patch>
 	
 	<!-- Added in version 1.10v2. 

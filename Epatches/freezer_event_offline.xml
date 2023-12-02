@@ -21,13 +21,13 @@
 		<Hook value="VCControl_Ctor_Patched" setup="SetupFsEventOffline" />
 	</Patch>
 	
-	<!-- Signature 1.19 -->
-	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3830A1" >
-		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
+	<!-- Signature 1.21 -->
+	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3CEE47" >
+		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
-		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
+		<Instruction code="0F 84 D9 00 00 00" comment="jz +0xD9" />
+		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -37,12 +37,12 @@
 	</Patch>
 	
 	<!-- The signature of this patch is similar to previous (instruction index changes) -->
-	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3830A1" >
-		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
+	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3CEE47" >
+		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="0F 84 D3 00 00 00" comment="jz +0xD3" />
-		<Instruction code="48 8D 8F 70 02 00 00" comment="lea rcx, [rdi+270h]" />
+		<Instruction code="0F 84 D9 00 00 00" comment="jz +0xD9" />
+		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -66,20 +66,21 @@
 		<Notify inst_index="3" value="OnSetIsFsEventHappeningLocated" />
 	</Patch>
 	
-	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x36E4B6" comment="signature 1.17.2" >
-		<Instruction code="B8 00 00 00 00" comment="mov eax, 0" />
-		<Instruction code="0F 44 F8" comment="cmovz edi, eax" />
+	<!-- When there is change in this event, review if the patch in the dll needs update -->
+	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x3B6FEA" comment="signature 1.21" >
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="0F 44 CE" comment="cmovz ecx, esi; (esi = zero constant here)" />
 		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
-		<Instruction code="89 46 08" comment="mov [rsi+8], eax" />
-		<Instruction code="89 7E 0C" comment="mov [rsi+0Ch], edi" />
+		<Instruction code="89 47 08" comment="mov [rdi+8], eax" />
+		<Instruction code="89 4F 0C" comment="mov [rdi+0Ch], ecx" />
 		
 		<Notify value="OnPatchLobbyScriptIsOpenedEventLocated" />
 	</Patch>
 	
 	<!-- WARNING: a change in the signature below may need to update the DLL.
 		 The DLL will replace one callback by another -->
-	<Patch name="LocatePatchOpenQuestCallback" type="notify" search_start="0x3D5DCB" comment="addr 1.19" >
-		<Instruction code="8B 86 00 01 00 00" comment="mov eax, [rsi+100h]; eax = quest menu type" />
+	<Patch name="LocatePatchOpenQuestCallback" type="notify" search_start="0x42813B" comment="addr 1.21" >
+		<Instruction code="8B 86 08 01 00 00" comment="mov eax, [rsi+108h]; eax = quest menu type" />
 		<Instruction code="83 F8 05" comment="cmp eax, expert_mission menu type" />
 		<Instruction code="75 09" comment="jnz +9" />
 		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, callback_for_expert_mission" />

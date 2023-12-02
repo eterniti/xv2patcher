@@ -1,6 +1,6 @@
 #pragma once
 
-#define LOOKUP_SIZE	0x1000
+#define LOOKUP_SIZE	0x2000
 
 extern "C"
 {

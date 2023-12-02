@@ -66,6 +66,7 @@ CHECK_FIELD_OFFSET(Battle_Command, bcm, 0xDC0);
 // (Game object) XG::Game::Battle::Mob
 // Size: 0x2850 (1.08)
 // Update 1.20: +4 displacement of multiple fields that had been stable for long time (e.g. hp F8 -> FC)
+// Update 1.21: again displacement of multiple fields
 struct Battle_Mob
 {
 	void **vtbl; // 0000
@@ -76,23 +77,25 @@ struct Battle_Mob
 	uint8_t unk_B1[0xB8-0xB1];
 	uint32_t default_partset; // 00B8 (the initial partset)
 	uint32_t cms_id; // 00BC
-	uint8_t unk_C0[0xFC-0xC0];
-	float hp; // 00FC
-	uint32_t unk_100; 
-	uint32_t unk_104;
-	float ki;	// 0108
-	uint8_t unk_10C[0x168-0x10C];
-	float stamina; // 0168
-	uint8_t unk_16C[0x260-0x16C];
-	SkillSlot skills[SKILL_NUM]; // 0260
-	uint8_t unk_2F0[0x3A0-0x2F0]; 
-	int32_t unk_interface_var; // 03A0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
-	uint8_t unk_3A4[0x4A8-0x3A4];
-	Battle_Command *battle_command; // 04A8
-	uint8_t unk_4B0[0x2004-0x4B0]; 
-	int32_t loaded_var; // 2004 ; if >= 0, char is loaded
-	uint8_t unk_2008[0x21BC-0x2008];
-	int32_t trans_control; // 21BC
+	uint8_t unk_C0[0x100-0xC0];
+	float hp; // 0100
+	uint32_t unk_104; 
+	uint32_t unk_108;
+	float ki;	// 010C
+	uint8_t unk_110[0x16C-0x110];
+	float stamina; // 016C
+	uint8_t unk_16C[0x268-0x170];
+	SkillSlot skills[SKILL_NUM]; // 0268
+	uint8_t unk_2F8[0x3B0-0x2F8]; 
+	int32_t unk_interface_var; // 03B0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
+	uint8_t unk_3B4[0x4C8-0x3B4];
+	void *common_chara; // 4C8 - XG::Game::Common::Chara, the one that has the BCS file content inside
+	uint64_t unk_4D0;
+	Battle_Command *battle_command; // 04D8
+	uint8_t unk_4E0[0x2084-0x4E0]; 
+	int32_t loaded_var; // 2084 ; if >= 0, char is loaded
+	uint8_t unk_2088[0x223C-0x2088];
+	int32_t trans_control; // 223C
 	// ...
 	// ...
 	
@@ -110,16 +113,18 @@ CHECK_FIELD_OFFSET(Battle_Mob, is_cpu, 0x50);
 CHECK_FIELD_OFFSET(Battle_Mob, flags, 0xB0);
 CHECK_FIELD_OFFSET(Battle_Mob, default_partset, 0xB8);
 CHECK_FIELD_OFFSET(Battle_Mob, cms_id, 0xBC);
-CHECK_FIELD_OFFSET(Battle_Mob, hp, 0xFC);
-CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x108);
-CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x168);
-CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x260);
-CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3A0);
-CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4A8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2004);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x21BC);
+CHECK_FIELD_OFFSET(Battle_Mob, hp, 0x100);
+CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x10C);
+CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x16C);
+CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x268);
+CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
+CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4C8);
+CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4D8);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2084);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x223C);
 
 // 1.20. size 0x180 -> 0x190
+// 1.21 size 0x190 -> 0x1A0
 struct Battle_HudCharInfo
 {
 	uint32_t unk_00;
@@ -131,7 +136,7 @@ struct Battle_HudCharInfo
 	
 	uint8_t unk_30[0x3C-0x30];
 	uint32_t cms_entry2; // 03C  WHY there is another one?
-	uint8_t unk_40[0x190-0x40];
+	uint8_t unk_40[0x1A0-0x40];
 	
 	inline const char16_t *GetName() const
 	{
@@ -139,7 +144,7 @@ struct Battle_HudCharInfo
 	}
 	
 };
-CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x190);
+CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x1A0);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, is_cac, 4);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, index, 8);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry, 0xC);
@@ -150,22 +155,23 @@ CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry2, 0x3C);
 // Size unknown
 struct Battle_HudCockpit
 {
-	uint8_t unk_00[0x540]; 
-	Battle_HudCharInfo char_infos[MAX_MOBS]; // 1.16, changed from offset 0x4F0 to 0x540
+	uint8_t unk_00[0x580]; 
+	Battle_HudCharInfo char_infos[MAX_MOBS]; // 1.16, changed from offset 0x4F0 to 0x540; 1.21: changed from offset 0x540 to 0x580
 	// ...
 };
-CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x540);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x580);
 
 // 1.10 structure grow from 0x1D0 to 0x1D4. team variable went from offset 0x10 to 0x14
 // 1.13v2 structure grow from 0x1D4 to 0x1D8
 // 1.14 structure grow from 0x1D8 to 0x1DC
+// 1.21 structure grow from 0x1DC to 0x1F0
 struct PACKED UnkMobStruct
 {
 	uint8_t unk_00[0x18];
 	uint32_t team; //  0x18 -  1 or 2
-	uint8_t unk_14[0x1DC-0x1C];
+	uint8_t unk_14[0x1F0-0x1C];
 };
-CHECK_STRUCT_SIZE(UnkMobStruct, 0x1DC);
+CHECK_STRUCT_SIZE(UnkMobStruct, 0x1F0);
 CHECK_FIELD_OFFSET(UnkMobStruct, team, 0x18);
 
 // (Game object) XG::Game::Battle::Core::MainSystem
@@ -175,15 +181,15 @@ struct Battle_Core_MainSystem
 	void **vtbl; // 0000
 	uint8_t unk_08[0xDC-8];
 	UnkMobStruct unk_mob_data[MAX_MOBS]; // 00DC	
-	uint8_t unk_1AE4[0x37F8-0x1AE4]; 
-	Battle_Mob *mobs[MAX_MOBS]; // 37F8
-	uint8_t unk_3868[0x40F8-0x3868];
-	Battle_HudCockpit *cockpit; // 40F8
+	uint8_t unk_1AE4[0x3A50-0x1BFC]; 
+	Battle_Mob *mobs[MAX_MOBS]; // 3A50
+	uint8_t unk_3AC0[0x4350-0x3AC0];
+	Battle_HudCockpit *cockpit; // 4350
 	//...
 };
 CHECK_FIELD_OFFSET(Battle_Core_MainSystem, unk_mob_data, 0xDC);
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, mobs, 0x37F8);
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x40F8);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, mobs, 0x3A50);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x4350);
 
 // (Game object)
 // Size unknown
@@ -225,6 +231,28 @@ struct AIDef
 CHECK_FIELD_OFFSET(AIDef, mob, 0x28);
 CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x40);
 CHECK_FIELD_OFFSET(AIDef, type, 0x174);
+
+struct BattleInterface
+{
+	uint8_t unk_00[0x14];
+	uint32_t gbb_mode; // 0014;  tentative name, it may have other uses?
+	//...
+	
+	inline bool IsGbbMode() const
+	{
+		return (gbb_mode == 1); // Note: specifically checking for 1 instead of "not zero"
+	}
+};
+CHECK_FIELD_OFFSET(BattleInterface, gbb_mode, 0x14);
+
+struct QuestManager
+{
+	uint8_t unk_00[0xA0];
+	uint32_t mode; // 0xA0; tentative name.
+	// ...
+};
+CHECK_FIELD_OFFSET(QuestManager, mode, 0xA0);
+
 
 // (Game object)
 // Size 0x180

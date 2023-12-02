@@ -24,6 +24,7 @@ static bool count_patches_failures;
 HMODULE myself;
 std::string myself_path;
 IniFile ini;
+DWORD initial_tick;
 
 static bool in_game_process()
 {
@@ -149,13 +150,14 @@ static bool unlock_bgm2 = false;
 static bool test_mode = false;
 static bool mode_6 = true;
 
-typedef int (* Type73)(int arg0);
+typedef int (* Type73)(int arg0, bool arg1);
+typedef int (* Type138)(int arg0);
 typedef void *(* ChaselCtorType)(void *, uint32_t, uint32_t, void *, void *, void *, void *, void *, void *, void *);
 typedef void *(* ChaselDtorType)(void *, uint32_t);
 typedef bool (* SetupAlliesType)(void *, int);
 
 static Type73 func73;
-static Type73 func138;
+static Type138 func138;
 static uint32_t *pE74;
 
 static ChaselCtorType ChaselCtor;
@@ -206,10 +208,11 @@ PUBLIC void OnE74Located(void *addr)
 	//DPRINTF("%p\n", pE74);
 }
 
-PUBLIC int Function73(int arg0)
+// 1.21: param arg1 is added (purpose: unknown, seems to be true in most/all calls)
+PUBLIC int Function73(int arg0, bool arg1)
 {
-	int ret = func73(arg0);
-	//DPRINTF("Arg = 0x%x, ret=0x%x\n", arg0, ret);	
+	int ret = func73(arg0, arg1);
+	//DPRINTF("Arg0 = 0x%x, arg1=0x%x, ret=0x%x\n", arg0, arg1, ret);	
 	
 	if (test_mode && pE74)
 	{
@@ -220,7 +223,7 @@ PUBLIC int Function73(int arg0)
 			done = true;
 			
 			*pE74 = 0xF;
-			return Function73(arg0);
+			return Function73(arg0, arg1);
 		}
 	}
 	
@@ -251,7 +254,7 @@ PUBLIC int Function73(int arg0)
 	return ret;
 }
 
-PUBLIC void SetupFunction138(Type73 orig)
+PUBLIC void SetupFunction138(Type138 orig)
 {
 	func138 = orig;
 }
@@ -371,7 +374,7 @@ PUBLIC bool SetupAlliesPatched(void *pthis, void *rbp)
 	if (patch_num_allies)
 	{
 		num = 5;
-		PatchUtils::WriteData64(rbp, num, -0x40);
+		PatchUtils::WriteData64(rbp, num, -0x28);
 	}
 	
 	return SetupAllies(pthis, num);
@@ -1486,6 +1489,7 @@ extern "C" BOOL WINAPI EXPORT DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOI
 			if (done)
 				return TRUE;
 			
+			initial_tick = GetTickCount();
 			set_debug_level(1); 	
 
 			if (in_game_process())

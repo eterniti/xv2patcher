@@ -48,6 +48,16 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Main" />
 	</Patch>
 	
+	<!-- New patch introduced in 1.21. Signature 1.21 -->
+	<Patch name="PatchStageDef1Top11" type="notify" search_start="0x187F72" >
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs1" />
+		<Instruction code="4A 8D 3C C0" comment="lea rdi, [rax+r8*8]" />
+		<Instruction code="48 8B 17" comment="mov rdx, [rdi]" />
+		<Instruction code="48 C7 44 24 40 0F 00 00 00" comment="mov qword ptr[rsp+40h], 0Fh" />
+		
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
+	</Patch>
+	
 	<!-- Signature 1.11 -->
 	<Patch name="PatchStageDef1Top2" type="notify" search_start="0x283CB9" comment="Takes place in scstage_func1" >
 		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs1" />
@@ -111,14 +121,35 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
 	
-	<Patch name="PatchStageDef1Top7" type="notify" search_start="0x3C8C5E" comment="Takes place in lcmap_func1" >
+	<!-- Signature: 1.21 (first time signature break since first implementation in 1.08) -->
+	<Patch name="PatchStageDef1Top7" type="notify" search_start="0x3DD6DE" comment="Takes place in lcmap_func1" >
 		<Instruction code="4C 8B 3D XXXXXXXX" comment="mov r15, cs:stage_defs1" />
-		<Instruction code="BF 0D 00 00 00" comment="mov edi, 0Dh" />		
-		<Instruction code="48 81 C3 88 00 00 00" comment="add rbx, 88h" />		
+		<Instruction code="BF 10 00 00 00" comment="mov edi, 10h" />		
+		<Instruction code="48 81 C3 A0 00 00 00" comment="add rbx, A0h" />		
 		<Instruction code="48 89 74 24 40" comment="mov [rsp+40h], rsi" />
 		<Instruction code="8D 6F FF" comment="lea ebp, [rdi-1]" />
 		<Instruction code="0F 1F 80 00 00 00 00" comment="long nop" />
 		<Instruction code="48 83 3B 00" comment="cmp qword ptr [rbx], 0" />
+		
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
+	</Patch>	
+	
+	<!-- New patch introduced in 1.21. Signature 1.21 -->
+	<Patch name="PatchStageDef1Top12" type="notify" search_start="0x3DD7AF" >
+		<Instruction code="48 8B 35 XXXXXXXX" comment="mov rsi, cs:stage_defs1" />
+		<Instruction code="48 89 B4 24 10 01 00 00" comment="mov [rsp+110h], rsi" />
+		<Instruction code="33 FF" comment="xor edi, edi" />	
+		<Instruction code="48 89 7C 24 38" comment="mov [rsp+38h], rdi" />
+		
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
+	</Patch>
+	
+	<!-- New patch introduced in 1.21. Signature 1.21 -->
+	<Patch name="PatchStageDef1Top13" type="notify" search_start="0x449A5A" >
+		<Instruction code="48 8B 35 XXXXXXXX" comment="mov rsi, cs:stage_defs1" />
+		<Instruction code="75 XX" comment="jne +XX" />
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="48 89 5C 24 30" comment="mov [rsp+30h], rbx" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
@@ -199,7 +230,7 @@ This part is divided into X subparts.
 		<Instruction code="49 83 C8 FF" comment="or r8, -1" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Off8" />
-	</Patch>
+	</Patch>	
 	
 	<Patch name="PatchStageDef1Off8_6" type="notify" search_start="0x3700D8" comment="Takes place in stagey_func1" >
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, stage_defs1_p8" />
@@ -250,7 +281,7 @@ This part is divided into X subparts.
 		<Notify inst_index="2" inst_offset="3" value="PatchStageDef1Off8" />
 	</Patch>
 	
-	<!-- Signarture 1.11 -->
+	<!-- Signature 1.11 -->
 	<Patch name="PatchStageDef1Off8_10" type="notify" search_start="0x5AFE60" comment="Takes place in stagem_func1" >
 		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, stage_defs1_p8" />
 		<Instruction code="66 0F 1F 84 00 00 00 00  00" comment="big nop" />
@@ -262,8 +293,8 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Off8" />
 	</Patch>
 	
-	<!-- In 1.11, this patch changed, since now the address was a RVA, and not splitted in two parts.
-	     Below, ocmmented, is the old patch. 
+	<!-- In 1.11, this patch changed, since now the address was a RVA, and not spitted in two parts.
+	     Below, commented, is the old patch. 
 		 Notice the patch function called in the patch (PatchStageDef1Off8_Absolute) is different to the old patch -->
 	<Patch name="PatchStageDef1Off8_11" type="notify" search_start="0x5A7126" comment="Takes place in misc_func1" >
 		<Instruction code="48 8B 94 CF XXXXXXXX" comment="mov rdx, ds:rva stage_def1_plus8[rdi+rcx*8]" />
@@ -386,7 +417,7 @@ This part is divided into X subparts.
 		<Instruction code="FF C3" comment="inc ebx" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1BottomOff8" />
-	</Patch>
+	</Patch>	
 	
 <!-- Part 2: Redirecting the acceses to the ssid_to_idx array -->
 	<Patch name="PatchStageSsidToIdx1" type="notify" search_start="0x504CFE" comment="Takes place in stagesele_vfunc_0068" >
@@ -413,11 +444,11 @@ This part is divided into X subparts.
 		<Notify inst_index="2" inst_offset="3" value="PatchStageSsidToIdx" />
 	</Patch>
 	
-	<!-- Signature 1.20.1 -->
-	<Patch name="PatchStageSsidToIdx3" type="notify" search_start="0x511E31" comment="Takes place in stagesele_func2" >
+	<!-- Signature 1.21 -->
+	<Patch name="PatchStageSsidToIdx3" type="notify" search_start="0x5B7F21" comment="Takes place in stagesele_func2" >
 		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h" />
-		<Instruction code="48 89 44 24 60" comment="mov [rsp+60h], rax" />
-		<Instruction code="4C 8D 3D XXXXXXXX" comment="lea r15, ssid_to_idx" />
+		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
+		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
 		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
 		<Instruction code="44 8D 6E FE" comment="lea r13d, [rsi-2]; Num of ss stages" />
@@ -440,17 +471,26 @@ This part is divided into X subparts.
 	
 <!-- Part 4: Redirecting the acceses to the stage_defs2 array -->	
 
-	<!-- Signature 1.20 -->
-	<Patch name="PatchStageDef2Top1" type="notify"  search_start="0x13273A" comment="Takes place in stagegt_default" >
-		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, stage_defs2" />
-		<Instruction code="BB 49 00 00 00" comment="mov ebx, 49; number of stages" />
-		<Instruction code="4C 8D 1D XXXXXXXX" comment="lea r11, stage_defs2_p8" />
-		<Instruction code="4C 2B C9" comment="sub r9, rcx" />
-		<Instruction code="4C 8D 15 XXXXXXXX" comment="lea r10, stage_defs2_p4" />
-		<Instruction code="4C 2B D9" comment="sub r11, rcx" />
-		<Instruction code="4C 2B D1" comment="sub r10, rcx" />
-		
-		<Notify inst_index="0" inst_offset="3" value="PatchStageDef2Main" />
+	<!-- Signature 1.21 -->
+	<!-- Noticeable change since 1.21 due to the GBB thing -->
+	<Patch name="PatchStageDef2Top1" type="notify"  search_start="0x13B62D" comment="Takes place in stagegt_default" >
+		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, stage_defs2_GBB" />
+		<Instruction code="4C 8D 2D XXXXXXXX" comment="lea r13, stage_defs2" />
+		<Instruction code="0F 1F 44 00 00" comment="penta nop *sigh*" />
+		<Instruction code="49 63 C6" comment="mov rax, r14d" />
+				
+		<Notify inst_index="1" inst_offset="3" value="PatchStageDef2Main" />
+	</Patch>
+	
+	<!-- Signature 1.21. Patch introduced in 1.21 -->
+	<!-- This patch has same signature as above -->
+	<Patch name="PatchStageDef2Top1GBB" type="notify"  search_start="0x13B62D" comment="Takes place in stagegt_default" >
+		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, stage_defs2_GBB" />
+		<Instruction code="4C 8D 2D XXXXXXXX" comment="lea r13, stage_defs2" />
+		<Instruction code="0F 1F 44 00 00" comment="penta nop *sigh*" />
+		<Instruction code="49 63 C6" comment="mov rax, r14d" />
+				
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef2MainGBB" />
 	</Patch>
 	
 	<!-- The 2 next patches are deleted because this function is now reimplemented by the patcher -->
@@ -481,27 +521,38 @@ This part is divided into X subparts.
 	</Patch>
 	-->
 	
-	<!-- Signature 1.11 -->
-	<Patch name="PatchStageDef2Top2" type="notify"  search_start="0x1C8F89" comment="Takes place in stagegt_func2" >
-		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
-		<Instruction code="48 8D 0C C0" comment="lea rcx, [rax+rax*8]" />
-		<Instruction code="41 8B C0" comment="mov eax, r8d" />
-		<Instruction code="48 03 C8" comment="add rcx, rax" />
-		<Instruction code="48 8D 04 49" comment="lea rax, [rcx+rcx*2]" />
-		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_defs2" />
-		<Instruction code="48 8D 04 C1" comment="lea rax, [rcx+rax*8]" />
+	<!-- Signature 1.21 -->
+	<!-- Noticeable change since 1.21 due to the GBB thing -->
+	<!-- Also note, that there are two matches now in two different functions -->
+	<Patch name="PatchStageDef2Top2" type="notify"  search_start="0x13B74C" matches="2" comment="Takes place in stagegt_getname and stagegt_get_gate_idx_by_name" >
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs2_GBB" />
+		<Instruction code="83 F9 10" comment="cmp ecx, 10h" />
+		<Instruction code="74 07" comment="jz +7" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs2" />
 		
-		<Notify inst_index="5" inst_offset="3" value="PatchStageDef2Top" />
+		<Notify inst_index="3" inst_offset="3" value="PatchStageDef2Top" />
 	</Patch>
 	
-<!-- Part 5: Redirecting the acceses to the stage_sounds array -->	
+	<!-- Signature 1.21. Patch introduced in 1.21 -->
+	<!-- This patch has same signature as above -->
+	<Patch name="PatchStageDef2Top2GBB" type="notify"  search_start="0x13B74C" matches="2" comment="Takes place in stagegt_getname and stagegt_get_gate_idx_by_name" >
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs2_GBB" />
+		<Instruction code="83 F9 10" comment="cmp ecx, 10h" />
+		<Instruction code="74 07" comment="jz +7" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs2" />
+		
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef2TopGBB" />
+	</Patch>
+	
+<!-- Part 5: Redirecting the accesses to the stage_sounds array -->	
 
-	<Patch name="PatchStageSounds" type="notify" search_start="0x1D33BD" comment="Takes place in btlsound_func1" >
+	<!-- Signature 1.21 -->
+	<Patch name="PatchStageSounds" type="notify" search_start="0x165A3D" comment="Takes place in btlsound_func1" >
 		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_sounds" />
 		<Instruction code="48 8B 0C C1" comment="mov rcx, [rcx+rax*8]" />
 		<Instruction code="48 85 C9" comment="test rcx, rcx" />
 		<Instruction code="74 DA" comment="jz -26" />
-		<Instruction code="C7 43 10 41 01 00 00" comment="mov dword ptr [rbx+10h], 141h" />
+		<Instruction code="C7 43 10 59 01 00 00" comment="mov dword ptr [rbx+10h], 159h" /> <!-- Whatever this is, it changed from 0x141 to 0x159 in 1.21 after being like that from the beginning -->
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageSoundsMain" />
 	</Patch>
@@ -521,8 +572,10 @@ This part is divided into X subparts.
 <!-- Part 7: Patching number of stages -->
 <!-- There is currently a limit of 255 stages due to 8 bits constants -->
 
+	<!-- Stage limits are removed in patcher 4.2 by changing all conditions. The patches assume that the stage id will never be a positive number that is past the limit of actual numbers of stage... which is hopefully true -->
+
 	<!-- Signature 1.20 -->
-	<Patch name="PatchStageNum1+2" type="notify" search_start="0x251096" matches="2" comment="Takes place in stagex_func1 AND stagex_func2" >		
+	<Patch name="PatchStageNum1+2" type="write" search_start="0x251096" matches="2" comment="Takes place in stagex_func1 AND stagex_func2" >		
 		<Instruction code="83 7C 24 6C 49" comment="cmp dword ptr [rsp+6Ch], 49h -> stage num" />
 		<Instruction code="0F 83 89 00 00 00" comment="jnb +0x89" />
 		<Instruction code="48 8B 15 XXXXXXXX" comment="mov rdx, cs:XXXXXXXX" />
@@ -531,24 +584,32 @@ This part is divided into X subparts.
 		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
 		<Instruction code="EB 0E" comment="jmp +E" />
 		
-		<Notify inst_index="0" inst_offset="4" value="PatchStageNum_8" />	
+		<!-- if (unsigned)sid >= 0x49: jump -> if (signed)sid < 0: jump -->
+		<!-- cmp dword ptr [rsp+6Ch], 0; jl +0xXX -->
+		<Write value="XX XX XX XX 00   XX 8C XX XX XX XX" />
+		<!-- Old notify patch -->
+		<!-- <Notify inst_index="0" inst_offset="4" value="PatchStageNum_8" />	 -->
 	</Patch>
 
 	
 	<!-- This patch is just below PatchStageDef1Off8_11. !-->
 	<!-- Signature 1.20 -->
-	<Patch name="PatchStageNum3" type="notify" search_start="0x59289D" comment="Takes place in misc_func1" >
+	<Patch name="PatchStageNum3" type="write" search_start="0x59289D" comment="Takes place in misc_func1" >
 		<Instruction code="41 83 FE 48" comment="cmp r14d, 48h; 48 -> num of stages-1" />
 		<Instruction code="77 30" comment="ja +30h" />
 		<Instruction code="4B 8D 0C B6" comment="lea rcx, [r14+r14*4]" />
 		<Instruction code="48 8B 94 CF XXXXXXXX" comment="mov rdx, ds:rva stage_def1_plus8[rdi+rcx*8]" />		
 		<Instruction code="48 85 D2" comment="test rdx, rdx" />
 		
-		<Notify inst_index="0" inst_offset="3" value="PatchStageNumM1_8" />
+		<!-- if (unsigned)sid > 0x48: jump -> if (signed)sid < 0: jump -->
+		<!-- cmp r14d, 0; jl +0xXX -->
+		<Write value="XX XX XX 00   7C XX" />
+		<!-- Old notify patch -->
+		<!--<Notify inst_index="0" inst_offset="3" value="PatchStageNumM1_8" />-->
 	</Patch>
 	
 	<!-- This patch is NOT needed. Or rather, it must not be done -->
-	<!-- This patch has same asignature as PatchStageSsidToIdx3. This one MUST go always below !-->
+	<!-- This patch has same signature as PatchStageSsidToIdx3. This one MUST go always below !-->
 	<!--<Patch name="PatchStageNum4" type="notify" search_start="0x50549E" comment="Takes place in stagesele_func2" >
 		<Instruction code="BE 24 00 00 00" comment="mov esi, 24h" />
 		<Instruction code="48 89 44 24 60" comment="mov [rsp+60h], rax" />
@@ -601,7 +662,7 @@ This part is divided into X subparts.
 	</Patch>-->
 	
 	<!-- Signature 1.20 -->
-	<Patch name="PatchStageNum8" type="notify" search_start="0x15B4E9" comment="This function takes place in btlsound_func1" >	
+	<Patch name="PatchStageNum8" type="write" search_start="0x15B4E9" comment="This function takes place in btlsound_func1" >	
 		<Instruction code="83 FA 48" comment="cmp edx, 48h; 48 -> num of stages-1" />
 		<Instruction code="77 59" comment="ja +59" />
 		<Instruction code="44 8B 41 10" comment="mov r8d, [rcx+10h]" />
@@ -609,7 +670,11 @@ This part is divided into X subparts.
 		<Instruction code="78 09" comment="js +9" />
 		<Instruction code="41 8B C0" comment="mov eax, r8d" />
 		
-		<Notify inst_index="0" inst_offset="2" value="PatchStageNumM1_8" />
+		<!-- if (unsigned)sid > 0x48: jump -> if (signed)sid < 0: jump -->
+		<!-- cmp edx, 0; jl +0xXX -->
+		<Write value="XX XX 00   7C XX" />
+		<!-- Old notify patch -->
+		<!-- <Notify inst_index="0" inst_offset="2" value="PatchStageNumM1_8" /> -->
 	</Patch>
 	
 <!-- Part 8: Patching the stage_eve function -->
@@ -697,24 +762,6 @@ This part is divided into X subparts.
 		<Hook value="OverrideFarClipT2" setup="SetupSetFarClipT2" />
 	</Patch>
 	
-	<!-- This patch is required by the one above to get the current stage id -->
-	<!-- This patch doesn't only locates the singleton, but it also "protects" the implementation of the GetCurrentStage in the DLL -->
-	<!-- Any change in the 4108 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
-	<!-- Signature 1.14 -->
-	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0x1426C4" comment="Takes place in stagew_func1" >
-		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, cs:XG_Game_Battle_Core_MainSystem_singleton" />
-		<Instruction code="0F 2F F7" comment="comiss xmm6, xmm7" />
-		<Instruction code="76 72" comment="jbe +72" />
-		<Instruction code="48 85 C0" comment="test rax, rax" />
-		<Instruction code="74 6D" comment="je +6D" />
-		<Instruction code="48 8B 88 08 41 00 00" comment="mov rcx, [rax+4108h]" />
-		<Instruction code="48 85 C9" comment="test rcx, rcx" />
-		<Instruction code="74 61" comment="je 61" />
-		<Instruction code="48 63 81 28 09 00 00" comment="movsxd eax, [rcx+928h]; eax = stage_id" />
-		
-		<Notify inst_index="0" inst_offset="3" value="OnCoreMainSystemLocated_Stages" />
-	</Patch>
-	
 	<!-- This patch is only to protect the implementation of OverrideFarClip -->
 	<!-- Any change in the 0xD0 would require the OverrideFarClip to be updated in the dll -->
 	<!-- Signature 1.17 -->
@@ -729,6 +776,24 @@ This part is divided into X subparts.
 		<Notify value="NULL" />
 	</Patch> -->
 	
+	<!-- This patch is required by the one above to get the current stage id -->
+	<!-- This patch doesn't only locates the singleton, but it also "protects" the implementation of the GetCurrentStage in the DLL -->
+	<!-- Any change in the 4360 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
+	<!-- Signature 1.21 -->
+	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0xA02A4" comment="Takes place in stagew_func1" >
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, cs:XG_Game_Battle_Core_MainSystem_singleton" />
+		<Instruction code="0F 2F F7" comment="comiss xmm6, xmm7" />
+		<Instruction code="76 72" comment="jbe +72" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
+		<Instruction code="74 6D" comment="je +6D" />
+		<Instruction code="48 8B 88 60 43 00 00" comment="mov rcx, [rax+4360h]" />
+		<Instruction code="48 85 C9" comment="test rcx, rcx" />
+		<Instruction code="74 61" comment="je 61" />
+		<Instruction code="48 63 81 28 09 00 00" comment="movsxd eax, [rcx+928h]; eax = stage_id" />
+		
+		<Notify inst_index="0" inst_offset="3" value="OnCoreMainSystemLocated_Stages" />
+	</Patch>
+	
 <!-- Part 10: Increase the memory of XG::Game::Battle::Core::MainSystem, and redirect stagems to the end -->	
 	
 	<!-- stagegt_ object has at beginning a buffer of 0x2A00, which is 0xA8 (size of XV2StageDef2) * num of stages 
@@ -741,11 +806,11 @@ This part is divided into X subparts.
 	
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
 	<!-- This patch is debug only, not needed in release version -->	
-	<!-- Signature 1.20 -->
-	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x822A5" >
+	<!-- Signature 1.21 -->
+	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x86235" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 F0 B3 00 00" comment="mov ecx, 0xB3F0" />
+		<Instruction code="B9 20 EA 00 00" comment="mov ecx, 0xEA20" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
 		<Instruction code="48 85 C0" comment="test eax, eax" />
@@ -758,11 +823,11 @@ This part is divided into X subparts.
 	
 	<!-- This patch has the same signature as the above one, but it needs to be always below  -->
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
-	<!-- Signature 1.20 -->
-	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x822A5" >
+	<!-- Signature 1.21 -->
+	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x86235" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 F0 B3 00 00" comment="mov ecx, 0xB3F0" />
+		<Instruction code="B9 20 EA 00 00" comment="mov ecx, 0xEA20" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
 		<Instruction code="48 85 C0" comment="test eax, eax" />
@@ -788,56 +853,89 @@ This part is divided into X subparts.
 		<Hook value="HookedMainSystem_Dtor" setup="SetupMainSystem_Dtor" />
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtClear" type="hook" search_start="0x132630" comment="The hooked function is stagegt_clear" >
-		<Instruction code="48 8D 41 24" comment="lea rax, [rcx+24h]" />
+	<!-- Patch introduced in 1.21. Signature 1.21 -->
+	<!-- The purpose of this patch is just to ensure that the imitation in stages_patch.cpp remains valid -->
+	<!-- A change in the 0x14 would require an update in the BattleInterface definition game_defs.h -->
+	<Patch name="ProtectIsGbbMode" type="notify" search_start="0x7DF210" >
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Battle::BattleInterface singleton" />
+		<Instruction code="33 C0" comment="xor eax, eax" />
+		<Instruction code="83 79 14 01" comment="cmp word ptr [rcx+14h], 1" />
+		<Instruction code="0F 94 C0" comment="setz al" />
+		<Instruction code="C3" comment="retn" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!-- Patch introduced in 1.21. Signature 1.21 -->
+	<!-- This patch has two purposes. One is to locate the QuestManager singleton -->
+	<!-- The second purpose is to ensure that our code in stage_patch.cpp to imitate the check of GBB mode remains valid -->
+	<!-- This code is weird. It's something like "if x <= 0x12 && x == 0x10 gbb mode else normal mode" but the condition x <= 0x12 is redundant with x == 0x10 -->
+	<!-- On a change of A0, QuestManager::mode in game_defs has to be updated. On a change of logic, the IsGbbMode function in stages_patch.cpp may need a change -->
+	<Patch name="LocateQuestManagerSingleton" type="notify" search_start="0x13B665" comment="Takes place in stagegt_default but it has another match in another stagegt function too" >
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XG::Game::Quest::QuestManager singleton" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
+		<Instruction code="74 1F" comment="jz +1F" />
+		<Instruction code="8B 88 A0 00 00 00" comment="mov ecx, [rax+0A0h]" />
+		<Instruction code="83 F9 12" comment="cmp ecx, 12h" />
+		<Instruction code="7D 14" comment="jge +0x14" />
+		<Instruction code="83 F9 10" comment="cmp ecx, 10h" />
+		<Instruction code="75 0F" comment="jnz +0x14" />
+		
+		<Notify inst_index="0" inst_offset="3" value="OnQuestManagerSingletonLocated" />	
+	</Patch>
+	
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtClear" type="hook" search_start="0x13B4A0" comment="The hooked function is stagegt_clear" >
+		<Instruction code="48 8D 41 58" comment="lea rax, [rcx+58h]" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="B9 49 00 00 00" comment="mov ecx, 49h; num of stages" />
 		<Instruction code="0F 1F 44 00 00" comment="penta nop" />
-		<Instruction code="48 89 50 DC" comment="mov [rax-24h], rdx" />
-		<Instruction code="48 89 50 F4" comment="mov [rax-0Ch], rdx" />
-		<Instruction code="C7 40 E4 FF FF FF FF" comment="mov dword ptr [rax-1Ch], 0FFFFFFFFh" />
+		<Instruction code="48 89 50 A8" comment="mov [rax-58h], rdx" />
+		<Instruction code="C7 40 B0 FF FF FF FF" comment="mov dword ptr [rax-50h], 0FFFFFFFFh" />
 		
 		<Hook value="StageGtClearReimplemented" />		
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtDefault" type="hook"  search_start="0x132730" comment="The hooked function is stagegt_default" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtDefault" type="hook"  search_start="0x13B600" comment="The hooked function is stagegt_default" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
-		<Instruction code="48 89 7C 24 10" comment="mov [rsp+10], rdi" />
-		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, stage_defs2" />
-		<Instruction code="BB 49 00 00 00" comment="mov ebx, 49; number of stages" />
-		<Instruction code="4C 8D 1D XXXXXXXX" comment="lea r11, stage_defs2_p8" />
-		<Instruction code="4C 2B C9" comment="sub r9, rcx" />
-		<Instruction code="4C 8D 15 XXXXXXXX" comment="lea r10, stage_defs2_p4" />
-		<Instruction code="4C 2B D9" comment="sub r11, rcx" />
-		<Instruction code="4C 2B D1" comment="sub r10, rcx" />
+		<Instruction code="48 89 6C 24 10" comment="mov [rsp+10], rbp" />
+		<Instruction code="48 89 74 24 18" comment="mov [rsp+18], rdi" />
+		<Instruction code="57 41 54 41 55 41 56 41 57" comment="push rdi, r12-r15" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="45 33 FF" comment="xor r15d, r15d" />
+		<Instruction code="48 8D 59 0C" comment="lea rbx, [rcx+0Ch]" />
+		<Instruction code="45 8B F7" comment="mov r14d, r15d" />
+		<Instruction code="48 8D B1 20 52 00 00" comment="lea rsi, [rcx+5220h]; 0x5220 = 0x49*0x120 = total size of stage_defs2; rsi points to the extra data" />
 		
 		<Hook value="StageGtDefaultReimplemented" />
 	</Patch>
 	
+	<!-- I deleted the patch deleted in 1.21. It was never needed because the game ignores rcx (this) and now in 1.21 there are two calls instead of one -->
 	<!-- This patch needs update when size of XG::Game::Battle::Core::MainSystem changes -->
 	<!-- This patch is not really needed because the called function ignores rcx (this), but anyway... -->
 	<!-- Signature 1.14 -->
-	<Patch name="RedirectStageGtFunc2" type="write" search_start="0x2A50B0" >
+	<!--<Patch name="RedirectStageGtGetName" type="write" search_start="0x2A50B0" >
 		<Instruction code="8B 97 28 09 00 00" comment="mov edx, [rdi+928h]" />
 		<Instruction code="49 8D 8E D0 61 00 00" comment="lea rcx, [r14+61D0h]" />
 		<Instruction code="44 8B C3" comment="mov r8d, ebx" />
-		<Instruction code="E8 XXXXXXXX" comment="call stagegt_func2" />
+		<Instruction code="E8 XXXXXXXX" comment="call stagegt_getname" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 36" comment="jz +0x36" />
 		
 		<Write inst_index="1" inst_offset="3" value="30 AE" />	
-	</Patch>
+	</Patch>-->
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtFindGate" type="hook"  search_start="0x1327F0" comment="The hooked function is stagegt_findgate" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtFindGate" type="hook"  search_start="0x13B850" comment="The hooked function is stagegt_findgate" >
 		<Instruction code="85 D2" comment="test edx, edx" />
 		<Instruction code="78 32" comment="js +0x32" />
 		<Instruction code="83 FA 49" comment="cmp edx, 49h; num of stages" />
 		<Instruction code="73 2D" comment="jnb +2D" />
 		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
-		<Instruction code="4C 69 C8 D8 00 00 00" comment="imul r9, rax, 0D8h; D8 = sizeof(XV2StageDef2)" />
+		<!-- Compiler optimization: r9 = rax*sizeof(XV2StageDef2) = rax*0x120  = rax*9*0x20 = (8*rax + rax) << 5 -->
+		<Instruction code="4C 8D 0C C0" comment="lea r9, [rax+rax*8]" />
+		<Instruction code="49 C1 E1 05" comment="shl r9, 5" />
 		<Instruction code="4C 03 C9" comment="add r9, rcx" />		
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="49 8D 49 08" comment="lea rcx, [r9+8]" />
@@ -845,13 +943,15 @@ This part is divided into X subparts.
 		<Hook value="StageGtFindGateReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtFindGateByName" type="hook" search_start="0x1C9000" comment="The hooked function is stagegt_findgatebyname" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtFindGateByName" type="hook" search_start="0x13B8A0" comment="The hooked function is stagegt_findgatebyname" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="48 89 7C 24 10" comment="mov [rsp+10], rdi" />
 		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
 		<Instruction code="49 8B F8" comment="mov rdi, r8" />
-		<Instruction code="48 69 D8 D8 00 00 00" comment="imul rbx, rax, 0D8h; D8 = sizeof(XV2StageDef2)" />
+		<!-- Compiler optimization: rbx = rax*sizeof(XV2StageDef2) = rax*0x120  = rax*9*0x20 = (8*rax + rax) << 5 -->
+		<Instruction code="48 8D 1C C0" comment="lea rbx, [rax+rax*8]" />
+		<Instruction code="48 C1 E3 05" comment="shl rbx, 5" />
 		<Instruction code="48 03 D9" comment="add rbx, rcx" />
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
 		<Instruction code="4C 8B D3" comment="mov r10, rbx" />
@@ -860,65 +960,68 @@ This part is divided into X subparts.
 		<Hook value="StageGtFindGateByNameReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtGetGate" type="hook" search_start="0x1C90A0" comment="The hooked function is stagegt_getgate" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtGetGate" type="hook" search_start="0x13B940" comment="The hooked function is stagegt_getgate" >
 		<Instruction code="4C 8B C9" comment="mov r9, rcx" />
 		<Instruction code="41 83 F8 09" comment="cmp r8d, 9" />
 		<Instruction code="72 03" comment="jb +03" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="C3" comment="ret" />
 		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
-		<Instruction code="48 8D 0C C0" comment="lea rax, [r9+rax*8]" />
+		<Instruction code="41 8B C8" comment="mov ecx, r8d" />
 		
 		<Hook value="StageGtGetGateReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtGetExtraByTarget" type="hook" search_start="0x132910" comment="The hooked function is stagegt_getextrabytarget" >
-		<Instruction code="4C 8B C9" comment="mov r9, rcx" />
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtGetExtraByTarget" type="hook" search_start="0x13B970" comment="The hooked function is stagegt_getextrabytarget" >
+		<Instruction code="4C 8B D1" comment="mov r10, rcx" />
 		<Instruction code="85 D2" comment="test edx, edx" />
 		<Instruction code="78 2F" comment="js +0x2F" />
 		<Instruction code="83 FA 49" comment="cmp edx, 49h; num of stages" />
 		<Instruction code="73 2A" comment="jnb +0x2A" />
-		<Instruction code="4C 63 D2" comment="movsxd r10, edx" />
+		<Instruction code="4C 63 CA" comment="movsxd r9, edx" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="49 69 C2 D8 00 00 00" comment="imul rax, r10, 0D8h; D8 = sizeof(XV2StageDef2)" />
+		<!-- Compiler optimization: rax = r9*sizeof(XV2StageDef2) = r9*0x120  = r9*9*0x20 = (8*r9 + r9) << 5 -->
+		<Instruction code="4B 8D 04 C9" comment="lea rax, [r9+r9*8]" />
+		<Instruction code="48 C1 E0 05" comment="shl rax, 5" />
 		
 		<Hook value="StageGtGetExtraByTargetReimplemented"/>
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtGetExtraByName" type="hook" search_start="0x1C9120" comment="The hooked function is stagegt_getextrabyname" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtGetExtraByName" type="hook" search_start="0x13B9C0" comment="The hooked function is stagegt_getextrabyname" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="48 89 7C 24 10" comment="mov [rsp+10], rdi" />		
-		<Instruction code="48 63 FA" comment="movsxd rdi, edx" />
+		<Instruction code="48 63 DA" comment="movsxd rbx, edx" />
 		<Instruction code="4D 8B D8" comment="mov r11, r8" />
-		<Instruction code="4C 69 D7 D8 00 00 00" comment="imul r10, rdi, 0D8h; D8 = sizeof(XV2StageDef2)" />
-		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
-		<Instruction code="4C 03 D1" comment="add r10, rcx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<!-- Compiler optimization: r9 = rbx*sizeof(XV2StageDef2) = rbx*0x120  = rbx*9*0x20 = (8*rbx + rbx) << 5 -->
+		<Instruction code="4C 8D 0C DB" comment="lea r9, [rbx+rbx*8]" />
+		<Instruction code="49 C1 E1 05" comment="shl r9, 5" />
 		
 		<Hook value="StageGtGetExtraByNameReimplemented"/>
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtGetTarget" type="hook" search_start="0x1329E0" comment="The hooked function is stagegt_gettarget" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtGetTarget" type="hook" search_start="0x13BA40" comment="The hooked function is stagegt_gettarget" >
 		<Instruction code="85 D2" comment="test edx, edx" />
-		<Instruction code="78 21" comment="js +21" />
+		<Instruction code="78 22" comment="js +22" />
 		<Instruction code="83 FA 49" comment="cmp edx, 49h; num of stages" />
-		<Instruction code="73 1C" comment="jnb +1C" />
+		<Instruction code="73 1D" comment="jnb +1D" />
 		<Instruction code="41 83 F8 09" comment="cmp r8d, 9; num of gates" />
-		<Instruction code="73 16" comment="jnb +16" />
+		<Instruction code="73 17" comment="jnb +17" />
 		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
-		<Instruction code="48 8D 14 C0" comment="lea rdx, [rax+rax*8]" />
-		<Instruction code="49 63 C0" comment="movsxd rax, r8d" />
+		<Instruction code="49 63 D0" comment="movsxd rdx, r8d" />
+		<Instruction code="4C 8D 0C C0" comment="lea r9, [rax+rax*8]" />
 		
 		<Hook value="StageGtGetTargetReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtClearExtra" type="hook" search_start="0x132A10" comment="The hooked function is stagegt_clearextra" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtClearExtra" type="hook" search_start="0x13BA70" comment="The hooked function is stagegt_clearextra" >
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="48 8D 81 98 3D 00 00" comment="lea rax, [rcx+3D98h] ; 3D98 = D8 * 49 (num stages)" />
+		<Instruction code="48 8D 81 20 52 00 00" comment="lea rax, [rcx+5220h] ; 5220 = 0x120 * 0x49 (num stages)" />
 		<Instruction code="8D 4A 29" comment="lea ecx, [rdx+29h]" />
 		<Instruction code="0F 1F 40 00" comment="tetra-nop" />
 		<Instruction code="48 89 10" comment="mov [rax], rdx" />
@@ -926,47 +1029,52 @@ This part is divided into X subparts.
 		<Hook value="StageGtClearExtraReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.20 -->
-	<Patch name="ReimplementStageGtSet" type="hook" search_start="0x132A50" comment="The hooked function is stagegt_set" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtSet" type="hook" search_start="0x13BAB0" comment="The hooked function is stagegt_set" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="49 63 C0" comment="movsxd rax, r8d" />
-		<Instruction code="4D 8B D9" comment="mov r11, r9" />
 		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
 		<Instruction code="83 FA 49" comment="cmp edx, 49h; num of stages" />
-		<Instruction code="73 5F" comment="jnb +5F" />
+		<Instruction code="73 5C" comment="jnb +5C" />
 		
 		<Hook value="StageGtSetReimplemented" />		
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtSetExtraByTarget" type="hook" search_start="0x1C92A0" comment="The hooked function is stagegt_setextrabytarget" >
-		<Instruction code="4C 8B D9" comment="mov r11, rcx" />
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtSetExtraByTarget" type="hook" search_start="0x13BB30" comment="The hooked function is stagegt_setextrabytarget" >
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="4C 63 DA" comment="movsxd r11, edx" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
-		<Instruction code="48 63 CA" comment="movsxd rcx, edx" />
-		<Instruction code="48 69 D1 D8 00 00 00" comment="imul rdx, rcx, 0D8h; D8 = sizeof(XV2StageDef2)" />
-		<Instruction code="48 83 C2 08" comment="add rdx, 8" />
-		<Instruction code="49 03 D3" comment="add rdx, r11" />
+		<Instruction code="45 8B D0" comment="mov r10d, r8d" />
+		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
+		<!-- Compiler optimization: rdx = r11*sizeof(XV2StageDef2) = r11*0x120  = r11*9*0x20 = (8*r11 + r11) << 5 -->
+		<Instruction code="4B 8D 14 DB" comment="lea rdx, [r11+r11*8]" />
+		<Instruction code="48 C1 E2 05" comment="shl rdx, 5" />
 		
 		<Hook value="StageGtSetExtraByTargetReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtSetExtraByName" type="hook" search_start="0x1C92F0" comment="The hooked function is stagegt_setextrabyname" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtSetExtraByName" type="hook" search_start="0x13BB90" comment="The hooked function is stagegt_setextrabyname" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="48 89 74 24 10" comment="mov [rsp+10], rsi" />
 		<Instruction code="48 89 7C 24 18" comment="mov [rsp+18], rdi" />
-		<Instruction code="48 63 F2" comment="mov rsi, edx" />
+		<Instruction code="48 63 FA" comment="movsxd rdi, edx" />
 		<Instruction code="49 8B D8" comment="mov rbx, r8" />
-		<Instruction code="4C 69 DE D8 00 00 00" comment="imul r11, rsi, 0D8h; D8 = sizeof(XV2StageDef2)" />
-		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
+		<!-- Compiler optimization: r10 = rdi*sizeof(XV2StageDef2) = rdi*0x120  = rdi*9*0x20 = (8*rdi + rdi) << 5 -->
+		<Instruction code="4C 8D 14 FF" comment="lea r10, [rdi+rdi*8]" />
+		<Instruction code="49 C1 E2 05" comment="shl r10, 5" />
 		
 		<Hook value="StageGtSetExtraByNameReimplemented" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ReimplementStageGtSetUnk10ByTarget" type="hook" search_start="0x1C9390" comment="The hooked function is stagegt_setunk10bytarget" >
+	<!-- Signature 1.21 -->
+	<Patch name="ReimplementStageGtSetUnk10ByTarget" type="hook" search_start="0x13BC30" comment="The hooked function is stagegt_setunk10bytarget" >
 		<Instruction code="48 63 C2" comment="movsxd rax, edx" />
-		<Instruction code="4C 69 D0 D8 00 00 00" comment="imul r10, rax, 0D8h; D8 = sizeof(XV2StageDef2)" />
+		<!-- Compiler optimization: r10 = rax*sizeof(XV2StageDef2) = rax*0x120  = rax*9*0x20 = (8*rax + rax) << 5 -->
+		<Instruction code="4C 8D 14 C0" comment="lea r10, [rax+rax*8]" />
+		<Instruction code="49 C1 E2 05" comment="shl r10, 5" />
 		<Instruction code="4C 03 D1" comment="add r10, rcx" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="49 8D 4A 08" comment="lea rcx, [r10+8]" />
@@ -1052,14 +1160,14 @@ This part is divided into X subparts.
 		<Hook value="GetStageNamePatched" setup="SetupGetStageName" />
 	</Patch>
 	
-	<!-- Signature 1.20.1 -->
-	<Patch name="LocateGameDataSingleton" type="notify" search_start="0x511E22" comment="Takes place in stagesele_func2" >
+	<!-- Signature 1.21 -->
+	<Patch name="LocateGameDataSingleton" type="notify" search_start="0x5B7F12" comment="Takes place in stagesele_func2" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::GameData::singleton" />
 		<Instruction code="83 CA FF" comment="or rdx, -1" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_selected_before_object" />
 		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h; num_ss_stages+1" />
-		<Instruction code="48 89 44 24 60" comment="mov [rsp+60h], rax" />
-		<Instruction code="4C 8D 3D XXXXXXXX" comment="lea r15, ssid_to_idx" />
+		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
+		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
 		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
 		
@@ -1067,39 +1175,37 @@ This part is divided into X subparts.
 	</Patch>
 	
 	<!-- This patch has same signature as above one -->
-	<Patch name="LocateGetSelectedBeforeObject" type="notify" search_start="0x511E22" comment="Takes place in stagesele_func2" >
+	<Patch name="LocateGetSelectedBeforeObject" type="notify" search_start="0x5B7F12" comment="Takes place in stagesele_func2" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::GameData::singleton" />
 		<Instruction code="83 CA FF" comment="or rdx, -1" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_selected_before_object" />
 		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h; num_ss_stages+1" />
-		<Instruction code="48 89 44 24 60" comment="mov [rsp+60h], rax" />
-		<Instruction code="4C 8D 3D XXXXXXXX" comment="lea r15, ssid_to_idx" />
+		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
+		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
 		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
 		
 		<Notify inst_index="2" inst_offset="1" value="OnGetSelectedBeforeObject_Located" />
 	</Patch>
 	
-	<!-- Signature 1.20.1 -->
-	<Patch name="LocateHasStageBeenSelectedBefore" type="notify" search_start="0x511EE8" comment="Takes place in stagesele_func2" >
+	<!-- Signature 1.21 -->
+	<Patch name="LocateHasStageBeenSelectedBefore" type="notify" search_start="0x5B7FD8" comment="Takes place in stagesele_func2" >
 		<Instruction code="41 8B D6" comment="mov edx, r14d" />
 		<Instruction code="E8 XXXXXXXX" comment="call has_stage_been_selected_before" />
 		<Instruction code="8D 56 4A" comment="lea edx, [rsi+4Ah]" />
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
-		<Instruction code="45 8B CE" comment="mov r9d, r14d" />
 		
 		<Notify inst_index="1" inst_offset="1" value="OnHasStageBeenSelectedBefore_Located" />
 	</Patch>
 	
 	<!-- If this breaks, we need to change STAGEGT_ADDRESS in the dll -->
-	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x13E7E0" comment="signature 1.17.2" >
-		<Instruction code="41 8B 75 00" comment="mov esi, [r13+0]" />		
-		<Instruction code="41 8B 1E" comment="mov ebx, r14" />
-		<Instruction code="44 8B C3" comment="mov r8d, ebx" />
-		<Instruction code="8B D6" comment="mov edx, esi" />
-		<Instruction code="49 8D 8C 24 D0 61 00 00" comment="lea rcx, [r12+61D0h]" />
+	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x83ED8" comment="signature 1.21" >
+		<Instruction code="48 81 C1 58 65 00 00" comment="add rcx, 6558h" />		
+		<Instruction code="44 8B 86 D4 00 00 00" comment="mov r8d, [rsi+0D4h]" />
+		<Instruction code="8B D0" comment="mov edx, eax" />
+		<Instruction code="E8 XXXXXXXX" comment="call stage_findgate" />
 		
 		<Notify value="NULL" />
 	</Patch>

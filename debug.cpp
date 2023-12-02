@@ -12,6 +12,20 @@
 static int debug_level;
 static FILE *file;
 
+extern DWORD initial_tick;
+
+static void local_tick(uint32_t *H, uint32_t *MM, uint32_t *SS, uint32_t *mmm)
+{
+	uint32_t T =  (uint32_t)(GetTickCount() - initial_tick);
+	uint32_t seconds_total = T / 1000;
+	uint32_t minutes_total = T / (1000*60);
+	
+	*mmm = T % 1000;
+	*SS = seconds_total % 60;
+	*MM = minutes_total % 60;
+	*H = T / (1000*60*60);
+}
+
 int set_debug_level(int level)
 {
 	int ret = debug_level;
@@ -56,7 +70,11 @@ int __attribute__ ((format (printf, 1, 2))) DebugPrintf(const char* fmt, ...)
 				return 0;
 		}
 
-		fputs(dbg, file);
+		//fputs(dbg, file);
+		uint32_t H, MM, SS, mmm;
+	
+		local_tick(&H, &MM, &SS, &mmm);
+		fprintf(file, "%d:%02d:%02d.%03d: %s", H, MM, SS, mmm, dbg);
 		fflush(file);
 	}
 	else
@@ -111,7 +129,11 @@ int __attribute__ ((format (printf, 1, 2))) FilePrintf(const char* fmt, ...)
 			return 0;
 	}
 
-	fputs(dbg, file);
+	//fputs(dbg, file);
+	uint32_t H, MM, SS, mmm;
+	
+	local_tick(&H, &MM, &SS, &mmm);
+	fprintf(file, "%d:%02d:%02d.%03d: %s", H, MM, SS, mmm, dbg);	
 	fflush(file);
 	
 	free(dbg);
@@ -153,7 +175,11 @@ PUBLIC int __attribute__ ((format (printf, 2, 3))) DprintfPatched(uint32_t unk, 
 				return 0;
 		}
 
-		fputs(dbg, file);
+		//fputs(dbg, file);
+		uint32_t H, MM, SS, mmm;
+		
+		local_tick(&H, &MM, &SS, &mmm);
+		fprintf(file, "%d:%02d:%02d.%03d: %s", H, MM, SS, mmm, dbg);	
 		fflush(file);
 	}
 	else
@@ -190,4 +216,42 @@ void iggy_warning_callback(void *, void *, uint32_t, const char *str)
 	}
 	
 	DPRINTF("%s\n", str);
+}
+
+void *get_caller(uint8_t level)
+{
+	void *addr;
+	
+	if (CaptureStackBackTrace(level+2, 1, &addr, nullptr) > 0)
+	{
+		return addr;
+	}
+	
+	return nullptr;
+}
+
+void PrintStackTrace(uint8_t level)
+{
+	for (uint8_t i = 0; i < level; i++)
+	{
+		void *ra = get_caller(i+1);
+		if (!ra)
+			break;
+		
+		HMODULE module;
+		
+		if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)ra, &module))
+		{
+			char *fp = (char *)malloc(MAX_PATH);
+			GetModuleFileNameA(module, fp, MAX_PATH);
+			std::string fn = Utils::GetFileNameString(fp);
+			free(fp);			
+			
+			DPRINTF("Called from %s:0x%x\n", fn.c_str(), Utils::DifPointer(ra, module));
+		}
+		else
+		{
+			DPRINTF("Called from %p\n", ra);
+		}
+	}
 }

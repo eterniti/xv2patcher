@@ -4,52 +4,69 @@
 	<!-- Addresses 1.08 unless stated otherwise -->	
 	
 	<!-- ui_enemy_portrait group -->
-	<!-- Signature 1.11. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
-	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x23CAE9" >
+	<!-- Signature 1.21. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
+	<!-- Note: since 1.21, the switch table changed to a 8 bits index table (a table for the actually jump table) -->
+	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x1D1F1D" >
 		<Instruction code="83 F9 01" comment="cmp ecx, 1" />
-		<Instruction code="75 29" comment="jnz +0x29" />
+		<Instruction code="75 3D" comment="jnz +0x3D" />
 		<Instruction code="48 63 45 04" comment="movsxd rax, [rbp+4]" />
-		<Instruction code="83 F8 11" comment="cmp eax, 11h " />
-		<Instruction code="77 20" comment="ja +0x20" />
-		<Instruction code="8B 8C 87 XXXXXXXX" comment="mov ecx, [rdi+rax*4+XXXXXXXX]"/>
+		<Instruction code="83 F8 1D" comment="cmp eax, 1Dh " />
+		<Instruction code="77 34" comment="ja +0x34" />
+		<Instruction code="41 0F B6 84 07 XXXXXXXX" comment="mov ecx, [rdi+rax*4+XXXXXXXX]"/>
 		
-		<Notify inst_index="5" inst_offset="3" value="OnLocatePortraitEnemyForEmbSwitchTable" />
+		<Notify inst_index="5" inst_offset="5" value="OnLocatePortraitEnemyForEmbSwitchTable" />
 	</Patch>
 	
-	<!-- Signature 1.11. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a bittest condition. -->
-	<Patch name="PortraitEnemyForAutoGen" enabled="ui_enemy_portrait" type="write" search_start="0x23CB54" >
-		<Instruction code="83 F8 11" comment="cmp eax, 11h " />
-		<Instruction code="77 BE" comment="ja -0x42" />
-		<Instruction code="B9 00 C2 02 00" comment="mov ecx, 2C200h" />
+	<!-- Signature 1.21. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a bittest condition. -->
+	<!-- 1.21: the bittest change has changed from 0x2C200->0x2FF80 to 0x2002C200->0x2002FF80 -->
+	<Patch name="PortraitEnemyForAutoGen" enabled="ui_enemy_portrait" type="write" search_start="0x1D1FCD" >
+		<Instruction code="83 F8 1D" comment="cmp eax, 1Dh " />
+		<Instruction code="77 8D" comment="ja -XX" />
+		<Instruction code="B9 00 C2 02 20" comment="mov ecx, 2002C200h" />
 		<Instruction code="0F A3 C1" comment="bt ecx, eax" />
 				
-		<!-- Change bittest 0x2C200 (case 9, 14, 15 & 17) to 0x2FF80 (case 7-15 & 17) -->
-		<Write inst_index="2" inst_offset="1" value="80 FF 02 00" />
+		<!-- Change bittest 0x2002C200 (case 9, 14, 15, 17, 29) to 0x2002FF80 (case 7-15, 17, 29) -->
+		<Write inst_index="2" inst_offset="1" value="80 FF 02 20" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="ShowTheRedRing" enabled="ui_enemy_portrait" type="notify" search_start="0x23C7D6" >
-		<Instruction code="4A 8B 8C F7 XXXXXXXX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
+	<!-- Signature 1.21 -->
+	<Patch name="ShowTheRedRing" enabled="ui_enemy_portrait" type="notify" search_start="0x1D1BD5" >
+		<Instruction code="4B 8B 8C F7 XXXXXXXX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
 		<Instruction code="4C 8B C5" comment="mov r8, rbp" />
 		<Instruction code="4C 2B C1" comment="sub r8, rcx" />
-		<Instruction code="BA 34 00 00 00" comment="mov edx, 34h" />
+		<Instruction code="BA 3A 00 00 00" comment="mov edx, 3Ah" />
 			
 		<Notify inst_index="0" inst_offset="4" value="ShowTheRedRing" />
 	</Patch>
 	<!-- end of ui_enemy_portrait group -->
 	
 	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
-	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x224106" comment="signature 1.14" >
-		<Instruction code="4C 8D 8C 24 B0 00 00 00" comment="lea r9, [rsp+B0h]" />
-		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1ACE5E" comment="signature 1.21" >
+		<Instruction code="4C 8D 4D C0" comment="lea r9, [rbp-40h]" />		
 		<Instruction code="4C 8D 44 24 60" comment="lea r8, [rsp+60h]" />
-		<Instruction code="49 8B D7" comment="mov rdx, r15" />
-		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
+		<Instruction code="49 8B D4" comment="mov rdx, r12" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="E8 XXXXXXXX" comment="call battle_ui function" />
-		<Instruction code="48 63 7C 24 60" comment="movsxd rdi, [rsp+60h]" />
-		<Instruction code="83 FF FF" comment="cmp edi, -1" />
+		<Instruction code="48 63 5C 24 60" comment="movsxd rbx, [rsp+60h]" />
+		<Instruction code="83 FB FF" comment="cmp ebx, -1" />
 	
 		<Notify inst_index="5" value="OnLocateToggleBattleUIPatch" />
+	</Patch>
+	
+	<!-- Patch introduced in 1.21 -->
+	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1ACEDE" comment="signature 1.21" >
+		<Instruction code="4C 8D 4D C0" comment="lea r9, [rbp-40h]" />		
+		<Instruction code="4C 8D 45 80" comment="lea r8, [rbp-80h]" />
+		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
+		<Instruction code="49 8B D4" comment="mov rdx, r12" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+		<Instruction code="E8 XXXXXXXX" comment="call battle_ui function" />
+		<Instruction code="48 63 4D 80" comment="movsxd rcx, [rbp-80h]" />
+		<Instruction code="83 F9 FF" comment="cmp ecx, -1" />
+	
+		<Notify inst_index="5" value="OnLocateToggleBattleUIPatch2" />
 	</Patch>
 	
 	<!-- Warning: signature of this is this big because too many functions start like this -->

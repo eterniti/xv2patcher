@@ -1,15 +1,13 @@
 <EternityPatchFile name="MobControl" enabled="take_ally_control" comment="This file contains patches for the ally control feature" >	
 
-	<!-- All addresses are 1.09.01 unless stated otherwise -->
-	
-	<!-- Signature 1.17.2 -->
-	<Patch name="LocateChangeBody" type="notify"  search_start="0x138980" >
+	<!-- Signature 1.21 -->
+	<Patch name="LocateChangeBody" type="notify"  search_start="0x14BA40" >
 		<Instruction code="40 55 41 54 41 55 41 56 41 57" comment="push rbp, r12-r15" />
-		<Instruction code="48 8D AC 24 60 FA FF FF" comment="lea rbp, [rsp-5A0h]" />
-		<Instruction code="48 81 EC A0 06 00 00" comment="sub rsp, 6A0h" />
+		<Instruction code="48 8D AC 24 00 FA FF FF" comment="lea rbp, [rsp-600h]" />
+		<Instruction code="48 81 EC 00 07 00 00" comment="sub rsp, 700h" />
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XXXXXXXX" />
 		<Instruction code="48 33 C4" comment="xor rax, rsp" />
-		<Instruction code="48 89 85 80 05 00 00" comment="mov [rbp+580h], rax" />
+		<Instruction code="48 89 85 E0 05 00 00" comment="mov [rbp+5E0h], rax" />
 		<Instruction code="49 63 C0" comment="movsxd rax, r8d" />
 		
 		<Notify value="SetupChangeBody" />
@@ -28,12 +26,12 @@
 		<Hook type="call" value="UsesMobControlPatched" setup="SetupUsesMobControl" />
 	</Patch>
 	
-	<!-- Signature 1.20-->
-	<Patch name="PatchGetMobControl" type="hook" search_start="0x14B00B" >
+	<!-- Signature 1.21-->
+	<Patch name="PatchGetMobControl" type="hook" search_start="0x154963" >
 		<Instruction code="E8 XXXXXXXX" comment="call get_mob_control" />
 		<Instruction code="4C 8B F0" comment="mov r14, rax" />
 		<Instruction code="48 89 45 XX" comment="mov [rbp-XXh], rax" />
-		<Instruction code="4D 8B CD" comment="mov r9, r13" />
+		<Instruction code="4D 8B CC" comment="mov r9, r12" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="4C 0F 45 C8" comment="cmovnz r9, rax" />
 		
@@ -96,30 +94,30 @@
 	
 	</Patch>
 	
-	<!-- Signature 1.17.2 -->
-	<Patch name="PatchMobControlPatchUntr2" type="hook" search_start="0x138AA3" comment="happens a bit below the patch above" >
+	<!-- Signature 1.21 -->
+	<Patch name="PatchMobControlPatchUntr2" type="hook" search_start="0x14BB63" comment="happens a bit below the patch above" >
 		<Instruction code="41 F6 85 B0 00 00 00 10" comment="test byte ptr [r13+0B0h], 10h; if transformed" />
 		<Instruction code="74 0F" comment="jz +F" />
 		<Instruction code="85 F6" comment="test esi, esi" />
 		<Instruction code="75 0B" comment="jnz +0xB" />
-		<Instruction code="8D 56 01" comment="lea edx, [rsi+1]1" />
+		<Instruction code="8D 56 01" comment="lea edx, [rsi+1]" />
 		<Instruction code="49 8B CD" comment="mov rcx, r13" />
 		<Instruction code="E8 XXXXXXXX" comment="call Mob_Untransform" />
-		<Instruction code="49 8D 8F B0 0A 00 00" comment="lea rcx, [r15+0AB0h]" />
+		<Instruction code="49 8D 8F E0 0A 00 00" comment="lea rcx, [r15+0AE0h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
-		<Instruction code="49 8D 8D B0 0A 00 00" comment="lea rcx, [r13+0AB0h]" />
+		<Instruction code="49 8D 8D E0 0A 00 00" comment="lea rcx, [r13+0AE0h]" />
 		
 		<Hook type="call" inst_index="6" value="DummyMobUntransformForMobControl" />
 	</Patch>
 
-	<!-- Just to protect the index 0x1F94 in the Battle_Mob object -->
-	<!-- Signature 1.20 -->
-	<Patch name="ProtectMobLoadedVar" type="notify" search_start="0x6EB990" comment="Takes place in qed cond 30" >
-		<Instruction code="83 B8 04 20 00 00 01" comment="cmp dword ptr [rax+2004h], 1" />
+	<!-- Just to protect the index 0x2084 (loaded_var) in the Battle_Mob object -->
+	<!-- Signature 1.21 -->
+	<Patch name="ProtectMobLoadedVar" type="notify" search_start="0x7B93C0" comment="Takes place in qed cond 30" >
+		<Instruction code="83 B8 84 20 00 00 01" comment="cmp dword ptr [rax+2084h], 1" />
 		<Instruction code="77 30" comment="ja +0x30" />
-		<Instruction code="48 83 B8 F0 1E 00 00 00" comment="cmp qword ptr [rax+1EF0h], 0" />
+		<Instruction code="48 83 B8 70 1F 00 00 00" comment="cmp qword ptr [rax+1F70h], 0" />
 		<Instruction code="74 26" comment="je +0x26" />
-		<Instruction code="8B 88 04 20 00 00" comment="mov ecx, [rax+2004h]" />
+		<Instruction code="8B 88 84 20 00 00" comment="mov ecx, [rax+2084h]" />
 		
 		<Notify value="NULL" />		
 	</Patch>

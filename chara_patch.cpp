@@ -15,9 +15,6 @@
 #include <unordered_set>
 #include <unordered_map>
 
-// 1.18: 26-> 27
-#define BEHAVIOUR_MAX	27 
-
 typedef void * (*IggyBaseCtorType)(void *, int32_t, int32_t);
 typedef void *(* ChaselDtorType)(void *, uint32_t);
 typedef void (* SendToAS3Type)(void *, int32_t, uint64_t);
@@ -35,8 +32,9 @@ typedef uint64_t (* SetBodyShapeType)(void *, int32_t, uint32_t, float);
 									
 //typedef uint64_t (* ResultPortraitsType)(uint64_t arg_rcx, uint64_t arg_rdx, uint32_t is_cac, uint32_t cms_entry);
 typedef uint64_t (* ResultPortraits2Type)(Battle_HudCockpit *pthis, int idx, void *r8, void *r9, void *arg5, void *arg6, void *arg7, void *arg8);
-typedef uint32_t (* Behaviour10FuncType)(void *, uint32_t, void *);
+typedef int (* Behaviour10FuncType)(void *, uint32_t, void *);
 typedef void (* ApplyCacMatsType)(uint64_t *, uint32_t, const char *);
+typedef void (* AurBpeType)(void *, uint32_t, uint32_t, uint32_t);
 
 
 // These constants are the ones in CharaSele.as
@@ -209,8 +207,11 @@ static SetBodyShapeType SetBodyShape;
 static ResultPortraits2Type ResultPortraits2;
 static Behaviour10FuncType Behaviour10Func;
 static ApplyCacMatsType ApplyCacMats;
+static AurBpeType AurBpe;
 
 static std::unordered_map<void *, uint64_t> send_map;
+
+static void *bh10_untransform_ra;
 
 static uint8_t *find_blob_string(uint8_t *blob, size_t size, const char *str)
 {
@@ -656,7 +657,7 @@ PUBLIC void PatchReceiveTypeCharaSelected(void *pthis, int32_t code, uint64_t da
 PUBLIC void IncreaseChaselMemory(uint32_t *psize)
 {
 	uint32_t old = *psize;
-	PatchUtils::Write32(psize, Utils::Align2(0x2900+(n_CharacterMax*32), 0x100));
+	PatchUtils::Write32(psize, Utils::Align2(0x2910+(n_CharacterMax*32), 0x100));
 	
 	DPRINTF("Chasel object memory succesfully changed from 0x%x to 0x%x\n", old, *psize);
 }
@@ -818,6 +819,7 @@ const std::string &GetSlotsData()
 // XV2Patcher extensions
 
 static std::vector<std::string> ozarus = { "OSV", "OSB", "OBB", "OSG", "OSN" }; // The original list, as it is in game (including non-existing OSG)
+static std::vector<std::string> cell_maxes = { "SIM", "SIH" }; // The original list as in the game
 static uint8_t body_shapes_lookup[LOOKUP_SIZE];
 uint8_t auto_btl_portrait_lookup[LOOKUP_SIZE]; // lookup table, we need O(1) access. 
 
@@ -831,8 +833,13 @@ static uint8_t cus_aura_bh13_lookup[LOOKUP_SIZE];
 uint8_t cus_aura_bh66_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
 static uint32_t bcs_hair_colors[LOOKUP_SIZE];
 static uint32_t bcs_eyes_colors[LOOKUP_SIZE];
+static std::unordered_map<uint32_t, std::string> bcs_additional_colors;
 static uint8_t remove_hair_accessories_lookup[LOOKUP_SIZE];
 uint8_t any_dual_skill_lookup[LOOKUP_SIZE]; // This one must be accessible by chara_patch_asm.S
+int32_t aur_bpe_map[LOOKUP_SIZE]; // This one must be accessible by chara_patch_asm.S
+static bool aur_bpe_flag1[LOOKUP_SIZE];
+static bool aur_bpe_flag2[LOOKUP_SIZE];
+uint8_t cus_aura_bh64_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
 
 // Aliases
 static std::unordered_map<std::string, std::string> ttc_files_map;
@@ -843,6 +850,7 @@ std::unordered_map<uint32_t, BcsColorsMap> pcac_colors;
 extern void GetRealAura();
 extern void GetCABehaviour11();
 extern void ForceTeleport();
+extern void GetCABehaviour64();
 
 PUBLIC void PreBakeSetup(size_t)
 {
@@ -861,6 +869,10 @@ PUBLIC void PreBakeSetup(size_t)
 	memset(bcs_eyes_colors, 0xFF, sizeof(bcs_eyes_colors));
 	memset(remove_hair_accessories_lookup, 0xFF, sizeof(remove_hair_accessories_lookup));
 	memset(any_dual_skill_lookup, 0, sizeof(any_dual_skill_lookup));
+	memset(aur_bpe_map, 0xFF, sizeof(aur_bpe_map));
+	memset(aur_bpe_flag1, 0, sizeof(aur_bpe_flag1));
+	memset(aur_bpe_flag2, 0, sizeof(aur_bpe_flag1));
+	memset(cus_aura_bh64_lookup, 0xFF, sizeof(cus_aura_bh64_lookup));
 		
 	// Original aura mapping
 	cus_aura_lookup[0] = 5;
@@ -927,6 +939,10 @@ PUBLIC void PreBakeSetup(size_t)
 	for (const std::string &ozaru : additional_ozarus)
 		ozarus.push_back(ozaru);
 	
+	std::vector<std::string> &additional_cm = pbk.GetCellMaxes();	
+	for (const std::string &cm : additional_cm)
+		cell_maxes.push_back(cm);
+	
 	const std::vector<BodyShape> &body_shapes = pbk.GetBodyShapes();	
 	for (const BodyShape &shape : body_shapes)
 	{
@@ -957,7 +973,13 @@ PUBLIC void PreBakeSetup(size_t)
 			cus_aura_bh66_lookup[data.cus_aura_id] = data.behaviour_66;
 			remove_hair_accessories_lookup[data.cus_aura_id] = data.remove_hair_accessories;
 			bcs_hair_colors[data.cus_aura_id] = data.bcs_hair_color;
-			bcs_eyes_colors[data.cus_aura_id] = data.bcs_eyes_color;			
+			bcs_eyes_colors[data.cus_aura_id] = data.bcs_eyes_color;	
+			cus_aura_bh64_lookup[data.cus_aura_id] = data.behaviour_64;
+
+			if (data.bcs_additional_colors.length() > 0)
+			{
+				bcs_additional_colors[data.cus_aura_id] = data.bcs_additional_colors;
+			}
 		}
 	}
 	
@@ -975,6 +997,30 @@ PUBLIC void PreBakeSetup(size_t)
 	}
 	
 	pcac_colors = pbk.GetColorsMap();
+	
+	// Default game values
+	aur_bpe_map[26] = aur_bpe_map[27] = aur_bpe_map[29] = aur_bpe_map[31] = aur_bpe_map[50] = 83;
+	aur_bpe_map[36] = 257;
+	aur_bpe_map[39] = 260;
+	aur_bpe_map[45] = 265;
+	aur_bpe_map[46] = 273;
+	aur_bpe_map[51] = 280;
+	aur_bpe_map[52] = 281;
+	aur_bpe_map[53] = 302;
+	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
+	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
+	//
+	for (auto &it : pbk.GetAuraExtraMap())
+	{
+		uint32_t aur_id = (uint32_t)it.first;		
+		
+		if (aur_id < LOOKUP_SIZE)
+		{
+			aur_bpe_map[aur_id] = it.second.bpe_id;
+			aur_bpe_flag1[aur_id] = it.second.flag1;
+			aur_bpe_flag2[aur_id] = it.second.flag2;
+		}
+	}
 }
 
 // Old implementation that simplye skipped call, (not longer works in 1.10)
@@ -1090,6 +1136,17 @@ PUBLIC int IsOzaruReplacement(const char *char_code)
 	return 0;	
 }
 
+PUBLIC int IsCellMaxReplacement(const char *char_code)
+{
+	for (const std::string &cm : cell_maxes)
+	{
+		if (strncmp(cm.c_str(), char_code, 3) == 0)
+			return 1;
+	}
+		
+	return 0;	
+}
+
 PUBLIC void SetBodyShape_Setup(SetBodyShapeType orig)
 {
 	SetBodyShape = orig;
@@ -1098,7 +1155,6 @@ PUBLIC void SetBodyShape_Setup(SetBodyShapeType orig)
 PUBLIC uint64_t SetBodyShape_Patched(void *object, int32_t body_shape, int32_t arg3, float arg4)
 {
 	// Note, if object offsets of this function change, change the ones in ApplyCacMatsPatched too 
-	
 	if (body_shape < 0 && object)
 	{
 		uint64_t *object64 = (uint64_t *)object;
@@ -1183,7 +1239,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x119)); // buf+0x119 -> the address of end of switch	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x120)); // buf+0x120 -> the address of end of switch	
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1195,7 +1251,7 @@ PUBLIC void CusAuraPatchBH11(uint8_t *buf)
 	PatchUtils::Write64((uint64_t *)(buf+2), g11_addr);
 	PatchUtils::Write16((uint16_t *)(buf+10), 0xE1FF); // jmp rcx
 	
-	uint64_t *ret_addr = (uint64_t *)(g11_addr+0x2B);
+	uint64_t *ret_addr = (uint64_t *)(g11_addr+0x32);
 	if (*ret_addr != 0x123456789ABCDEF)
 	{
 		UPRINTF("Internal error in CusAuraPatchBH11\n");
@@ -1222,19 +1278,6 @@ PUBLIC uint32_t CusAuraPatchInt2(Battle_Mob *pthis)
 	}
 	
 	return 0xFFFFFFFF;
-}
-
-PUBLIC void Behaviour10Setup(Behaviour10FuncType orig)
-{
-	Behaviour10Func = orig;
-}
-
-PUBLIC uint32_t Behaviour10FuncPatched(void *obj, uint32_t cus_aura, void *unk)
-{
-	if (cus_aura < LOOKUP_SIZE && cus_aura_bh10_lookup[cus_aura] <= BEHAVIOUR_MAX)
-		cus_aura = cus_aura_bh10_lookup[cus_aura];
-	
-	return Behaviour10Func(obj, cus_aura, unk);
 }
 
 PUBLIC uint32_t CusAuraPatchInt3(Battle_Mob *pthis)
@@ -1275,7 +1318,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x919)); // buf+0x919 -> address return for no teleport   
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x999)); // buf+0x999 -> address return for no teleport   
 }
 
 PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)
@@ -1288,9 +1331,34 @@ PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)
 	return cus_aura;
 }
 
-typedef void (* SetBcsColorType)(void *, int, uint64_t, const char *);
+typedef void (* SetBcsColorType)(void *, int, uint32_t, const char *);
+typedef void (* SaveBcsType)(void *, uint64_t, const char *);
 
-void SetBcsHairColorPatched(void *pthis, Battle_Mob *mob, uint64_t unk, const char *part)
+void SetBcsColor(void *pthis, int color, int transform, const char *part, bool save)
+{	
+	uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
+	SetBcsColorType SetBcsColorV = (SetBcsColorType)vtable[0x408/8];
+	SaveBcsType Save1 = (SaveBcsType)vtable[0x3F8/8];
+	SaveBcsType Save2 = (SaveBcsType)vtable[0x400/8];
+	
+	//DPRINTF("Setting %s:%d (transform=%d,save=%d)\n", part, color, transform, save);
+	
+	if (transform && save)
+	{
+		Save1(pthis, 0, part);
+		Save2(pthis, 0, part);
+	}
+	
+	SetBcsColorV(pthis, color, transform, part);
+	
+	if (!transform && save)
+	{
+		Save1(pthis, 1, part);
+		Save2(pthis, 1, part);
+	}
+}	
+
+void SetBcsColors(void *pthis, Battle_Mob *mob, int transform, bool from_bh10_fail)
 {
 	int hair_color = -1;
 	int eyes_color = -1;
@@ -1299,23 +1367,67 @@ void SetBcsHairColorPatched(void *pthis, Battle_Mob *mob, uint64_t unk, const ch
 	{
 		hair_color = (int)bcs_hair_colors[mob->trans_control];
 		eyes_color = (int)bcs_eyes_colors[mob->trans_control];
-	}
-	
-	uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-	SetBcsColorType SetBcsColor = (SetBcsColorType) vtable[0x400/8];
+	}	
 	
 	if (hair_color >= 0)
 	{
-		SetBcsColor(pthis, hair_color, unk, part);		
+		SetBcsColor(pthis, hair_color, transform, "HAIR_", from_bh10_fail);		
 	}
 	
 	if (eyes_color >= 0)
 	{
-		SetBcsColor(pthis, eyes_color, unk, "eye_");
+		SetBcsColor(pthis, eyes_color, transform, "eye_", from_bh10_fail);
+	}	
+	
+	// Additional colors (4.2)
+	if (mob && mob->trans_control >= 0)
+	{
+		auto it = bcs_additional_colors.find(mob->trans_control);
+		if (it != bcs_additional_colors.end())
+		{
+			std::vector<std::string> parts;
+			
+			if (Utils::GetMultipleStrings(it->second, parts) > 0)
+			{
+				for (const std::string &part : parts)
+				{
+					std::vector<std::string> lr;
+					if (Utils::GetMultipleStrings(part, lr, ':') == 2)
+					{
+						uint32_t color = Utils::GetUnsigned(lr[1], 0xDEADC0DE);
+						if (color != 0xDEADC0DE)
+						{							
+							static std::unordered_set<std::string> not_save = { "HAIR_", "eye_", "SKIN_" }; // These are already saved by the game (if bh10) or by our previous code (if not bh10)
+							bool save = (not_save.find(part) == not_save.end());
+							
+							SetBcsColor(pthis, color, transform, lr[0].c_str(), save);
+						}
+						else
+						{
+							DPRINTF("%s: Bad number string \"%s\" in \"%s\"\n", FUNCNAME, lr[1].c_str(), part.c_str());
+						}
+					}
+					else
+					{
+						DPRINTF("%s: Unrecognized additional color string \"%s\"\n", FUNCNAME, part.c_str());
+					}
+				}
+			}
+		}
 	}
 }
 
-PUBLIC void ApplyBcsHairColorPatch(uint8_t *addr)
+void SetBcsColorsTransform(void *pthis, Battle_Mob *mob, uint64_t, const char *)
+{
+	SetBcsColors(pthis, mob, 1, false);
+}
+
+void SetBcsColorsUntransform(void *pthis, Battle_Mob *mob, uint64_t, const char *)
+{
+	SetBcsColors(pthis, mob, 0, false);
+}
+
+PUBLIC void ApplyBcsHairColorPatchUntransform(uint8_t *addr)
 {
 	// First patch, destroy the conditional
 	PatchUtils::Write16(addr+7, 0x9090);
@@ -1325,7 +1437,7 @@ PUBLIC void ApplyBcsHairColorPatch(uint8_t *addr)
 		
 	// Third patch, hook the method 0x400	
 	PatchUtils::Write16(addr+0x21, 0xE890);
-	PatchUtils::HookCall(addr+0x21+1, nullptr, (void *)SetBcsHairColorPatched);
+	PatchUtils::HookCall(addr+0x21+1, nullptr, (void *)SetBcsColorsUntransform);
 	
 	// Fourth patch, skip eyes call
 	PatchUtils::Nop(addr+0x3F, 6);
@@ -1334,7 +1446,7 @@ PUBLIC void ApplyBcsHairColorPatch(uint8_t *addr)
 	PatchUtils::Write8(addr+0x4C, 0xEB); // jne to jmp	
 }
 
-PUBLIC void ApplyBcsHairColorPatch2(uint8_t *addr)
+PUBLIC void ApplyBcsHairColorPatchTransform(uint8_t *addr)
 {
 	// First patch, destroy the conditional
 	PatchUtils::Write16(addr+7, 0x9090);
@@ -1345,13 +1457,38 @@ PUBLIC void ApplyBcsHairColorPatch2(uint8_t *addr)
 		
 	// Third patch, hook the method 0x400	
 	PatchUtils::Write16(addr+0x23, 0xE890);
-	PatchUtils::HookCall(addr+0x23+1, nullptr, (void *)SetBcsHairColorPatched);
+	PatchUtils::HookCall(addr+0x23+1, nullptr, (void *)SetBcsColorsTransform);
 	
 	// Fourth patch, skip eyes call
 	PatchUtils::Nop(addr+0x43, 6);
 	
 	// Fifth patch, skip SSJ blue evolution code 
 	PatchUtils::Write8(addr+0x50, 0xEB); // jne to jmp	
+}
+
+PUBLIC void Behaviour10Setup(Behaviour10FuncType orig)
+{
+	Behaviour10Func = orig;
+}
+
+PUBLIC int Behaviour10FuncPatched(Battle_Mob *pthis, uint32_t cus_aura, uint32_t *unk)
+{
+	if (cus_aura < LOOKUP_SIZE && cus_aura_bh10_lookup[cus_aura] <= BEHAVIOUR_MAX)
+		cus_aura = cus_aura_bh10_lookup[cus_aura];
+	
+	int ret = Behaviour10Func(pthis, cus_aura, unk);
+	if (ret <= 0)
+	{
+		bool transform = (BRA(0) != bh10_untransform_ra);
+		SetBcsColors(pthis->common_chara, pthis, transform, true);
+	}
+	
+	return ret;
+}
+
+PUBLIC void OnBH10UntransformCallLocated(uint8_t *addr)
+{
+	bh10_untransform_ra = (void *)(addr + 5);
 }
 
 typedef void (* RemoveAccessoriesType)(void *, int);
@@ -1390,7 +1527,7 @@ void RemoveAccessoriesPatched(void *pthis, Battle_Mob *mob)
 	if (do_call)
 	{
 		uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x398/8];
+		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x3A0/8];
 		
 		RemoveAccessories(pthis, 5); // 5 = hair part
 	}
@@ -1533,5 +1670,82 @@ PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xBD)); // buf+0xBD -> address return for any dual skill
 }
 
+extern void AurToBpeMap();
+
+PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instruction with the "ja"
+{
+	PatchUtils::Write16(buf, 0xE990); // nop + change conditional to inconditional
+	
+	if (!PatchUtils::HookCall((void *)(buf+1), nullptr, (void *)AurToBpeMap))
+	{
+		UPRINTF("Internal error in AurToBpePatch (HookCall failed.\n");
+		exit(-1);
+	}
+	
+	uintptr_t abm_addr = (uintptr_t)AurToBpeMap;
+	uint64_t *ifbpe_ra = (uint64_t *)(abm_addr+0x19);
+	if (*ifbpe_ra != 0x123456789ABCDEF)
+	{
+		UPRINTF("Internal error in AurToBpeMap\n");
+		exit(-1);
+	}
+	
+	PatchUtils::Write64(ifbpe_ra, (uint64_t)(buf+0x59)); // buf+0x59, address to return to if bpe mapping is done
+	
+	uint64_t *ifnotbpe_ra = (uint64_t *)(abm_addr+0x25);
+	if (*ifnotbpe_ra != 0xFEDCBA987654321)
+	{
+		UPRINTF("Internal error in AurToBpeMap (2)\n");
+		exit(-1);
+	}
+	
+	PatchUtils::Write64(ifnotbpe_ra, (uint64_t)(buf+0xD3)); // buf+0xD3, address of original default case
+}
+
+static void AurBpeCase1(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
+{
+	if (aur < LOOKUP_SIZE && aur_bpe_flag1[aur])
+		AurBpe(pthis, aur, flags, unk);
+	// else nothing
+}
+
+PUBLIC void AurBpeFlag1Patch(uint8_t *buf)
+{
+	// First patch, bye to the conditional
+	PatchUtils::Nop(buf+0xB, 6);
+	// Second patch hook call to the function
+	if (!PatchUtils::HookCall((void *)(buf+0x2A), (void **)&AurBpe, (void *)AurBpeCase1))
+	{
+		UPRINTF("Internal error in AurBpeFlag1Patch.\n");
+		exit(-1);
+	}
+}
+
+PUBLIC void AurBpeCase2(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
+{
+	if (aur < LOOKUP_SIZE && aur_bpe_flag2[aur] != flags)
+		flags = aur_bpe_flag2[aur];
+	
+	AurBpe(pthis, aur, flags, unk);
+}
+
+// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+PUBLIC void CusAuraPatchBH64(uint8_t *buf)
+{
+	PatchUtils::Write16((uint16_t *)buf, 0xB948); // mov rcx, XXXXXXXXXXXXXX
+	
+	uint64_t g64_addr = (uint64_t)GetCABehaviour64;
+	PatchUtils::Write64((uint64_t *)(buf+2), g64_addr);
+	PatchUtils::Write16((uint16_t *)(buf+10), 0xE1FF); // jmp rcx
+	
+	uint64_t *ret_addr = (uint64_t *)(g64_addr+0x27);
+	if (*ret_addr != 0x123456789ABCDEF)
+	{
+		UPRINTF("Internal error in CusAuraPatchBH64\n");
+		exit(-1);
+	}
+	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xC)); // buf+0xC -> address to return to
+}
 
 } // extern "C"

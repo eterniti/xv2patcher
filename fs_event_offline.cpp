@@ -1,5 +1,6 @@
 #include "PatchUtils.h"
 #include "xv2patcher.h"
+#include "QxdFile.h"
 #include "debug.h"
 
 //#define CHANGE_MEDALS_ADDRESS 0x699D90
@@ -39,7 +40,7 @@ static int goal;
 static float resistance_multiplier;
 static int prize;
 
-static uint8_t orig_ins1[7], orig_ins2[8], orig_ins3[5];
+static uint8_t orig_ins1[7], orig_ins2[5], orig_ins3[5];
 static uint8_t *patch_addr1, *patch_addr2, *patch_addr3;
 
 static void *em_callback;
@@ -54,20 +55,20 @@ static DWORD WINAPI EventTimer(LPVOID)
 	return 0;
 }
 
-static void QuestFunctionPatched(void *pthis, int *quest, uint32_t a3, uint32_t a4, uint32_t a5)
+static void QuestFunctionPatched(void *pthis, QXDQuest *quest, uint32_t a3, uint32_t a4, uint32_t a5)
 {
 	if (event_state == EVENT_STARTED && prize > 0)
 	{
-		if (quest && memcmp(quest, "LEQ_", 4) == 0)
+		if (quest && memcmp(quest->name, "LEQ_", 4) == 0)
 		{
-			int resistance_points = quest[0x9C/4];
+			int resistance_points = quest->resistance_points;
 			resistance_points = (int)((float)resistance_points * resistance_multiplier);
 			
 			// If we are going to meet the reward
 			if (resistance_points+GetResistancePoints() >= goal)
 			{
 				// Set TP medals reward
-				quest[0x94/4] = prize;
+				quest->tp_medals = prize;
 			}
 		}
 	}
@@ -147,7 +148,7 @@ PUBLIC void SetupIsFreezerEventEnding(IsFreezerEventEndingType orig)
 
 PUBLIC int IsFreezerEventEndingPatched(void *pthis)
 {
-	static uint8_t patch2[8] = { 0xB8, 0x01, 0x00, 0x00, 0x00,   0x89, 0xC6, 0x90 }; // mov eax, 1; mov esi, eax; nop;
+	static uint8_t patch2[5] = { 0xB9, 0x01, 0x00, 0x00, 0x00 }; // mov ecx, 1; (ORIGINAL CODE: test eax, eax; cmovz ecx, esi) (NOTE: esi is zero constant in this func)
 	
 	switch (event_state)
 	{

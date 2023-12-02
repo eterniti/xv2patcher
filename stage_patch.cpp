@@ -17,8 +17,8 @@
 #define LOOKUP_SIZE	0x1000
 
 // Address of stagegt within XG::Game::Battle::Core::MainSystem 
-#define STAGEGT_ADDRESS	0x61D0
-#define MAINSYSTEM_SIZE	0xB3F0
+#define STAGEGT_ADDRESS	0x6558
+#define MAINSYSTEM_SIZE	0xEA20
 
 static uint8_t *orig_stage_defs1;
 static uint8_t *new_stage_defs1;
@@ -31,6 +31,8 @@ static uint8_t *new_stage_f6;
 
 static uint8_t *orig_stage_defs2;
 static uint8_t *new_stage_defs2;
+static uint8_t *orig_stage_defs2_gbb; // 1.21
+static uint8_t *new_stage_defs2_gbb; // 1.21
 
 static uint8_t *orig_stage_sounds;
 static uint8_t *new_stage_sounds;
@@ -44,50 +46,50 @@ static char *strings;
 
 void StageDef1Breakpoint(void *pc, void *addr)
 {
-	UPRINTF("Old stage def1 was accesed. Look at log for more info.\n");
+	UPRINTF("Old stage def1 was accessed. Look at log for more info.\n");
 	
-	DPRINTF("Old stage def1 was accesed at address %p (rel %Ix)\n", pc, RelAddress(pc));
-	DPRINTF("Address that was accesed: %p (rel %Ix)\n", addr, RelAddress(addr));
+	DPRINTF("Old stage def1 was accessed at address %p (rel %Ix)\n", pc, RelAddress(pc));
+	DPRINTF("Address that was accessed: %p (rel %Ix)\n", addr, RelAddress(addr));
 	
 	exit(-1);
 }
 
 void StageSsidToIdxBreakpoint(void *pc, void *addr)
 {
-	UPRINTF("Old ssid_to_idx was accesed. Look at log for more info.\n");
+	UPRINTF("Old ssid_to_idx was accessed. Look at log for more info.\n");
 	
-	DPRINTF("Old ssid_to_idx was accesed at address %p (rel %Ix)\n", pc, RelAddress(pc));
-	DPRINTF("Address that was accesed: %p (rel %Ix)\n", addr, RelAddress(addr));
+	DPRINTF("Old ssid_to_idx was accessed at address %p (rel %Ix)\n", pc, RelAddress(pc));
+	DPRINTF("Address that was accessed: %p (rel %Ix)\n", addr, RelAddress(addr));
 	
 	exit(-1);
 }
 
 void StageF6Breakpoint(void *pc, void *addr)
 {
-	UPRINTF("Old stage_f6 was accesed. Look at log for more info.\n");
+	UPRINTF("Old stage_f6 was accessed. Look at log for more info.\n");
 	
-	DPRINTF("Old stage_f6 was accesed at address %p (rel %Ix)\n", pc, RelAddress(pc));
-	DPRINTF("Address that was accesed: %p (rel %Ix)\n", addr, RelAddress(addr));
+	DPRINTF("Old stage_f6 was accessed at address %p (rel %Ix)\n", pc, RelAddress(pc));
+	DPRINTF("Address that was accessed: %p (rel %Ix)\n", addr, RelAddress(addr));
 	
 	exit(-1);
 }
 
 void StageDef2Breakpoint(void *pc, void *addr)
 {
-	UPRINTF("Old stage def2 was accesed. Look at log for more info.\n");
+	UPRINTF("Old stage def2 was accessed. Look at log for more info.\n");
 	
-	DPRINTF("Old stage def2 was accesed at address %p (rel %Ix)\n", pc, RelAddress(pc));
-	DPRINTF("Address that was accesed: %p (rel %Ix)\n", addr, RelAddress(addr));
+	DPRINTF("Old stage def2 was accessed at address %p (rel %Ix)\n", pc, RelAddress(pc));
+	DPRINTF("Address that was accessed: %p (rel %Ix)\n", addr, RelAddress(addr));
 	
 	exit(-1);
 }
 
 void StageGtBreakpoint(void *pc, void *addr)
 {
-	UPRINTF("Old stagegt was accesed. Look at log for more info.\n");
+	UPRINTF("Old stagegt was accessed. Look at log for more info.\n");
 	
-	DPRINTF("Old stagegt was accesed at address %p (rel %Ix)\n", pc, RelAddress(pc));
-	DPRINTF("Address that was accesed: %p\n", addr);
+	DPRINTF("Old stagegt was accessed at address %p (rel %Ix)\n", pc, RelAddress(pc));
+	DPRINTF("Address that was accessed: %p\n", addr);
 	
 	exit(-1);
 }
@@ -96,6 +98,11 @@ extern "C"
 {
 	
 PUBLIC bool IsDebuggingStages()
+{
+	return false;
+}
+
+static bool DebuggingSetBreakPoint()
 {
 	return false;
 }
@@ -169,7 +176,7 @@ PUBLIC void PatchStageDef1Main(void *buf)
 	SetRelAddr(buf, new_stage_defs1);
 	
 	/*** DEBUG ***/	
-	if (IsDebuggingStages())
+	if (IsDebuggingStages() && DebuggingSetBreakPoint())
 	{
 		if (!PatchUtils::SetMemoryBreakpoint(orig_stage_defs1, XV2_ORIGINAL_NUM_STAGES*sizeof(XV2StageDef1), StageDef1Breakpoint))
 		{
@@ -385,6 +392,9 @@ PUBLIC void PatchStageDef2Main(void *buf)
 			defs2[i].gates[j].name = strings + str_map[x2sta[i].gates[j].name];
 			defs2[i].gates[j].target_stage_idx = x2sta[i].gates[j].target_stage_idx;
 			defs2[i].gates[j].unk_10 = x2sta[i].gates[j].unk_10;
+			// 1.21
+			defs2[i].gates[j].unk_14 = x2sta[i].gates[j].unk_14;
+			defs2[i].gates[j].unk_18 = x2sta[i].gates[j].unk_18;
 		}
 	}	
 	
@@ -392,9 +402,48 @@ PUBLIC void PatchStageDef2Main(void *buf)
 	//SetRelAddr(buf, new_stage_defs2);
 	
 	/*** DEBUG ***/	
-	if (IsDebuggingStages())
+	if (IsDebuggingStages() && DebuggingSetBreakPoint())
 	{
 		if (!PatchUtils::SetMemoryBreakpoint(orig_stage_defs2, XV2_ORIGINAL_NUM_STAGES*sizeof(XV2StageDef2), StageDef2Breakpoint))
+		{
+			DPRINTF("Failed to set memory breakpoint.\n");
+			exit(-1);
+		}
+	}
+	/*** ***/
+}
+
+// New: 1.21
+PUBLIC void PatchStageDef2MainGBB(void *buf)
+{
+	orig_stage_defs2_gbb = (uint8_t *)GetAddrFromRel(buf);
+	DPRINTF("Original stage_defs2_gbb located at %p (rel 0x%Ix)\n", orig_stage_defs2_gbb, RelAddress(orig_stage_defs2_gbb));	
+
+	new_stage_defs2_gbb = (uint8_t *)PatchUtils::AllocateIn32BitsArea(buf, x2sta.GetNumStages()*sizeof(XV2StageDef2));	
+	DPRINTF("New stage_defs2_gbb allocated at %p\n", new_stage_defs2_gbb);
+	
+	XV2StageDef2 *defs2 = (XV2StageDef2 *)new_stage_defs2_gbb;
+	
+	for (size_t i = 0; i < x2sta.GetNumStages(); i++)
+	{
+		for (size_t j = 0; j < XV2_STA_NUM_GATES; j++)
+		{
+			defs2[i].gates[j].name = strings + str_map[x2sta[i].gates_gbb[j].name];
+			defs2[i].gates[j].target_stage_idx = x2sta[i].gates_gbb[j].target_stage_idx;
+			defs2[i].gates[j].unk_10 = x2sta[i].gates_gbb[j].unk_10;
+			// 1.21
+			defs2[i].gates[j].unk_14 = x2sta[i].gates_gbb[j].unk_14;
+			defs2[i].gates[j].unk_18 = x2sta[i].gates_gbb[j].unk_18;
+		}
+	}	
+	
+	// We don't need to set this, since this patch happens in stagegt_default and is reimplemented
+	//SetRelAddr(buf, new_stage_defs2_gbb);
+	
+	/*** DEBUG ***/	
+	if (IsDebuggingStages() && DebuggingSetBreakPoint())
+	{
+		if (!PatchUtils::SetMemoryBreakpoint(orig_stage_defs2_gbb, XV2_ORIGINAL_NUM_STAGES*sizeof(XV2StageDef2), StageDef2Breakpoint))
 		{
 			DPRINTF("Failed to set memory breakpoint.\n");
 			exit(-1);
@@ -456,7 +505,14 @@ PUBLIC void PatchStageDef2Top(void *buf)
 	SetRelAddr(buf, new_stage_defs2);
 }
 
-PUBLIC void PatchStageDef2Off4(void *buf)
+// New in 1.21
+PUBLIC void PatchStageDef2TopGBB(void *buf)
+{
+	SetRelAddr(buf, new_stage_defs2_gbb);
+}
+
+// 1.21: not longer in use 
+/*PUBLIC void PatchStageDef2Off4(void *buf)
 {
 	SetRelAddr(buf, new_stage_defs2+4);
 }
@@ -464,9 +520,10 @@ PUBLIC void PatchStageDef2Off4(void *buf)
 PUBLIC void PatchStageDef2Off8(void *buf)
 {
 	SetRelAddr(buf, new_stage_defs2+8);
-}
+}*/
 
-PUBLIC void PatchStageNum_8(uint8_t *buf)
+// These aren't needed anymore (patcher 4.2: stage limit removal)
+/*PUBLIC void PatchStageNum_8(uint8_t *buf)
 {
 	PatchUtils::Write8(buf, x2sta.GetNumStages());
 }
@@ -486,7 +543,7 @@ PUBLIC void PatchStageSsNumComplex(int8_t *buf)
 	uint8_t byte = (uint8_t) (x2sta.GetNumSsStages() - 0x24); // On original, this should return -2, aka 0xFE;
 	//DPRINTF("byte %02X\n", byte);
 	PatchUtils::Write8(buf, byte);
-}
+}*/
 
 typedef int32_t (* StageEveType)(int32_t, StdString *);
 typedef void * (* StringCopyType)(StdString *, const char *, size_t);
@@ -499,7 +556,7 @@ PUBLIC void SetupStageEve(StageEveType orig)
 	StageEve = orig;
 	
 	// Note, this function will trigger the memory breakpoint, so disable that when dumping
-	/*if (IsDebuggingStages())
+	if (IsDebuggingStages())
 	{
 		static bool done = false;
 		
@@ -532,7 +589,7 @@ PUBLIC void SetupStageEve(StageEveType orig)
 			
 			DPRINTF("%s\n", c_array.c_str());
 		}
-	}*/
+	}
 }
 
 PUBLIC void OnStringCopyLocated(void *address)
@@ -594,6 +651,10 @@ PUBLIC void *HookedMainSystem_Ctor(uint8_t *pthis)
 typedef void (* MainSystem_DtorType)(void *);
 static MainSystem_DtorType MainSystem_Dtor;
 
+static void **pmainsystem_singleton;
+static BattleInterface **pbattleinterface_singleton;
+static QuestManager **pquestmanager_singleton;
+
 PUBLIC void SetupMainSystem_Dtor(MainSystem_DtorType orig)
 {
 	MainSystem_Dtor = orig;
@@ -616,6 +677,42 @@ static inline uint8_t *GetStageGtNewAddress(uint8_t *pthis)
 	return (pthis - STAGEGT_ADDRESS) + MAINSYSTEM_SIZE;
 }
 
+static bool IsGbbMode()
+{
+	if (!pmainsystem_singleton || !pbattleinterface_singleton || !pquestmanager_singleton)
+		return false;
+	
+	// Note: even if not field of mainsystem is used here, the game actually checks for it to not be NULL 
+	if (!*pmainsystem_singleton)
+		return false;
+	
+	// Implementation is divided in two parts
+	
+	// Part 1: imitation of function 0x7DF210 (1.21)
+	// Note: the game didn't do null check here, we add it just in case
+	BattleInterface *bis = *pbattleinterface_singleton;	
+	if (!bis)
+		return false;
+	
+	if (!bis->IsGbbMode())
+		return false;
+	
+	// Part 2: imitation of the rest of the check. Can be seen in stagegt_default and some other function(s)
+	QuestManager *qms = *pquestmanager_singleton;
+	if (!qms)
+		return false;
+	
+	// Simplified the code to remove the redundant <= 0x12
+	//return (qms->mode <= 0x12 && qms->mode == 0x10)
+	return (qms->mode == 0x10);
+}
+
+static inline uint8_t *GetNewStageDefs2ForCurrentMode()
+{
+	//DPRINTF("IsGbbMode: %d\n", IsGbbMode());
+	return IsGbbMode() ? new_stage_defs2_gbb : new_stage_defs2;
+}
+
 PUBLIC void StageGtClearReimplemented(uint8_t *pthis)
 {
 	XV2StageDef2 *defs2 = (XV2StageDef2 *)GetStageGtNewAddress(pthis);	
@@ -629,6 +726,9 @@ PUBLIC void StageGtClearReimplemented(uint8_t *pthis)
 			defs2[i].gates[j].target_stage_idx = 0xFFFFFFFF;
 			defs2[i].gates[j].unk_0C = 0;
 			defs2[i].gates[j].unk_10 = 1;
+			// 1.21
+			defs2[i].gates[j].unk_14 = 0xFFFFFFFF;
+			defs2[i].gates[j].unk_18 = 0;
 		}
 	}
 }
@@ -638,7 +738,7 @@ PUBLIC void StageGtDefaultReimplemented(uint8_t *pthis)
 	XV2StageDef2 *defs2 = (XV2StageDef2 *)GetStageGtNewAddress(pthis);	
 	size_t num = x2sta.GetNumStages();
 	
-	memcpy(defs2, new_stage_defs2, num*sizeof(XV2StageDef2));
+	memcpy(defs2, GetNewStageDefs2ForCurrentMode(), num*sizeof(XV2StageDef2));
 	
 	uint8_t *ptr = ((uint8_t *)defs2) + num*sizeof(XV2StageDef2);
 	memset(ptr, 0, sizeof(uint32_t)*XV2_STA_NUM_GATES*num);
@@ -841,9 +941,6 @@ typedef void (* SetFarClipTypeT2)(float **);
 SetFarClipTypeT1 SetFarClipT1;
 SetFarClipTypeT2 SetFarClipT2;
 
-static void **pmainsystem_singleton;
-static void **pbattleinterface_singleton;
-
 int GetCurrentStage()
 {
 	if (!pmainsystem_singleton)
@@ -853,7 +950,7 @@ int GetCurrentStage()
 	if (!mainsystem_singleton)
 		return -1;
 	
-	int *object = (int *)(mainsystem_singleton[0x4108/8]);
+	int *object = (int *)(mainsystem_singleton[0x4360/8]);
 	if (!object)
 		return -1;
 	
@@ -896,7 +993,9 @@ void PrintCurrentStageGates()
 		DPRINTF("Name: %s\n", gate.name);		
 		DPRINTF("Target: %d\n", gate.target_stage_idx);
 		DPRINTF("Unk 0C: %d\n", gate.unk_0C);
-		DPRINTF("Unk 10: %Id\n", gate.unk_10);
+		DPRINTF("Unk 10: %d\n", gate.unk_10);
+		DPRINTF("Unk 14: %d\n", gate.unk_14);
+		DPRINTF("Unk 18: %Id\n", gate.unk_18);
 		DPRINTF("Extra: %d\n", extra[i]);
 	}
 }
@@ -944,7 +1043,12 @@ PUBLIC void OnCoreMainSystemLocated_Stages(void *addr)
 
 PUBLIC void OnBattleInterfaceSingletonLocated(void *addr)
 {
-	pbattleinterface_singleton = (void **)GetAddrFromRel(addr);
+	pbattleinterface_singleton = (BattleInterface **)GetAddrFromRel(addr);
+}
+
+PUBLIC void OnQuestManagerSingletonLocated(void *addr)
+{
+	pquestmanager_singleton = (QuestManager **)GetAddrFromRel(addr);
 }
 
 PUBLIC void SetupSetFarClipT1(SetFarClipTypeT1 orig)
