@@ -896,6 +896,7 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[27] = 0x34;
 	cus_aura_lookup[28] = 0x35;
 	cus_aura_lookup[29] = 0x37;
+	cus_aura_lookup[30] = 0x24;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -920,6 +921,17 @@ PUBLIC void PreBakeSetup(size_t)
 	bcs_eyes_colors[25] = 67; // SSJ Blue Evolution original
 	bcs_eyes_colors[26] = 11; // SS God
 	// Original remove_hair_accessories_lookup: nothing (the 0xFF init will ensure that)
+	// Original bpe thing
+	aur_bpe_map[26] = aur_bpe_map[27] = aur_bpe_map[29] = aur_bpe_map[31] = aur_bpe_map[50] = 83;
+	aur_bpe_map[36] = 257;
+	aur_bpe_map[39] = 260;
+	aur_bpe_map[45] = 265;
+	aur_bpe_map[46] = 273;
+	aur_bpe_map[51] = 280;
+	aur_bpe_map[52] = 281;
+	aur_bpe_map[53] = 302;
+	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
+	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
 	
 	Xv2PreBakedFile pbk;
 	const std::string pbk_path = myself_path + CONTENT_ROOT + "data/pre-baked.xml";
@@ -928,7 +940,7 @@ PUBLIC void PreBakeSetup(size_t)
 	{
 		if (Utils::FileExists(pbk_path))
 		{
-			UPRINTF("Compilationof \"%s\" failed.\n", pbk_path.c_str());
+			UPRINTF("Compilation of \"%s\" failed.\n", pbk_path.c_str());
 			exit(-1);
 		}
 		
@@ -998,18 +1010,6 @@ PUBLIC void PreBakeSetup(size_t)
 	
 	pcac_colors = pbk.GetColorsMap();
 	
-	// Default game values
-	aur_bpe_map[26] = aur_bpe_map[27] = aur_bpe_map[29] = aur_bpe_map[31] = aur_bpe_map[50] = 83;
-	aur_bpe_map[36] = 257;
-	aur_bpe_map[39] = 260;
-	aur_bpe_map[45] = 265;
-	aur_bpe_map[46] = 273;
-	aur_bpe_map[51] = 280;
-	aur_bpe_map[52] = 281;
-	aur_bpe_map[53] = 302;
-	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
-	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
-	//
 	for (auto &it : pbk.GetAuraExtraMap())
 	{
 		uint32_t aur_id = (uint32_t)it.first;		
