@@ -853,10 +853,11 @@ This part is divided into X subparts.
 		<Hook value="HookedMainSystem_Dtor" setup="SetupMainSystem_Dtor" />
 	</Patch>
 	
-	<!-- Patch introduced in 1.21. Signature 1.21 -->
+	<!-- Patch introduced in 1.21. Signature 1.21.2 -->
 	<!-- The purpose of this patch is just to ensure that the imitation in stages_patch.cpp remains valid -->
 	<!-- A change in the 0x14 would require an update in the BattleInterface definition game_defs.h -->
-	<Patch name="ProtectIsGbbMode" type="notify" search_start="0x7DF210" >
+	<!-- This patch failed in 1.21.2 because they relocated the function from around 1/2 the exe to < 1/10, and it went beyond default search size -->
+	<Patch name="ProtectIsGbbMode" type="notify" search_start="0x7DB90" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Battle::BattleInterface singleton" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="83 79 14 01" comment="cmp word ptr [rcx+14h], 1" />
