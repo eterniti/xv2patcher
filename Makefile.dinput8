@@ -2,6 +2,8 @@ CC = gcc
 CXX = g++
 
 OUTPUT := dinput8.dll
+OUTPUT_COPY := "/c/Program Files (x86)/Steam/steamapps/common/DB Xenoverse 2/bin/dinput8.dll"
+
 OBJS=main.o debug.o cpk_patch.o UtfLowLevel.o chara_patch.o stage_patch.o autogenportrait_dumper.o ai_patch.o ui_patch.o fs_event_offline.o item_patch.o 
 OBJS += mob_control.o quest.o chara_patch_asm.o fs_event_offline_asm.o
 OBJS += ../eternity_common/crypto/sha1.o ../eternity_common/crypto/md5.o ../eternity_common/crypto/rijndael.o
@@ -22,6 +24,9 @@ LDFLAGS=-L. -static dinput.def
 LIBS = -lstdc++ -lversion -lminhook
 
 all: $(OUTPUT)	
+	
+copy: $(OUTPUT)	
+	cp $(OUTPUT) $(OUTPUT_COPY)	
 
 clean:
 	rm -f $(OUTPUT) *.o
@@ -30,6 +35,14 @@ clean:
 	rm -f ../eternity_common/DBXV2/*.o
 	rm -f ../eternity_common/tinyxml/*.o	
 	rm -f ../eternity_common/crypto/*.o
+	
+clean_windowfied:
+	DEL /f $(OUTPUT) *.o
+	DEL /f ../eternity_common/*.o
+	DEL /f ../eternity_common/Misc/*.o
+	DEL /f ../eternity_common/DBXV2/*.o
+	DEL /f ../eternity_common/tinyxml/*.o	
+	DEL /f ../eternity_common/crypto/*.o
 
 $(OUTPUT): $(OBJS)
 	$(LINK.c) $(LDFLAGS) -o $@ $^ $(LIBS)

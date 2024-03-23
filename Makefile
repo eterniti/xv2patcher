@@ -24,6 +24,8 @@ LDFLAGS=-L. -static xinput.def
 LIBS = -lstdc++ -lversion -lminhook
 
 all: $(OUTPUT)	
+	
+copy: $(OUTPUT)	
 	cp $(OUTPUT) $(OUTPUT_COPY)
 
 clean:
@@ -33,6 +35,15 @@ clean:
 	rm -f ../eternity_common/DBXV2/*.o
 	rm -f ../eternity_common/tinyxml/*.o	
 	rm -f ../eternity_common/crypto/*.o
+	
+clean_windowfied:
+	DEL /f $(OUTPUT) *.o
+	DEL /f ../eternity_common/*.o
+	DEL /f ../eternity_common/Misc/*.o
+	DEL /f ../eternity_common/DBXV2/*.o
+	DEL /f ../eternity_common/tinyxml/*.o	
+	DEL /f ../eternity_common/crypto/*.o
+
 
 $(OUTPUT): $(OBJS)
 	$(LINK.c) $(LDFLAGS) -o $@ $^ $(LIBS)
