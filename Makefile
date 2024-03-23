@@ -38,11 +38,11 @@ clean:
 	
 clean_windowfied:
 	DEL /f $(OUTPUT) *.o
-	DEL /f ../eternity_common/*.o
-	DEL /f ../eternity_common/Misc/*.o
-	DEL /f ../eternity_common/DBXV2/*.o
-	DEL /f ../eternity_common/tinyxml/*.o	
-	DEL /f ../eternity_common/crypto/*.o
+	DEL /f ..\eternity_common\*.o
+	DEL /f ..\eternity_common\Misc\*.o
+	DEL /f ..\eternity_common\DBXV2\*.o
+	DEL /f ..\eternity_common\tinyxml\*.o	
+	DEL /f ..\eternity_common\crypto\*.o
 
 
 $(OUTPUT): $(OBJS)
