@@ -105,7 +105,7 @@ PUBLIC int CpkGetFileInfo_Patched(uint8_t *cpk_object, const char *path, uint8_t
 	
 	if (!*result)
 	{
-		if (!(void *)&cpk_object[0x40] || cpk_object[0x28] != 2)
+		if (cpk_object[0x28] != 2)
 		{
 			DPRINTF("Conditions are not met for file %s\n", path);
 			return ret;

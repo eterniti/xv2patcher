@@ -987,8 +987,8 @@ static bool load_dll(bool critical)
 #ifndef DINPUT	
 	if (Utils::FileExists(myself_path+"xinput_other.dll"))
 	{
-		strncpy(original_path, myself_path.c_str(), sizeof(original_path));
-		strncat(original_path, "xinput_other.dll", sizeof(original_path));
+		strncpy(original_path, myself_path.c_str(), sizeof(original_path)-1);
+		strncat(original_path, "xinput_other.dll", sizeof(original_path)-1);
 	}
 	else
 #endif
@@ -997,9 +997,9 @@ static bool load_dll(bool critical)
 			return false;
 
 #ifdef DINPUT
-		strncat(original_path, "\\dinput8.dll", sizeof(original_path));
+		strncat(original_path, "\\dinput8.dll", sizeof(original_path)-1);
 #else
-		strncat(original_path, "\\xinput1_3.dll", sizeof(original_path));
+		strncat(original_path, "\\xinput1_3.dll", sizeof(original_path)-1);
 #endif
 	}
 	
