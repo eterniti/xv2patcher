@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <EternityPatchFile name="PseudoCacs" enabled="new_chara" comment="This file enables patches to allow Cac2x2m features. This was sadly needed since version 1.08 of the game" >	
 
-	<!-- Note: if the signature breaks, check the 118 (address of skin color), since that needs to be changed in the dll aswell -->
-	<Patch name="StopPCColors" type="hook" search_start="0x2C3430" comment="addr 1.15" >
+	<!-- Note: if the signature breaks, check the 120 (address of skin color), since that needs to be changed in the dll aswell -->
+	<Patch name="StopPCColors" type="hook" search_start="0x2688C0" comment="addr 1.22.1" >
 		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12, r13, r14, r15" />
 		<Instruction code="48 83 EC 50" comment="sub rsp, 50h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -15,7 +15,7 @@
 		<Instruction code="4C 8B F1" comment="mov r14, rcx" />
 		<Instruction code="33 ED" comment="xor ebp, ebp" />
 		<Instruction code="45 33 E4" comment="xor r12d, r12d" />
-		<Instruction code="41 BF 18 01 00 00" comment="mov r15d, 118h; address of skin color1" />
+		<Instruction code="41 BF 20 01 00 00" comment="mov r15d, 120h; address of skin color1" />
 		<Instruction code="0F 1F 40 00 0F 1F 84 00 00 00 00 00" comment="very large nop" />
 		<Instruction code="49 8B 4E 30" comment="mov rcx, [r14+30h]" />
 		
@@ -38,16 +38,17 @@
 		<Write inst_index="3" value="45 31 C9 90" />
 	</Patch>-->
 	
-	<!-- New signature since 1.19. Current: 1.20 -->
-	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xBD29C" >
+	<!-- New signature since 1.19. Current: 1.22.1 -->
+	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xC438F" >
 		<Instruction code="BA 64 00 00 00" comment="mov edx, 64h" />
 		<Instruction code="41 83 C9 FF" comment="or r9d, FFFFFFFF" />
+		<Instruction code="C7 44 24 XX 01 00 00 00" comment="mov [rsp+XX], 1" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 8B CE" comment="mov rcx, rsi" />		
 		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::ChangePartSet" />
 		
 		<!-- r9: -1 to 0 -->
 		<Write inst_index="1" value="45 31 C9 90" />
-	</Patch>
+	</Patch>	
 
 </EternityPatchFile>

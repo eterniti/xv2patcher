@@ -31,10 +31,10 @@ Also, the size must be patched.
 
 -->
 
-	<!-- Signature 1.17 -->
+	<!-- Signature 1.22.1 -->
 	<!-- Note: if there were a change in the r8d parameter, this means that charasele.iggy changed and the .dll side has to be updated too to match -->
-	<Patch name="ChaselMainPatch" type="Hook" search_start="0x4F0F42" comment="Takes place in chasel_ctor." >
-		<Instruction code="41 B8 4F 46 00 00" comment="mov r8d, 464Fh; r8d = ReceiveType_Num" />
+	<Patch name="ChaselMainPatch" type="Hook" search_start="0x5C0FF3" comment="Takes place in chasel_ctor." >
+		<Instruction code="41 B8 50 48 00 00" comment="mov r8d, 4850h; r8d = ReceiveType_Num" />
 		<Instruction code="E8 XXXXXXXX" comment="call base::ctor" />
 		<Instruction code="90" comment="nop" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, chasel_vtable" />
@@ -45,10 +45,10 @@ Also, the size must be patched.
 	</Patch>
 
 
-	<!-- Signature 1.17 -->
-	<Patch name="PatchReceiveTypeInt" type="hook" search_start="0x4F2418" comment="Takes place in chasel_func14" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchReceiveTypeInt" type="hook" search_start="0x5C245B" comment="Takes place in chasel_func14" >
 		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
-		<Instruction code="8D 97 10 21 00 00" comment="lea edx, [rdi+2110h]" />
+		<Instruction code="8D 97 11 21 00 00" comment="lea edx, [rdi+2111h]" />
 		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_int" />
 		<Instruction code="E9 07020000" comment="jmp +0x207" />
@@ -56,10 +56,10 @@ Also, the size must be patched.
 		<Hook type="resolve_target" inst_index="3" value="AS3SendInt_Hook" setup="AS3SendIntSetup" />
 	</Patch>	
 	
-	<!-- Signature 1.17 -->
-	<Patch name="PatchReceiveTypeFlag" type="hook" search_start="0x4F4B8E" comment="Takes place in chasel_func7" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchReceiveTypeFlag" type="hook" search_start="0x5C4CBB" comment="Takes place in chasel_func7" >
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 96 28 21 00 00" comment="lea edx, [rsi+2128h]" />
+		<Instruction code="8D 96 29 21 00 00" comment="lea edx, [rsi+2129h]" />
 		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />
@@ -80,10 +80,10 @@ Also, the size must be patched.
 	</Patch>	
 	
 	<!-- Begin: exceptional handling -->
-	<!-- Signature 1.17 -->
-	<Patch name="PatchReceiveTypeUnlockVar" type="hook" search_start="0x4F62B1" comment="Takes place in chasel_func6" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchReceiveTypeUnlockVar" type="hook" search_start="0x5C64F1" comment="Takes place in chasel_func6" >
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 93 10 01 00 00" comment="lea edx, [rbx+110h]" />
+		<Instruction code="8D 93 11 01 00 00" comment="lea edx, [rbx+111h]" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="48 8B 5C 24 30" comment="mov rbx, [rsp+30h]" />
 		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
@@ -92,10 +92,10 @@ Also, the size must be patched.
 		
 		<Hook type="call" inst_index="6" value="PatchReceiveTypeUnlockVar" />
 	</Patch>
-	<!-- Signature updated in 1.17 -->
-	<Patch name="PatchReceiveTypeCharaSelected" type="hook" search_start="0x4F4B8B" comment="Takes place in chasel_func7" >
+	<!-- Same signature as PatchReceiveTypeFlag -->
+	<Patch name="PatchReceiveTypeCharaSelected" type="hook" search_start="0x5C4CBB" comment="Takes place in chasel_func7" >
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 96 28 21 00 00" comment="lea edx, [rsi+2128h]" />
+		<Instruction code="8D 96 29 21 00 00" comment="lea edx, [rsi+2129h]" />
 		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />

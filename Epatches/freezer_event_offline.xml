@@ -22,12 +22,12 @@
 	</Patch>
 	
 	<!-- Signature 1.21 -->
-	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3CEE47" >
-		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
+	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3D50A7" >
+		<Instruction code="48 8D 8F 80 02 00 00" comment="lea rcx, [rdi+280h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
 		<Instruction code="0F 84 D9 00 00 00" comment="jz +0xD9" />
-		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
+		<Instruction code="48 8D 8F 80 02 00 00" comment="lea rcx, [rdi+280h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -37,12 +37,12 @@
 	</Patch>
 	
 	<!-- The signature of this patch is similar to previous (instruction index changes) -->
-	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3CEE47" >
-		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
+	<Patch name="HookIsFreezerEventEnding" type="hook" search_start="0x3D50A7" >
+		<Instruction code="48 8D 8F 80 02 00 00" comment="lea rcx, [rdi+280h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
 		<Instruction code="85 C0" comment="test eax, eax" />
 		<Instruction code="0F 84 D9 00 00 00" comment="jz +0xD9" />
-		<Instruction code="48 8D 8F 78 02 00 00" comment="lea rcx, [rdi+278h]" />
+		<Instruction code="48 8D 8F 80 02 00 00" comment="lea rcx, [rdi+280h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsFreezerEventEnding" />
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Lobby::Next singleton" />
 		<Instruction code="85 C0" comment="test eax, eax" />

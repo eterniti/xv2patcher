@@ -2,7 +2,7 @@
 <EternityPatchFile name="Debug" enabled="debug" comment="This file enables miscellaneous debug patches">
 
 	<!-- Address 1.16 -->
-	<Patch name="Dprintf1Hook" type="hook" search_start="0x89D04C" search_up="0x8000000" >
+	<Patch name="Dprintf1Hook" type="hook" search_start="0x89D04C" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
@@ -15,7 +15,7 @@
 	</Patch>
 
 	<!-- Address 1.16 -->
-	<Patch name="Dprintf2Hook" type="hook" search_start="0x89D068" search_up="0x8000000" >
+	<Patch name="Dprintf2Hook" type="hook" search_start="0x89D068" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
@@ -27,7 +27,7 @@
 	</Patch>
 	
 	<!-- Address 1.16 -->
-	<Patch name="Dprintf3Hook" type="hook" search_start="0x89D080" search_up="0x8000000" >
+	<Patch name="Dprintf3Hook" type="hook" search_start="0x89D080" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
 		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
@@ -37,8 +37,8 @@
 		<Hook value="DprintfPatched" />		
 	</Patch>
 	
-	<!-- Address 1.20 -->
-	<Patch name="Dprintf4Hook" type="hook" search_start="0x864600" >
+	<!-- Address 1.22.1 -->
+	<Patch name="Dprintf4Hook" type="hook" search_start="0x177B30" search_down="0x800000" search_up="0x700000" >
 		<Instruction code="48 89 54 24 10" comment="mov [rsp+10h], rdx" />
 		<Instruction code="4C 89 44 24 18" comment="mov [rsp+18h], r8" />
 		<Instruction code="4C 89 4C 24 20" comment="mov [rsp+20h], r9" />

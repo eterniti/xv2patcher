@@ -75,6 +75,17 @@
 		<Hook value="SetBodyShape_Patched" setup="SetBodyShape_Setup" />	
 	</Patch>
 	
+	<!-- Signature 1.22.1 -->
+	<!-- If C4 changes, update body in Battle_Mob -->
+	<Patch name="FixGiantUntransform" type="hook" search_start="0xD6310" >
+		<Instruction code="40 56 57 41 54" comment="push rsi, rdi, r12" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />		
+		<Instruction code="8B B1 C4 00 00 00" comment="mov esi, [rcx+0C4h]" />
+		<Instruction code="44 8B E2" comment="mov r12d, edx" />
+		
+		<Hook value="MobSetDefaultBody_Patched" setup="MobSetDefaultBody_Setup" />		
+	</Patch>
+	
 	<!-- Signature is 1.21 -->
 	<Patch name="AutoBtlPortrait" type="hook" search_start="0x1AAC17" >
 		<Instruction code="E8 XXXXXXXX" comment="call is_cac" />
@@ -124,54 +135,34 @@
 		<Hook type="call" value="UseAutobattlePortrait" />
 	</Patch>-->
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.22.1 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- If the number of behaviors change, the following changes has to be done in common code/skill creator too: 
+	<!-- If the number of behaviors change, the following changes has to be done in common code and patcher: 
 	<!-- * Update BEHAVIOUR_MAX in Xv2PreBakedFile.h
 		 * Update CusAuraToAurAura in Xenoverse2.cpp with the newer values (new "case:")		 
 		 * Update the behaviour max in chara_patch_asm.S (GetCABehaviour11 and GetCABehaviour64)
 	-->
-	<Patch name="CusAuraMapPatch" type="notify" search_start="0xF2548" >
-		<Instruction code="83 F8 1E" comment="cmp eax, 1Eh; if cus aura id is greater than 27" />
-		<Instruction code="0F 87 17 01 00 00" comment="ja end_switch" />
+	<Patch name="CusAuraMapPatch" type="notify" search_start="0xF4BC8" >
+		<Instruction code="83 F8 21" comment="cmp eax, 21h; if cus aura id is greater than 33" />
+		<Instruction code="0F 87 2C 01 00 00" comment="ja end_switch" />
 		<Instruction code="48 63 C8" comment="movsxd rcx, eax" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, XXXXXXXX" />
 		<Instruction code="8B 94 88 XX XX XX XX" comment="mov edx, ds:XXXXXXXX[rax+rcx*4]; edx = switch jump relative" />
 		<Instruction code="48 03 D0" comment="add rdx, rax" />
 		<Instruction code="FF E2" comment="jmp rdx; jump to case" />
 		<Instruction code="BB 05 00 00 00" comment="mov ebx, 5; real_aura = 5" />
-		<Instruction code="E9 F7 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 06 00 00 00" comment="mov ebx, 6; real_aura = 6" />
-		<Instruction code="E9 ED 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 07 00 00 00" comment="mov ebx, 7; real_aura = 7" />
-		<Instruction code="E9 E3 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 0F 00 00 00" comment="mov ebx, 0xF; real_aura = 0xF" />
-		<Instruction code="E9 D9 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 0D 00 00 00" comment="mov ebx, 0xD; real_aura = 0xD" />
-		<Instruction code="E9 CF 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 0E 00 00 00" comment="mov ebx, 0xE; real_aura = 0xE" />
-		<Instruction code="E9 C5 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 12 00 00 00" comment="mov ebx, 0x12; real_aura = 0x12" />
-		<Instruction code="E9 BB 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 13 00 00 00" comment="mov ebx, 0x13; real_aura = 0x13" />
-		<Instruction code="E9 B1 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 18 00 00 00" comment="mov ebx, 0x18; real_aura = 0x18" />
-		<Instruction code="E9 A7 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 19 00 00 00" comment="mov ebx, 0x19; real_aura = 0x19" />
-		<Instruction code="E9 9D 00 00 00" comment="jmp end_switch" />
-		<Instruction code="BB 14 00 00 00" comment="mov ebx, 0x14; real_aura = 0x14" />
-		<Instruction code="E9 93 00 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 0C 01 00 00" comment="jmp end_switch" />
 			
 		<Notify value="CusAuraMapPatch" />
 	</Patch>
 	
-	<!-- Signature 1.20. Signature significantly changed in 1.20 -->
+	<!-- Signature 1.22.1 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<Patch name="CusAuraPatchBH11" type="notify" search_start="0xB5A8E" >
+	<Patch name="CusAuraPatchBH11" type="notify" search_start="0xBC612" >
 		<Instruction code="8B 93 XXXXXXXX" comment="mov edx, [rbx+XXXXh]; edx = cus aura" />
-		<Instruction code="8D 42 FE" comment="lea eax, [rdx-2]" />
-		<Instruction code="83 F8 1A" comment="cmp eax, 1Ah" />
-		<Instruction code="77 5F" comment="ja default_case" />
+		<Instruction code="8D 42 FF" comment="lea eax, [rdx-1]" />
+		<Instruction code="83 F8 1B" comment="cmp eax, 1Bh" />
+		<Instruction code="77 64" comment="ja default_case" />
 	
 		<Notify value="CusAuraPatchBH11" />
 	</Patch>
@@ -205,33 +196,31 @@
 		<Hook value="CusAuraPatchInt2" />
 	</Patch>
 	
-	<!-- Signature is 1.20 -->
-	<Patch name="CusAuraPatchBH10" type="hook" search_start="0xB51F4" >
+	<!-- Signature is 1.22.1 -->
+	<Patch name="CusAuraPatchBH10" type="hook" search_start="0xBBBAF" >
 		<Instruction code="FF 90 A8 00 00 00" comment="call qword ptr [rax+0A8h]" />
-		<Instruction code="4C 8B BC 24 B0 00 00 00" comment="mov r15, [rsp+0B0h]" />
 		<Instruction code="8B 97 XXXXXXXX" comment="mov edx, [rdi+XXXXh]; edx = cus aura/trans_control" />
 		<Instruction code="4C 8D 45 67" comment="lea r8, [rbp+67h]" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />		
 		
-		<Hook inst_index="5" type="resolve_target" value="Behaviour10FuncPatched" setup="Behaviour10Setup" />
+		<Hook inst_index="4" type="resolve_target" value="Behaviour10FuncPatched" setup="Behaviour10Setup" />
 	</Patch>
 	
 	<!-- Signature identical to patch above -->
-	<Patch name="GetBH10UntransformCall" type="notify" search_start="0xB51F4" >
+	<Patch name="GetBH10UntransformCall" type="notify" search_start="0xBBBAF" >
 		<Instruction code="FF 90 A8 00 00 00" comment="call qword ptr [rax+0A8h]" />
-		<Instruction code="4C 8B BC 24 B0 00 00 00" comment="mov r15, [rsp+0B0h]" />
 		<Instruction code="8B 97 XXXXXXXX" comment="mov edx, [rdi+XXXXh]; edx = cus aura/trans_control" />
 		<Instruction code="4C 8D 45 67" comment="lea r8, [rbp+67h]" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />		
+		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />			
 		
-		<Notify inst_index="5" value="OnBH10UntransformCallLocated" />
+		<Notify inst_index="4" value="OnBH10UntransformCallLocated" />
 	</Patch>
 	
-	<!-- Signature is 1.21. Signature noticeably changed in 1.08 (commented below this one is the old patch from 1.04 v2 to 1.07) -->
-	<Patch name="CusAuraPatchInt3" type="hook" search_start="0x155828" >
-		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+	<!-- Signature is 1.22.1. Signature noticeably changed in 1.08 (commented below this one is the old patch from 1.04 v2 to 1.07) -->
+	<Patch name="CusAuraPatchInt3" type="hook" search_start="0x158F19" >
+		<Instruction code="49 8B CD" comment="mov rcx, r13" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_int3_bh" />
 		<Instruction code="8B F8" comment="mov edi, eax" />
 		<Instruction code="8B D0" comment="mov edx, eax" />
@@ -284,13 +273,13 @@
 		<Notify value="CusAuraPatchTeleport" />
 	</Patch>
 	
-	<!-- Signature is 1.21 -->
-	<Patch name="CusAuraPatchBH13" type="hook" search_start="0x154CC7" >
-		<Instruction code="C7 45 XX FF FF FF FF" comment="mov dword ptr [rbp-XXh], 0FFFFFFFFh" />
-		<Instruction code="C7 45 XX FF FF FF FF" comment="mov dword ptr [rbp+XXh], 0FFFFFFFFh" />
-		<Instruction code="49 83 BD A8 43 00 00 00" comment="cmp qword ptr [r13+43A8h], 0" />
+	<!-- Signature is 1.22.1 -->
+	<Patch name="CusAuraPatchBH13" type="hook" search_start="0x1583DA" >
+		<Instruction code="44 89 4D XX" comment="mov dword ptr [rbp-XXh], r9d" />
+		<Instruction code="44 89 4D XX" comment="mov dword ptr [rbp-XXh], r9d" />
+		<Instruction code="49 83 BC 24 B0 43 00 00 00" comment="cmp qword ptr [r12+43B0h], 0" />
 		<Instruction code="74 XX" comment="je +0xXX" />
-		<Instruction code="49 8B CC" comment="mov rcx, r12" />
+		<Instruction code="49 8B CD" comment="mov rcx, r13" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_cusskill_aura" />
 		<Instruction code="44 8B C8" comment="mov r9d, eax" />
 		
@@ -379,10 +368,10 @@
 		<Notify value="ApplyConditionalRemoveHairAccessories" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="TestNum144" type="hook" enabled="test_144" search_start="0xED0E0" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="TestNum144" type="hook" enabled="test_144" search_start="0xEF4B3" >
 		<Instruction code="66 83 F9 FF" comment="cmp cx, -1" />
-		<Instruction code="8D 14 0B" comment="lea edx, [rbx+rcx]" />
+		<Instruction code="8D 14 19" comment="lea edx, [rcx+rbx]" />
 		<Instruction code="0F 4E D1" comment="cmovle edx, ecx" />
 		<Instruction code="49 8B 0C 24" comment="mov rcx, [r12]" />
 		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob_ChangePartset" />
@@ -445,11 +434,11 @@
 	</Patch>
 	
 	<!-- This patch may break in the dll on any change. -->
-	<!-- When the patch breaks, implementation of default values of aur_bpe_map in PrebakedSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
-	<!-- Signature 1.21 -->
-	<Patch name="PatchAurBpe" type="notify" search_start="0xF2896" >
+	<!-- When the patch breaks, implementation of default values of aur_bpe_map in PreBakeSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchAurBpe" type="notify" search_start="0xF4F36" >
 		<Instruction code="8D 42 E6" comment="lea eax, [rdx-1Ah]" />
-		<Instruction code="83 F8 1B" comment="cmp eax, 1B" />
+		<Instruction code="83 F8 21" comment="cmp eax, 21" />
 		<Instruction code="0F 87 XXXXXXXX" comment="ja default_case" />
 				
 		<Notify inst_index="2" value="AurToBpePatch" />
@@ -457,7 +446,7 @@
 	
 	<!-- This patch may break in the dll on any change -->
 	<!-- It's multipurpose patch: destroy the ja conditional, and hook the function -->
-	<!-- When the patch breaks, implementation of default values of aur_bpe_flag1 in PrebakedSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
+	<!-- When the patch breaks, implementation of default values of aur_bpe_flag1 in PreBakeSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
 	<!-- Code would be something like this: "if (aura == 39 || aura == 52 || aura == 53) this->AuraBpe(aura, 1, 0) else return" -->
 	<!-- Signature 1.21 -->
 	<Patch name="PatchAurBpeFlag1" type="notify" search_start="0xF13F6" >

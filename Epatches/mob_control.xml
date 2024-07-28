@@ -26,12 +26,12 @@
 		<Hook type="call" value="UsesMobControlPatched" setup="SetupUsesMobControl" />
 	</Patch>
 	
-	<!-- Signature 1.21-->
-	<Patch name="PatchGetMobControl" type="hook" search_start="0x154963" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchGetMobControl" type="hook" search_start="0x15807B" >
 		<Instruction code="E8 XXXXXXXX" comment="call get_mob_control" />
 		<Instruction code="4C 8B F0" comment="mov r14, rax" />
 		<Instruction code="48 89 45 XX" comment="mov [rbp-XXh], rax" />
-		<Instruction code="4D 8B CC" comment="mov r9, r12" />
+		<Instruction code="4D 8B CD" comment="mov r9, r13" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="4C 0F 45 C8" comment="cmovnz r9, rax" />
 		

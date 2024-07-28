@@ -3,7 +3,7 @@
 
 	<!-- All addreses are 1.08 unless stated otherwise -->		
 	
-	<Patch name="PatchGameVersionString" type="hook" search_start="0x4F7D65" comment="sinature 1.16" >
+	<Patch name="PatchGameVersionString" type="hook" search_start="0x4F7D65" comment="signature 1.16" >
 		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, '%ls'; comment=version_string" />
 		<Instruction code="E8 XX XX XX XX" />
 		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
@@ -97,30 +97,24 @@
 		<Notify inst_index="5" inst_offset="3" value="OnUnknownItemAddressLocated" />
 	</Patch>
 	
-	<!-- Address 1.15 -->
-	<Patch name="LocateGameLanguageVar_Item" type="notify" search_start="0x2FB826" >
+	<!-- Address 1.22.1 -->
+	<Patch name="LocateGameLanguageVar_Item" type="notify" search_start="0x2A4676" >
 		<Instruction code="C7 05 XXXXXXXX 09 00 00 00" comment="mov game_language, 9" />
-		<Instruction code="E9 XXXXXXXX" comment="jmp +XXXXXXXX" />
-		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, 'schinese'" />
-		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
-		<Instruction code="E8 XXXXXXXX" comment="call strcmp" />
-		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="75 0F" comment="jnz +0x0F" />
-		<Instruction code="C7 05 XXXXXXXX 0A 00 00 00" comment="mov game_language, 0xA" />
-		
+		<Instruction code="8B C7" comment="mov eax, edi" />
+				
 		<Notify inst_index="0" inst_offset="2" value="OnGameLanguageLocated_Item" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x174158" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x177D1D" >
 		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
-		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
 		<Instruction code="E8 XXXXXXXX" comment="call Mob_Untransform" />
-		<Instruction code="48 8B 87 XXXX 00 00" comment="mov rax, [rdi+XXXXh]" />
-		<Instruction code="44 89 B0 XXXX 00 00" comment="mov [rax+XXh], r14d" />
-		<Instruction code="FF C6" comment="inc esi" />
+		<Instruction code="48 8B 86 XXXX 00 00" comment="mov rax, [rsi+XXXXh]" />
+		<Instruction code="44 89 B8 XXXX 00 00" comment="mov [rax+XXh], r15d" />
+		<Instruction code="FF C7" comment="inc edi" />
 		<Instruction code="48 83 C3 08" comment="add rbx, 8" />
-		<Instruction code="48 81 FB C0 3A 00 00" comment="cmp rbx, 3AC0h" />
+		<Instruction code="48 81 FB C8 3A 00 00" comment="cmp rbx, 3AC8h" />
 		
 		<Hook type="call" inst_index="2" value="PatchUntransform" setup="SetupUntransform" />
 	</Patch>
@@ -140,10 +134,10 @@
 		<Hook type="call" inst_index="2" value="PatchUntransform" />
 	</Patch>
 	
-	<!-- Signature 1.16 -->
-	<Patch name="MultiSelectExpert_CS_Ctor" type="hook" enabled="enable_multiselect_expert" search_start="0x33D3D9" >
-		<Instruction code="44 8B 44 24 50" comment="mov r8d, [rsp+50h]" />
-		<Instruction code="41 8B D5" comment="mov edx, r13d" />
+	<!-- Signature 1.22.1 -->
+	<Patch name="MultiSelectExpert_CS_Ctor" type="hook" enabled="enable_multiselect_expert" search_start="0x39A36C" >
+		<Instruction code="45 8B C4" comment="mov r8d, r12d" />
+		<Instruction code="8B D7" comment="mov edx, edi" />
 		<Instruction code="49 8B CA" comment="mov rcx, r10" />
 		<Instruction code="E8 XXXXXXXX" comment="call chasel_ctor" />		
 		
@@ -194,9 +188,9 @@
 	<!-- DON'T DELETE/DISABLE the patch below.
 	
 	<!-- when/if this patch gets broken, the cockpit parameter of the structure may have changed -->
-	<Patch name="LocateBattleCoreMainSystem_singleton" type="notify" search_start="0x7CAF42" comment="addr 1.21" >
+	<Patch name="LocateBattleCoreMainSystem_singleton" type="notify" search_start="0x7F8482" comment="addr 1.22.1" >
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XG::Game::Battle::Core::MainSystem::singleton" />
-		<Instruction code="48 8B 98 50 43 00 00" comment="mov rbx, singleton->cockpit" />
+		<Instruction code="48 8B 98 58 43 00 00" comment="mov rbx, singleton->cockpit" />
 		<Instruction code="48 85 DB" comment="test rbx, rbx" />
 		<Instruction code="74 1F" comment="jz +0x1F" />
 		
@@ -206,7 +200,7 @@
 	<!-- This patch is used by more than one functionality -->
 	<!-- This will also be called from derived class for ohzaru mob -->
 	<!-- This patch will break in almost every update *sigh* -->
-	<Patch name="PatchMobDtor" type="hook" search_start="0xB08C0" comment="signature based on 1.21" >
+	<Patch name="PatchMobDtor" type="hook" search_start="0xB2870" comment="signature based on 1.22.1" >
 		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -216,7 +210,7 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="4C 8B 87 00 3C 00 00" comment="mov r8, [rdi+3C00h]" />
+		<Instruction code="4C 8B 87 10 3C 00 00" comment="mov r8, [rdi+3C10h]" />
 		
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
 	</Patch>
@@ -228,6 +222,94 @@
 		<Instruction code="48 8B C3" comment="mov rax, rbx" />
 		
 		<Nop inst_index="2" size="2" />
+	</Patch>
+	
+	<!-- ***BEGIN ExtendEEPK patches -->
+	<Patch name="ExtendEEPK" type="hook" search_start="0x15E07F" comment="signature 1.22.1" >
+		<Instruction code="C1 C3 00" comment="rol ebx, 0" />
+		<Instruction code="85 DE" comment="test esi, ebx" />
+		<Instruction code="74 XX" comment="jz +0xXX" />
+		<Instruction code="C7 44 24 28 01 00 00 00" comment="mov dword ptr [rsp+28h], 1" />
+		<Instruction code="C7 44 24 20 01 00 00 00" comment="mov dword ptr [rsp+20], 1" />
+		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
+		<Instruction code="44 8B C7" comment="mov r8d, edi" />
+		<Instruction code="33 D2" comment="xor edx, edx" />
+		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<Hook type="call" inst_index="9" value="LoadEEPKEntryPatched" setup="SetupLoadEEPKEntry" />
+	</Patch>
+	
+	<Patch name="LocateSystemResourceManager_singleton" type="notify" search_start="0xF4E38" comment="addr 1.22.1" >
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rax, SystemResourceManager::singleton" />
+		<Instruction code="48 89 74 24 38" comment="mov [rsp+38h], rsi" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B F0" comment="mov rsi, rax" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
+		<Instruction code="74 54" comment="jz +XX" />
+		
+		<Notify inst_index="0" inst_offset="3" value="SetupSystemResourceManager_singleton" />
+	</Patch>
+	
+	<!-- This patch has same signature as above -->
+	<Patch name="FindGetAuraFile" type="notify" search_start="0xF4E38" comment="addr 1.22.1" >
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rax, SystemResourceManager::singleton" />
+		<Instruction code="48 89 74 24 38" comment="mov [rsp+38h], rsi" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="48 8B F0" comment="mov rsi, rax" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
+		<Instruction code="74 54" comment="jz +XX" />
+		
+		<Notify inst_index="2" inst_offset="1" value="SetupGetAuraFile" />
+	</Patch>
+	
+	<Patch name="FindAuraFunc1" type="notify" search_start="0xF53CF" comment="addr 1.22.1" >
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="39 43 0C" comment="cmp [rbx+0Ch], eax" />
+		<Instruction code="75 1C" comment="jz 1C" />
+		
+		<Notify inst_index="0" inst_offset="1" value="SetupAuraFunc1" />
+	</Patch>	
+	
+	<!-- This patch is slightly below previous one -->
+	<Patch name="PatchLoadEEPKPart1" type="write" search_start="0xF53FD" comment="addr 1.22.1" >
+		<Instruction code="41 B9 01 00 00 00" comment="mov r9d, 1" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="85 F6" comment="test esi, esi" />
+		<Instruction code="74 07" comment="jz 7" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<!-- Change mov r9d, 1 -> mov r9, rbx -->
+		<Write value="49 89 D9 909090" />
+	</Patch>	
+	
+	<!-- This patch is slightly below previous one -->
+	<Patch name="PatchLoadEEPKPart2" type="hook" search_start="0xF5411" comment="addr 1.22.1" >
+		<Instruction code="C7 44 24 30 FF FF FF FF" comment="mov dword ptr [rsp+30h], -1" />
+		<Instruction code="C7 44 24 28 FF FF FF FF" comment="mov dword ptr [rsp+28h], -1" />
+		<Instruction code="89 6C 24 20" comment="mov [rsp+20h], ebp" />		
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		
+		<Hook type="call" inst_index="3" value="LoadEEPKPatched" setup="SetupLoadEEPK" />
+	</Patch>
+	<!-- ***END ExtendEEPK patches -->
+	
+	<!-- Patch provided by Dee-Jay -->
+	<!-- If 0B changes in first instruction, an update to Xenoverse2.cpp (SoulSpritBulletTypeString vector, based on the iggy one) will be needed -->
+	<Patch name="ExtendSSKiBlastTypes" type="write" search_start="0x5EABE7" addr="1.22.1" >
+		<Instruction code="83 FB 0B" comment="cmp ebx,0B" />
+		<Instruction code="77 0C" comment="ja DBXV2.exe+XXXXXXXX" />
+		<Instruction code="85 DB" comment="test ebx,ebx" />
+		<Instruction code="74 08" comment="je DBXV2.exe+XXXXXXXX" />
+		<Instruction code="81 C3 37040000" comment="add ebx,00000437" />
+		<Instruction code="EB 10" comment="jmp DBXV2.exe+XXXXXXXX" />
+		<Instruction code="48 8D 0D XXXXXXXX" comment="" />
+		<Instruction code="8B 1C B9" comment="lea rcx,[DBXV2.exe+XXXXXXXX]" />
+		<Instruction code="81 C3 38040000" comment="add ebx,00000438" />
+		
+		<!-- cmp ebx,0x0; jz XX-->
+		<!-- (I removed the jump offset from the write, since that one is unchanged from the ja) -->
+		<Write value="83 FB 00 74 XX" />>
 	</Patch>
 
 </EternityPatchFile>

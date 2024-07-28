@@ -48,12 +48,12 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Main" />
 	</Patch>
 	
-	<!-- New patch introduced in 1.21. Signature 1.21 -->
-	<Patch name="PatchStageDef1Top11" type="notify" search_start="0x187F72" >
+	<!-- New patch introduced in 1.21. Signature 1.22.1 -->
+	<Patch name="PatchStageDef1Top11" type="notify" search_start="0x18BD0C" >
 		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, stage_defs1" />
-		<Instruction code="4A 8D 3C C0" comment="lea rdi, [rax+r8*8]" />
-		<Instruction code="48 8B 17" comment="mov rdx, [rdi]" />
-		<Instruction code="48 C7 44 24 40 0F 00 00 00" comment="mov qword ptr[rsp+40h], 0Fh" />
+		<Instruction code="4A 8D 1C C0" comment="lea rbx, [rax+r8*8]" />
+		<Instruction code="48 8B 13" comment="mov rdx, [rbx]" />
+		<Instruction code="48 C7 45 F0 0F 00 00 00" comment="mov qword ptr[rbp-10h], 0Fh" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
@@ -97,14 +97,14 @@ This part is divided into X subparts.
 		<Notify inst_index="1" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
-	<Patch name="PatchStageDef1Top5" type="notify" search_start="0x2E1727" comment="Takes place in vcdstage_func1" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchStageDef1Top5" type="notify" search_start="0x29B4C7" comment="Takes place in vcdstage_func1" >
 		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, stage_defs1" />
 		<Instruction code="C7 44 24 20 80 00 00 00" comment="mov dword ptr[rsp+20h], 80h" />		
 		<Instruction code="41 B9 01 00 00 00" comment="mod r9d, 1" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'data/stage/template.map'" />
 		<Instruction code="41 8B D1" comment="mov edx, r9d" />
-		<Instruction code="48 8D 8B D0 01 00 00" comment="lea rcx, [rbx+1D0h]" />
+		<Instruction code="48 8D 8F D0 01 00 00" comment="lea rcx, [rdi+1D0h]" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
@@ -546,25 +546,25 @@ This part is divided into X subparts.
 	
 <!-- Part 5: Redirecting the accesses to the stage_sounds array -->	
 
-	<!-- Signature 1.21 -->
-	<Patch name="PatchStageSounds" type="notify" search_start="0x165A3D" comment="Takes place in btlsound_func1" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="PatchStageSounds" type="notify" search_start="0x16949D" comment="Takes place in btlsound_func1" >
 		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_sounds" />
 		<Instruction code="48 8B 0C C1" comment="mov rcx, [rcx+rax*8]" />
 		<Instruction code="48 85 C9" comment="test rcx, rcx" />
 		<Instruction code="74 DA" comment="jz -26" />
-		<Instruction code="C7 43 10 59 01 00 00" comment="mov dword ptr [rbx+10h], 159h" /> <!-- Whatever this is, it changed from 0x141 to 0x159 in 1.21 after being like that from the beginning -->
+		<Instruction code="C7 43 10 7A 01 00 00" comment="mov dword ptr [rbx+10h], 17Ah" /> 
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageSoundsMain" />
 	</Patch>
 	
 <!-- Part 6: Redirecting the accesses to the stage_music array -->
 
-	<Patch name="PatchStageMusic" type="notify" search_start="0x37F80D" comment="Takes place in btlnormal_func1" >
+	<!-- Signature 1.22.1 (patch first broken in 1.22.1 -->
+	<Patch name="PatchStageMusic" type="notify" search_start="0x38276D" comment="Takes place in btlnormal_func1" >
 		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_music" />
-		<Instruction code="48 63 43 1C" comment=" movsxd rax, dword ptr [rbx+1Ch]" />
+		<Instruction code="41 83 C8 FF" comment="or r8d, -1" />
+		<Instruction code="83 7B 58 00" comment="cmp dword ptr [rbx+58h], 0" />
 		<Instruction code="8B 14 81" comment="mov edx, [rcx+rax*4]" />
-		<Instruction code="74 08" comment="jz +8" />
-		<Instruction code="8B 43 2C" comment="mov eax, [rbx+2Ch]" />
 	
 		<Notify inst_index="0" inst_offset="3" value="PatchStageMusicMain" />
 	</Patch>
@@ -778,15 +778,15 @@ This part is divided into X subparts.
 	
 	<!-- This patch is required by the one above to get the current stage id -->
 	<!-- This patch doesn't only locates the singleton, but it also "protects" the implementation of the GetCurrentStage in the DLL -->
-	<!-- Any change in the 4360 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
-	<!-- Signature 1.21 -->
-	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0xA02A4" comment="Takes place in stagew_func1" >
+	<!-- Any change in the 4368 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
+	<!-- Signature 1.22.1 -->
+	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0xA2004" comment="Takes place in stagew_func1" >
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, cs:XG_Game_Battle_Core_MainSystem_singleton" />
 		<Instruction code="0F 2F F7" comment="comiss xmm6, xmm7" />
 		<Instruction code="76 72" comment="jbe +72" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 6D" comment="je +6D" />
-		<Instruction code="48 8B 88 60 43 00 00" comment="mov rcx, [rax+4360h]" />
+		<Instruction code="48 8B 88 68 43 00 00" comment="mov rcx, [rax+4368h]" />
 		<Instruction code="48 85 C9" comment="test rcx, rcx" />
 		<Instruction code="74 61" comment="je 61" />
 		<Instruction code="48 63 81 28 09 00 00" comment="movsxd eax, [rcx+928h]; eax = stage_id" />
@@ -1137,16 +1137,10 @@ This part is divided into X subparts.
 		 We need to locate several game functions that the patcher will use to implement the native functionality provided to the special iggy.
 	-->
 	
-	<!-- Signature 1.15 -->
-	<Patch name="LocateGameLanguageVar" type="notify" search_start="0x2FB826" >
+	<!-- Signature 1.22.1 -->
+	<Patch name="LocateGameLanguageVar" type="notify" search_start="0x2A4676" >
 		<Instruction code="C7 05 XXXXXXXX 09 00 00 00" comment="mov game_language, 9" />
-		<Instruction code="E9 XXXXXXXX" comment="jmp +XXXXXXXX" />
-		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, 'schinese'" />
-		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
-		<Instruction code="E8 XXXXXXXX" comment="call strcmp" />
-		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="75 0F" comment="jnz +0x0F" />
-		<Instruction code="C7 05 XXXXXXXX 0A 00 00 00" comment="mov game_language, 0xA" />
+		<Instruction code="8B C7" comment="mov eax, edi" />
 		
 		<Notify inst_index="0" inst_offset="2" value="OnGameLanguageLocated" />
 	</Patch>
