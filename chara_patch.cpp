@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "PatchUtils.h"
 #include "PscFile.h"
+#include "AurFile.h"
 #include "Xv2PreBakedFile.h"
 #include "Xv2PatcherSlotsFile.h"
 #include "xv2patcher.h"
@@ -22,6 +23,7 @@ typedef void (*Func1Type)(void *, uint32_t, uint32_t, void *, void *);
 typedef void (*Func2Type)(void *, uint32_t, uint32_t, void *);
 typedef int (* CheckUnlockType)(void *, int32_t, int32_t);
 typedef uint64_t (* SetBodyShapeType)(void *, int32_t, uint32_t, float);
+typedef void (*MobSetDefaultBodyType)(Battle_Mob *, uint32_t);
 
 /*typedef uint64_t (* ResultPortraitsType)(uint64_t arg_rcx, uint64_t arg_rdx, uint32_t is_cac, uint32_t cms_entry, 
 									uint64_t arg_20, uint64_t arg_28, uint64_t arg_30, uint64_t arg_38, uint64_t arg_40, uint64_t arg_48, uint64_t arg_50, uint64_t arg_58, uint64_t arg_60, uint64_t arg_68,
@@ -45,7 +47,7 @@ static constexpr const int SkillMax = 8;
 static constexpr const int CharaVarIndexNum = 32;
 static constexpr const int CharacterMax = 256; // 1.17: 128->256
 static constexpr const int CustomListMax = 512; // 1.17: 256->512
-static constexpr const int CharacterTableData = 14;  // 1.16: 13->14
+static constexpr const int CharacterTableData = 15;  // 1.22: 14->15
 static constexpr const int CharacterTableMax = 512; // 1.10: 350->512
 static constexpr const int ReceiveType_FlagUseCancel = 0;
 static constexpr const int ReceiveType_PlayerFriNum = 1;
@@ -58,73 +60,75 @@ static constexpr const int ReceiveType_Str2pController = 7;
 static constexpr const int ReceiveType_Time = 8;
 static constexpr const int ReceiveType_CharaNameStr = 9;
 static constexpr const int ReceiveType_NameOption_GK2 = 10;
-static constexpr const int ReceiveType_NameOption_LvText = 11; // 1.10: new
-static constexpr const int ReceiveType_NameOption_LvNum = 12; // 1.10: new
-static constexpr const int ReceiveType_VariationNameStr = 13; // 1.10: 11->13
-static constexpr const int ReceiveType_TarismanHeaderStr = 14; // 1.10: 12->14
-static constexpr const int ReceiveType_TarismanNameStr = 15; // 1.10: 13->15
-static constexpr const int ReceiveType_ImageStrStart = 16; ; // 1.10: 14->16
-static constexpr const int ReceiveType_ImageStrEnd = ReceiveType_ImageStrStart + CharacterMax - 1; // 0x10F (pre 1.17: 0x8F)
-static constexpr const int ReceiveType_UnlockVarStart = ReceiveType_ImageStrEnd + 1; // 0x110 (pre 1.17: 0x90)
-static constexpr const int ReceiveType_UnlockVarEnd = ReceiveType_UnlockVarStart + CharaVarIndexNum * CharacterMax - 1; // 0x210F (pre 1.17: 0x108F)
-static constexpr const int ReceiveType_KeyStrL1 = ReceiveType_UnlockVarEnd + 1; // 0x2110 (pre 1.17: 0x1090)
-static constexpr const int ReceiveType_KeyStrR1 = ReceiveType_KeyStrL1 + 1; // 0x2111 (pre 1.17: 0x1091)
-static constexpr const int ReceiveType_KeyStrL2 = ReceiveType_KeyStrR1 + 1; // 0x2112 (pre 1.17: 0x1092)
-static constexpr const int ReceiveType_KeyStrR2 = ReceiveType_KeyStrL2 + 1; // 0x2113 (pre 1.17: 0x1093)
-static constexpr const int ReceiveType_KeyStrRU = ReceiveType_KeyStrR2 + 1; // 0x2114 (pre 1.17: 0x1094)
-static constexpr const int ReceiveType_KeyStrRD = ReceiveType_KeyStrRU + 1; // 0x2115 (pre 1.17: 0x1095)
-static constexpr const int ReceiveType_KeyStrRL = ReceiveType_KeyStrRD + 1; // 0x2116 (pre 1.17: 0x1096)
-static constexpr const int ReceiveType_KeyStrRR = ReceiveType_KeyStrRL + 1; // 0x2117 (pre 1.17: 0x1097)
-static constexpr const int ReceiveType_KeyStrSingleLS = ReceiveType_KeyStrRR + 1; // 0x2118 (pre 1.17: 0x1098)
-static constexpr const int ReceiveType_KeyStrSingleRS = ReceiveType_KeyStrSingleLS + 1; // 0x2119 (pre 1.17: 0x1099)
-static constexpr const int ReceiveType_KeyStrSingleU = ReceiveType_KeyStrSingleRS + 1; // 0x211A (pre 1.17: 0x109A)
-static constexpr const int ReceiveType_KeyStrSingleD = ReceiveType_KeyStrSingleU + 1; // 0x211B (ptr 1.17: 0x109B)
-static constexpr const int ReceiveType_KeyStrSingleL = ReceiveType_KeyStrSingleD + 1; // 0x211C (pre 1.17: 0x109C)
-static constexpr const int ReceiveType_KeyStrSingleR = ReceiveType_KeyStrSingleL + 1; // 0x211D (pre 1.17: 0x109D)
-static constexpr const int ReceiveType_SkillNameStrStart = ReceiveType_KeyStrSingleR + 1; // 0x211E (pre 1.17: 0x109E)
-static constexpr const int ReceiveType_SkillNameStrEnd = ReceiveType_SkillNameStrStart + SkillMax - 1; // 0x2125 (pre 1.17: 0x10A5)
-static constexpr const int ReceiveType_ImageStrNpcStart = ReceiveType_SkillNameStrEnd + 1; // 0x2126 (pre 1.17: 0x10A6)
-static constexpr const int ReceiveType_ImageStrNpcEnd = ReceiveType_ImageStrNpcStart + PlayerNumFri - 1; // 0x2127 (pre 1.17: 0x10A7)
-static constexpr const int ReceiveType_CharaSelectedStart = ReceiveType_ImageStrNpcEnd + 1; // 0x2128 (pre 1.17: 0x10A8) 
-static constexpr const int ReceiveType_CharaSelectedEnd = ReceiveType_CharaSelectedStart + CharacterMax - 1; // 0x2227 (pre 1.17: 0x1127)
-static constexpr const int ReceiveType_CharaVariationStart = ReceiveType_CharaSelectedEnd + 1; // 0x2228 (pre 1.17: 0x1128)
-static constexpr const int ReceiveType_CharaVariationEnd = ReceiveType_CharaVariationStart + CharaVarIndexNum - 1; // 0x2247 (pre 1.17: 0x1147)
-static constexpr const int ReceiveType_DLCUnlockFlag = ReceiveType_CharaVariationEnd + 1; // 0x2248 (pre 1.17: 0x1148) 
-static constexpr const int ReceiveType_DLCUnlockFlag2 = ReceiveType_DLCUnlockFlag + 1; // 0x2249 (pre 1.17: 0x1149)
-static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_DLCUnlockFlag2 + 1; // 0x224A (pre 1.17: 0x114A)
-static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224A (pre 1.17: 0x114A)
+static constexpr const int ReceiveType_NameOption_CGK = 11; // 1.22: new
+static constexpr const int ReceiveType_NameOption_LvText = 12; // 1.10: new
+static constexpr const int ReceiveType_NameOption_LvNum = 13; // 1.10: new
+static constexpr const int ReceiveType_VariationNameStr = 14;  
+static constexpr const int ReceiveType_TarismanHeaderStr = 15; 
+static constexpr const int ReceiveType_TarismanNameStr = 16; 
+static constexpr const int ReceiveType_ImageStrStart = 17; 
+static constexpr const int ReceiveType_ImageStrEnd = ReceiveType_ImageStrStart + CharacterMax - 1; // 0x110
+static constexpr const int ReceiveType_UnlockVarStart = ReceiveType_ImageStrEnd + 1; // 0x111 (pre 1.22: 0x110)
+static constexpr const int ReceiveType_UnlockVarEnd = ReceiveType_UnlockVarStart + CharaVarIndexNum * CharacterMax - 1; // 0x2110
+static constexpr const int ReceiveType_KeyStrL1 = ReceiveType_UnlockVarEnd + 1; // 0x2111 (pre 1.22: 0x2110)
+static constexpr const int ReceiveType_KeyStrR1 = ReceiveType_KeyStrL1 + 1; // 0x2112
+static constexpr const int ReceiveType_KeyStrL2 = ReceiveType_KeyStrR1 + 1; // 0x2113
+static constexpr const int ReceiveType_KeyStrR2 = ReceiveType_KeyStrL2 + 1; // 0x2114
+static constexpr const int ReceiveType_KeyStrRU = ReceiveType_KeyStrR2 + 1; // 0x2115
+static constexpr const int ReceiveType_KeyStrRD = ReceiveType_KeyStrRU + 1; // 0x2116
+static constexpr const int ReceiveType_KeyStrRL = ReceiveType_KeyStrRD + 1; // 0x2117
+static constexpr const int ReceiveType_KeyStrRR = ReceiveType_KeyStrRL + 1; // 0x2118
+static constexpr const int ReceiveType_KeyStrSingleLS = ReceiveType_KeyStrRR + 1; // 0x2119
+static constexpr const int ReceiveType_KeyStrSingleRS = ReceiveType_KeyStrSingleLS + 1; // 0x211A
+static constexpr const int ReceiveType_KeyStrSingleU = ReceiveType_KeyStrSingleRS + 1; // 0x211B
+static constexpr const int ReceiveType_KeyStrSingleD = ReceiveType_KeyStrSingleU + 1; // 0x211C
+static constexpr const int ReceiveType_KeyStrSingleL = ReceiveType_KeyStrSingleD + 1; // 0x211D
+static constexpr const int ReceiveType_KeyStrSingleR = ReceiveType_KeyStrSingleL + 1; // 0x211E
+static constexpr const int ReceiveType_SkillNameStrStart = ReceiveType_KeyStrSingleR + 1; // 0x211F
+static constexpr const int ReceiveType_SkillNameStrEnd = ReceiveType_SkillNameStrStart + SkillMax - 1; // 0x2126
+static constexpr const int ReceiveType_ImageStrNpcStart = ReceiveType_SkillNameStrEnd + 1; // 0x2127
+static constexpr const int ReceiveType_ImageStrNpcEnd = ReceiveType_ImageStrNpcStart + PlayerNumFri - 1; // 0x2128
+static constexpr const int ReceiveType_CharaSelectedStart = ReceiveType_ImageStrNpcEnd + 1; // 0x2129 (pre 1.22: 0x2128)
+static constexpr const int ReceiveType_CharaSelectedEnd = ReceiveType_CharaSelectedStart + CharacterMax - 1; // 0x2228
+static constexpr const int ReceiveType_CharaVariationStart = ReceiveType_CharaSelectedEnd + 1; // 0x2229
+static constexpr const int ReceiveType_CharaVariationEnd = ReceiveType_CharaVariationStart + CharaVarIndexNum - 1; // 0x2248
+static constexpr const int ReceiveType_DLCUnlockFlag = ReceiveType_CharaVariationEnd + 1; // 0x2249
+static constexpr const int ReceiveType_DLCUnlockFlag2 = ReceiveType_DLCUnlockFlag + 1; // 0x224A
+static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_DLCUnlockFlag2 + 1; // 0x224B
+static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224B
 
-static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224B (pre 1.17: 0x114B)
-static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x224C (pre 1.17: 0x114C)
-static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x224C (pre 1.17: 0x114C)
-static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x224D (pre 1.17: 0x114D)
-static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x224E (pre 1.17: 0x114E)
-static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x224F (pre 1.17: 0x114F)
-static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2250 (pre 1.17: 0x1150)
-static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2251 (pre 1.17: 0x1151)
-static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2252 (pre 1.17: 0x1152)
-static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2253 (pre 1.17: 0x1153)
-static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2254 (pre 1.17: 0x1154)
-static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2255 (pre 1.17: 0x1155)
-static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x2256 (pre 1.17: 0x1156)
-static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x2257 (pre 1.17: 0x1157)
-static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x2258 (pre 1.17: 0x1158)
-static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x2259 (pre 1.17: 0x1159)
-static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x3E4C (pre 1.17: 0x2D4C)
+static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224c
+static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x224D
+static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x224D
+static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x224E
+static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x224F
+static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x2250
+static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2251
+static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2252
+static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2253
+static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2254
+static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2255
+static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2256
+static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x2257
+static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x2258
+static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x2259
+static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x225A
+static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225B (New in 1.22)
+static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x404d
 
-static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x3E4D (pre 1.17: 0x2D4D)
-static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x3E4E (pre 1.17: 0x2D4E)
-static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x3E4F (pre 1.17: 0x2D4F)
-static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x404E (pre 1.17: 0x2E4E)
-static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x404F (pre 1.17: 0x2E4F)
-static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x424E (pre 1.17: 0x2F4E)
-static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x424F (pre 1.17: 0x2F4F)
-static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 0x444E (pre 1.17: 0x304E)
-static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x444F (pre 1.17: 0x304F)
-static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x464E (pre 1.17: 0x314E)
-static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x464F (pre 1.17: 0x314F)
+static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x404E
+static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x404F
+static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x4050
+static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x424f
+static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x4250
+static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x444f
+static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x4450
+static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 0x464f
+static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x4650
+static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x484f
+static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x4850
 
-static_assert(ReceiveType_Num == 0x464F, "Error");
+static_assert(ReceiveType_Num == 0x4850, "Error (ReceiveType_Num)");
 
 extern "C" 
 {
@@ -178,6 +182,7 @@ static int n_ReceiveType_CustomCostume;
 static int n_ReceiveType_AvatarSlotID;
 static int n_ReceiveType_AfterTU9Order;
 static int n_ReceiveType_CustomCostumeEx;
+static int n_ReceiveType_ChouGokuaku;
 static int n_ReceiveType_CharacterTableEnd;
 
 static int n_ReceiveType_UseCustomList;
@@ -203,6 +208,7 @@ static Func1Type func1;
 static Func2Type func2;
 static CheckUnlockType check_unlock;
 static SetBodyShapeType SetBodyShape;
+static MobSetDefaultBodyType MobSetDefaultBody;
 //static ResultPortraitsType ResultPortraits;
 static ResultPortraits2Type ResultPortraits2;
 static Behaviour10FuncType Behaviour10Func;
@@ -273,7 +279,7 @@ static uint32_t guess_character_max()
 				return CharacterMax;
 			}
 			
-			uint32_t ret = lrint(ImageStrEnd_double) - 15;
+			uint32_t ret = lrint(ImageStrEnd_double) - 16;
 			DPRINTF("Auto character max has been estimated: %d\n", ret);
 			return ret;
 		}
@@ -355,6 +361,7 @@ PUBLIC void CharaSetup(IggyBaseCtorType orig)
 	n_ReceiveType_AvatarSlotID = n_ReceiveType_CustomCostume + 1;
 	n_ReceiveType_AfterTU9Order = n_ReceiveType_AvatarSlotID + 1;
 	n_ReceiveType_CustomCostumeEx = n_ReceiveType_AfterTU9Order + 1;
+	n_ReceiveType_ChouGokuaku = n_ReceiveType_CustomCostumeEx + 1;
 	n_ReceiveType_CharacterTableEnd = n_ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; 
 	
 	n_ReceiveType_UseCustomList = n_ReceiveType_CharacterTableEnd + 1;	
@@ -528,6 +535,11 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 		else if (code == ReceiveType_CustomCostumeEx)
 		{
 			maped = n_ReceiveType_CustomCostumeEx;
+			special = true;
+		}
+		else if (code == ReceiveType_ChouGokuaku)
+		{
+			maped = n_ReceiveType_ChouGokuaku;
 			special = true;
 		}
 		else if (code == ReceiveType_UseCustomList)
@@ -930,6 +942,7 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[51] = 280;
 	aur_bpe_map[52] = 281;
 	aur_bpe_map[53] = 302;
+	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = 320;
 	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
 	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
 	
@@ -1023,7 +1036,7 @@ PUBLIC void PreBakeSetup(size_t)
 	}
 }
 
-// Old implementation that simplye skipped call, (not longer works in 1.10)
+// Old implementation that simply skipped call, (not longer works in 1.10)
 /*PUBLIC void ApplyCacMatsPatched(uint64_t *object, uint32_t arg2, const char *mat)
 {
 	uint32_t *object2 = (uint32_t *)object[0x30/8];
@@ -1088,7 +1101,7 @@ PUBLIC void ApplyCacMatsPatched(uint64_t *object, uint32_t arg2, const char *mat
 	{
 		uint32_t cms_entry = object2[0xD0/4];	
 		uint32_t costume = object2[0xD4/4] & 0xFFFF;
-		uint16_t *colors = (uint16_t *)(object2 + 0x118/4);
+		uint16_t *colors = (uint16_t *)(object2 + 0x120/4);
 		
 		uint32_t key = (cms_entry << 16) | costume;
 		
@@ -1174,6 +1187,32 @@ PUBLIC uint64_t SetBodyShape_Patched(void *object, int32_t body_shape, int32_t a
 	return SetBodyShape(object, body_shape, arg3, arg4);
 }
 
+PUBLIC void MobSetDefaultBody_Setup(MobSetDefaultBodyType orig)
+{
+	MobSetDefaultBody = orig;
+}
+
+PUBLIC void MobSetDefaultBody_Patched(Battle_Mob *pthis, int32_t edx)
+{
+	int32_t backup = pthis->body;
+	if (backup < 0)
+	{
+		int32_t set_body = 0;
+		if (pthis->cms_id < LOOKUP_SIZE && body_shapes_lookup[pthis->cms_id] != 0xFF)
+		{
+			set_body = body_shapes_lookup[pthis->cms_id];
+		}
+		pthis->body = set_body;
+	}
+	
+	MobSetDefaultBody(pthis, edx);
+	
+	if (backup < 0)
+	{
+		pthis->body = backup;
+	}
+}
+
 PUBLIC int UseAutobattlePortrait(int32_t cms_entry)
 {
 	if (cms_entry >= 0 && cms_entry < LOOKUP_SIZE && auto_btl_portrait_lookup[cms_entry])
@@ -1239,7 +1278,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x120)); // buf+0x120 -> the address of end of switch	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x135)); // buf+0x135 -> the address of end of switch	
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1690,7 +1729,7 @@ PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instructi
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ifbpe_ra, (uint64_t)(buf+0x59)); // buf+0x59, address to return to if bpe mapping is done
+	PatchUtils::Write64(ifbpe_ra, (uint64_t)(buf+0x60)); // buf+0x60, address to return to if bpe mapping is done
 	
 	uint64_t *ifnotbpe_ra = (uint64_t *)(abm_addr+0x25);
 	if (*ifnotbpe_ra != 0xFEDCBA987654321)
@@ -1699,7 +1738,7 @@ PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instructi
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ifnotbpe_ra, (uint64_t)(buf+0xD3)); // buf+0xD3, address of original default case
+	PatchUtils::Write64(ifnotbpe_ra, (uint64_t)(buf+0xDA)); // buf+0xDA, address of original default case
 }
 
 static void AurBpeCase1(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
@@ -1746,6 +1785,90 @@ PUBLIC void CusAuraPatchBH64(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xC)); // buf+0xC -> address to return to
+}
+
+// EEPK section
+
+typedef void (* LoadEEPKEntryType)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+typedef AURHeader * (* GetAuraFileType)(void *);
+typedef int32_t (* AuraFunc1Type)(void *);
+typedef void (* LoadEEPKType)(void *, void *, uint32_t, uint32_t, void *, void *, void *);
+
+static LoadEEPKEntryType LoadEEPKEntry;
+static GetAuraFileType GetAuraFile;
+static AuraFunc1Type AuraFunc1;
+static LoadEEPKType LoadEEPK;
+
+void **srm_singleton;
+
+PUBLIC void SetupLoadEEPKEntry(void *addr)
+{
+	LoadEEPKEntry = (LoadEEPKEntryType)addr;
+}
+
+PUBLIC void LoadEEPKEntryPatched(void *pthis, uint32_t edx, uint32_t idx, uint32_t r9d, uint32_t sp20, uint32_t sp28)
+{
+	LoadEEPKEntry(pthis, edx, idx, r9d, sp20, sp28);
+	
+	if (idx == 6) // Last call in the loop
+	{
+		for (idx=80; idx < 90; idx++)
+		{
+			//DPRINTF("Loading eepk entry %d\n", idx);
+			LoadEEPKEntry(pthis, edx, idx, r9d, sp20, sp28);
+		}
+	}
+}
+
+PUBLIC void SetupSystemResourceManager_singleton(void *address)
+{
+	srm_singleton = (void **)GetAddrFromRel(address);
+}
+
+PUBLIC void SetupGetAuraFile(void *address)
+{
+	GetAuraFile = (GetAuraFileType)GetAddrFromRel(address);
+}
+
+PUBLIC void SetupAuraFunc1(void *address)
+{
+	AuraFunc1 = (AuraFunc1Type)GetAddrFromRel(address);
+}
+
+PUBLIC void SetupLoadEEPK(void *addr)
+{
+	LoadEEPK = (LoadEEPKType)addr;
+}
+
+PUBLIC void LoadEEPKPatched(void *pthis, void *rdx, uint32_t r8d, void *rbx, void *sp20, void *sp28, void *sp30)
+{
+	//DPRINTF("LoadEEPK\n");
+	uint32_t eepk = 1;
+	
+	if (srm_singleton && *srm_singleton)
+	{
+		AURHeader *hdr = GetAuraFile(*srm_singleton);
+		if (hdr)
+		{
+			int32_t aur1 = AuraFunc1((void *)PatchUtils::Read64(rbx, 0));
+			//int32_t aur2 = (int32_t)PatchUtils::Read32(rbx, 0xC);
+			//DPRINTF("Aur 1 = %d, Aur2 = %d\n", aur1, aur2);
+			//if (aur1 == aur2 && aur1 >= 0)
+			if (true)
+			{
+				AURAura *auras = (AURAura *)(((uint8_t *)hdr) + hdr->auras_offset);
+				
+				if (auras[aur1].unk_04 != 0)
+				{
+					eepk = auras[aur1].unk_04;
+					DPRINTF("EEPK changed to %d.\n", eepk);
+				}
+			}
+			
+		}
+	}
+	
+	LoadEEPK(pthis, rdx, r8d, eepk, sp20, sp28, sp30);
 }
 
 } // extern "C"

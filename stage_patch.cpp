@@ -950,7 +950,7 @@ int GetCurrentStage()
 	if (!mainsystem_singleton)
 		return -1;
 	
-	int *object = (int *)(mainsystem_singleton[0x4360/8]);
+	int *object = (int *)(mainsystem_singleton[0x4368/8]);
 	if (!object)
 		return -1;
 	

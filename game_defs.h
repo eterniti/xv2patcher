@@ -77,7 +77,9 @@ struct Battle_Mob
 	uint8_t unk_B1[0xB8-0xB1];
 	uint32_t default_partset; // 00B8 (the initial partset)
 	uint32_t cms_id; // 00BC
-	uint8_t unk_C0[0x100-0xC0];
+	uint32_t unk_C0;
+	int32_t body; // C4 (filled only for cacs)
+	uint8_t unk_C8[0x100-0xC8];
 	float hp; // 0100
 	uint32_t unk_104; 
 	uint32_t unk_108;
@@ -113,6 +115,7 @@ CHECK_FIELD_OFFSET(Battle_Mob, is_cpu, 0x50);
 CHECK_FIELD_OFFSET(Battle_Mob, flags, 0xB0);
 CHECK_FIELD_OFFSET(Battle_Mob, default_partset, 0xB8);
 CHECK_FIELD_OFFSET(Battle_Mob, cms_id, 0xBC);
+CHECK_FIELD_OFFSET(Battle_Mob, body, 0xC4);
 CHECK_FIELD_OFFSET(Battle_Mob, hp, 0x100);
 CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x10C);
 CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x16C);
@@ -179,17 +182,17 @@ CHECK_FIELD_OFFSET(UnkMobStruct, team, 0x18);
 struct Battle_Core_MainSystem
 {
 	void **vtbl; // 0000
-	uint8_t unk_08[0xDC-8];
-	UnkMobStruct unk_mob_data[MAX_MOBS]; // 00DC	
-	uint8_t unk_1AE4[0x3A50-0x1BFC]; 
-	Battle_Mob *mobs[MAX_MOBS]; // 3A50
-	uint8_t unk_3AC0[0x4350-0x3AC0];
-	Battle_HudCockpit *cockpit; // 4350
+	uint8_t unk_08[0xE0-8];
+	UnkMobStruct unk_mob_data[MAX_MOBS]; // 00E0	
+	uint8_t unk_1C00[0x3A58-0x1C00]; 
+	Battle_Mob *mobs[MAX_MOBS]; // 3A58
+	uint8_t unk_3AC8[0x4358-0x3AC8];
+	Battle_HudCockpit *cockpit; // 4358
 	//...
 };
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, unk_mob_data, 0xDC);
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, mobs, 0x3A50);
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x4350);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, unk_mob_data, 0xE0);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, mobs, 0x3A58);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x4358);
 
 // (Game object)
 // Size unknown

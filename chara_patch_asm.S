@@ -29,16 +29,16 @@ GetCABehaviour11:
 	lea rcx, cus_aura_bh11_lookup[rip]
 	movsx r8, edx
 	movzx ecx, BYTE PTR [rcx+r8]
-	cmp ecx, 30 # must match behaviour max in Xv2PreBakedFile
+	cmp ecx, 33 # must match behaviour max in Xv2PreBakedFile
 	ja orig2
-	lea eax, [rcx-2]
-	cmp eax, 0x1A
+	lea eax, [rcx-1]
+	cmp eax, 0x1B
 	jmp ret2
 	
 orig2:
 
-	lea eax, [rdx-2]
-	cmp eax, 0x1A	
+	lea eax, [rdx-1]
+	cmp eax, 0x1B	
 	
 ret2:
 # return to B5A9A (1.20)
@@ -171,7 +171,7 @@ GetCABehaviour64:
 	ja orig3
 	lea rcx, cus_aura_bh64_lookup[rip]
 	movzx ecx, BYTE PTR [rax+rcx]
-	cmp ecx, 30 # must match behaviour max in Xv2PreBakedFile
+	cmp ecx, 33 # must match behaviour max in Xv2PreBakedFile
 	ja orig3
 	mov eax, ecx
 	

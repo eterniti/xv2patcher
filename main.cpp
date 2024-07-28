@@ -247,7 +247,7 @@ PUBLIC int Function73(int arg0, bool arg1)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32)
+		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32 || arg0 == 0x37)
 			return 1;
 	}
 	
@@ -284,7 +284,7 @@ PUBLIC int Function138(int arg0)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23)
+		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23 || arg0 == 0x24)
 			return 1;
 	}
 	
@@ -749,193 +749,6 @@ PUBLIC void MobDtorPatched(Battle_Mob *pthis)
 	Battle_Mob_Destructor(pthis);
 }
 
-// TEST DELETE ME
-/*
-struct BattleEventMob_Hensin
-{
-	void *vtbl;
-	void *unk_08;	// Initialized in ctor to third parameter. Unused in the transform?
-	void *mob_object; // Apparently there is one of this for every character in the battle? Size is 0x2850, cms id is at 0xBC
-	uint32_t unk_18;
-	uint32_t unk_1C; // Seen value 1
-	uint32_t unk_20; // Seen 0x41
-	uint32_t unk_24;
-	uint32_t unk_28; // Seen 0x65. Tranformation bcs?
-	uint32_t unk_2C; // Seen 0x64
-	uint32_t unk_30; // Seen value 0, checked against 0. Then on second call it is at 1
-	uint32_t unk_34; // It could be pad
-};
-
-static_assert(offsetof(BattleEventMob_Hensin, unk_34) == 0x34, "Struct alignment error");
-STATIC_ASSERT_STRUCT(BattleEventMob_Hensin, 0x38);
-
-typedef uint32_t ( *AISpecialBehaviourType)(void *, void *, void *);
-AISpecialBehaviourType AISpecialBehaviour;
-
-typedef void * (* Battle_Mob_Ctor_Type)(void *, void *, uint32_t);
-Battle_Mob_Ctor_Type Battle_Mob_Ctor;
-
-typedef void (* BattleEventMob_Hensin_Type)(BattleEventMob_Hensin *);
-BattleEventMob_Hensin_Type BattleEventMob_Hensin_Func;
-
-static void *last_mob;
-
-static void Transform()
-{
-	uint32_t *mob32 = (uint32_t *)last_mob;
-	
-	DPRINTF("Attempting transform on char with cms 0x%x.\n", mob32[0xBC/4]);
-	BattleEventMob_Hensin hen;
-	
-	memset(&hen, 0, sizeof(hen));
-	hen.mob_object = last_mob;
-	hen.unk_1C = 1;
-	hen.unk_20 = 0x41;
-	hen.unk_28 = 0x64; // Bcs index
-	hen.unk_2C = 0x64; // Base?
-	hen.unk_30 = 0;
-	BattleEventMob_Hensin_Func(&hen);	
-	
-	memset(&hen, 0, sizeof(hen));
-	hen.mob_object = last_mob;
-	hen.unk_1C = 1;
-	hen.unk_20 = 0x41;
-	hen.unk_28 = 0x64; // Bcs index
-	hen.unk_2C = 0x64; // Base?
-	hen.unk_30 = 1;
-	BattleEventMob_Hensin_Func(&hen);
-}
-
-// a2+0x10 = MOB object owner 
-PUBLIC uint32_t AISpecialBehaviourPatched(void *pthis, void *a1, uint32_t *a2)
-{
-	static int state = 0;
-	static uint32_t used_skill = -1;
-	
-	if (state != 2)
-	{
-		bool doit = false;
-		
-		if (state == 0)
-		{
-			if (a2[0x154/4] == 2)
-			{
-				used_skill = a2[0x28/4];
-				a2[0x154/4] = 0xFFFFFFFF;
-				doit = true;
-			}
-		}
-		else if (state == 1)
-		{
-			if (a2[0x28/4] == used_skill)
-			{
-				doit = true;
-			}
-			else
-			{
-				state = 0;
-			}
-		}
-		
-		if (doit)
-		{		
-			DPRINTF("Will skip usage of %d\n", a2[0x28/4]);
-			state++;
-			
-			if (state == 2)
-			{
-				Transform();
-			}
-			
-			return 0;
-		}	
-	}
-	
-	return AISpecialBehaviour(pthis, a1, a2);
-}
-
-PUBLIC void SetupAISpecialBehaviour(AISpecialBehaviourType orig)
-{
-	AISpecialBehaviour = orig;
-}
-
-PUBLIC void *Battle_Mob_Ctor_Patched(void *pthis, void *a1, uint32_t a2)
-{
-	last_mob = Battle_Mob_Ctor(pthis, a1, a2);
-	return last_mob;
-}
-
-PUBLIC void Setup_Battle_Mob_Ctor(Battle_Mob_Ctor_Type orig)
-{
-	Battle_Mob_Ctor = orig;
-}
-
-PUBLIC void Setup_BattleEventMob_Hensin(BattleEventMob_Hensin_Type orig)
-{
-	BattleEventMob_Hensin_Func = orig;
-}*/
-
-/*struct StringObject
-{	
-	union
-	{
-		char short_str[16]; // For length2 < 16
-		char *long_str; // For length2 >= 16		
-	} str; 
-	
-	size_t length; 
-	size_t length2; 
-	
-	StringObject()
-	{
-		str.long_str = nullptr;
-		length = 0;
-		length2 = 0;
-	}
-	
-	inline char *CStr()
-	{
-		if (length2 >= 16)
-		{
-			return str.long_str;
-		}
-		
-		return str.short_str;
-	}
-};
-CHECK_STRUCT_SIZE(StringObject, 0x20);
-
-typedef void (* TestFmType)(uint8_t *, uint32_t, uint32_t);
-TestFmType TestFmOrig;
-
-PUBLIC void TestFmSetup(TestFmType orig)
-{
-	TestFmOrig = orig;
-}
-
-PUBLIC void TestFm(uint8_t *pthis, uint32_t a2, uint32_t a3)
-{
-	uint8_t *str = pthis + 0x28;
-	StringObject *sstr = (StringObject *)str;
-	
-	DPRINTF("TESTFM: %s 0x%x 0x%x 0x%x\n", sstr->CStr(), a2, a3, *(uint32_t *)&pthis[0x20]);
-	
-	//if (strcmp(sstr->CStr(), "NLBYSKY00") != 0)
-	//{
-	//	DPRINTF("Changing it\n");
-		//a2 = 1; a3 = 0;	
-	//	static int tick = 0;
-		
-	//	if (tick == 0)
-	//		tick = GetTickCount();
-		
-	//	if ((GetTickCount() - tick) >= 60000)		
-	//		return;
-	//}
-	
-	TestFmOrig(pthis, a2, a3);
-}*/
-
 } // extern C
 
 static bool load_dll(bool critical)
@@ -1243,10 +1056,10 @@ static bool idb_check_visitor(const std::string &path, bool, void *)
 		{
 			size -= sizeof(IDBHeader);
 			
-			if ((size % sizeof(IDBEntryNew)) != 0)
+			if ((size % sizeof(IDBEntry122)) != 0)
 			{
 				std::string partial_path = path.substr(std::string(myself_path + CONTENT_ROOT).length());
-				std::string msg = "The file \"" + partial_path + "\" is not compatible with this version of the game (idb format changed in 1.18).\n\nAbort load? If you press no, a crash or undefined behavior can happen in game.";
+				std::string msg = "The file \"" + partial_path + "\" is not compatible with this version of the game (idb format changed in 1.22).\n\nAbort load? If you press no, a crash or undefined behavior can happen in game.";
 				
 				if (MessageBoxA(NULL, msg.c_str(), "xv2patcher", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 				{
