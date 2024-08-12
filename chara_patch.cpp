@@ -852,6 +852,7 @@ int32_t aur_bpe_map[LOOKUP_SIZE]; // This one must be accessible by chara_patch_
 static bool aur_bpe_flag1[LOOKUP_SIZE];
 static bool aur_bpe_flag2[LOOKUP_SIZE];
 uint8_t cus_aura_bh64_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
+static bool cus_aura_gfs_bh[LOOKUP_SIZE];
 
 // Aliases
 static std::unordered_map<std::string, std::string> ttc_files_map;
@@ -885,6 +886,7 @@ PUBLIC void PreBakeSetup(size_t)
 	memset(aur_bpe_flag1, 0, sizeof(aur_bpe_flag1));
 	memset(aur_bpe_flag2, 0, sizeof(aur_bpe_flag1));
 	memset(cus_aura_bh64_lookup, 0xFF, sizeof(cus_aura_bh64_lookup));
+	memset(cus_aura_gfs_bh, 0, sizeof(cus_aura_gfs_bh));
 		
 	// Original aura mapping
 	cus_aura_lookup[0] = 5;
@@ -909,6 +911,9 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[28] = 0x35;
 	cus_aura_lookup[29] = 0x37;
 	cus_aura_lookup[30] = 0x24;
+	cus_aura_lookup[31] = 0x38;
+	cus_aura_lookup[32] = 0x3A;
+	cus_aura_lookup[33] = 0x3B;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -945,6 +950,8 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = 320;
 	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
 	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
+	// Original Golden Freezer Skin behaviour
+	cus_aura_gfs_bh[13] = true;
 	
 	Xv2PreBakedFile pbk;
 	const std::string pbk_path = myself_path + CONTENT_ROOT + "data/pre-baked.xml";
@@ -1869,6 +1876,29 @@ PUBLIC void LoadEEPKPatched(void *pthis, void *rdx, uint32_t r8d, void *rbx, voi
 	}
 	
 	LoadEEPK(pthis, rdx, r8d, eepk, sp20, sp28, sp30);
+}
+
+void GoldenFreezerSkinBehaviour(void *common_chara, Battle_Mob *mob)
+{
+	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
+	{
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x3F8, 0, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 0, (uintptr_t)"SKIN_");
+	}
+}
+
+PUBLIC void OnGoldenFreezerSkinBehaviourLocated(uint8_t *addr, size_t size)
+{
+	// mov rcx, [rbx+4C8h]; nop
+	PatchUtils::Write64(addr, 0x90000004C88B8B48); addr += 8; size -= 8;
+	// mov rdx, rbx; nop
+	PatchUtils::Write32(addr, 0x90DA8948); addr += 4; size -= 4;
+	// Set call to my code
+	PatchUtils::Write8(addr, 0xE8);
+	PatchUtils::HookCall(addr, nullptr, (void *)GoldenFreezerSkinBehaviour); addr += 5; size -= 5;
+	// Nop the remaining code
+	//DPRINTF("Noped size: %Id\n", size);
+	PatchUtils::Nop(addr, size);
 }
 
 } // extern "C"

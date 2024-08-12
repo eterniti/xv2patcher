@@ -139,7 +139,8 @@
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
 	<!-- If the number of behaviors change, the following changes has to be done in common code and patcher: 
 	<!-- * Update BEHAVIOUR_MAX in Xv2PreBakedFile.h
-		 * Update CusAuraToAurAura in Xenoverse2.cpp with the newer values (new "case:")		 
+		 * Update CusAuraToAurAura in Xenoverse2.cpp with the newer values (new "case:")	
+		 * Update cus_aura_lookup in PreBakeSetup with newwer values
 		 * Update the behaviour max in chara_patch_asm.S (GetCABehaviour11 and GetCABehaviour64)
 	-->
 	<Patch name="CusAuraMapPatch" type="notify" search_start="0xF4BC8" >
@@ -471,6 +472,7 @@
 	<!-- Happens in same function as above patch -->
 	<!-- When the patch breaks, implementation of default values of aur_bpe_flag2 in PrebakedSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
 	<!-- Pseudo code is something like: "if (aura > 53) flag=0; else if (aura == 36,39,52,53) flag=1; else flag=0; this->AuraBpe(aura, flag, 0) -->
+	<!-- Signature 1.21 -->
 	<Patch name="PatchAurBpeFlag2" type="hook" search_start="0xF1506" >
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="83 FA 35" comment="cmp edx, 35h" />
@@ -495,6 +497,27 @@
 		<Instruction code="0F 87 XXXXXXXX" comment="ja default_case" />
 	
 		<Notify value="CusAuraPatchBH64" />
+	</Patch>
+	
+	<!-- Signature 1.22.2 -->
+	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
+	<!-- Changes in virtual method offset would require code in dll to be updated. Change in rbx+4C8 also would require update -->
+	<!-- The patch must hold the whole conditional code.  -->
+	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviour" type="notify" search_start="0xBC9FC" >
+		<Instruction code="83 BB XX XX 00 00 0D" comment="cmp dword ptr [rbx+XXXXh], 0Dh; 0xD = golden freezer" />
+		<Instruction code="75 32" comment="jne end_if" />
+		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
+		<Instruction code="48 8B 01" comment="lea rax, [rcx]" />
+		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
+		<Instruction code="33 D2" comment="xor edx, edx" />
+		<Instruction code="FF 90 F8 03 00 00" comment="call qword ptr [rax+3F8h]" />
+		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
+		<Instruction code="48 8B 01" comment="lea rax, [rcx]" />
+		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
+		<Instruction code="33 D2" comment="xor edx, edx" />
+		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
+		
+		<Notify value="OnGoldenFreezerSkinBehaviourLocated" />
 	</Patch>
 	
 </EternityPatchFile>

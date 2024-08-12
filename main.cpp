@@ -138,6 +138,56 @@ extern "C"
 		DPRINTF("%s: ****************I have been called but I shouldn't!!!\n", FUNCNAME);
 		return ERROR_DEVICE_NOT_CONNECTED;
 	}
+	
+	// WTF, why is gameoverlay64 always hooking import 108?	
+	PUBLIC uint64_t DummyExport1()
+	{
+		DPRINTF("****Dummy 1!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport2()
+	{
+		DPRINTF("****Dummy 2!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport3()
+	{
+		DPRINTF("****Dummy 3!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport4()
+	{
+		DPRINTF("****Dummy 4!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport5() // This should be the one gameoverlay64 will grab
+	{
+		DPRINTF("****Dummy 5!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport6()
+	{
+		DPRINTF("****Dummy 6!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
+	
+	PUBLIC uint64_t DummyExport7()
+	{
+		DPRINTF("****Dummy 7!!!!\n");
+		PrintStackTrace(4);
+		return 0;
+	}
 #endif
 }
 
@@ -1218,6 +1268,8 @@ static LONG CALLBACK ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo)
 														
 	DPRINTF("R14 = %p, R15 = %p, RDI = %p, RSI = %p\n", (void *)ExceptionInfo->ContextRecord->R14, (void *)ExceptionInfo->ContextRecord->R15, 
 														(void *)ExceptionInfo->ContextRecord->Rdi, (void *)ExceptionInfo->ContextRecord->Rsi);
+														
+	//DPRINTF("RIP content: %I64x\n", *(uint64_t *)fault_addr);
 														
 	DPRINTF("************************************************************************\n");
 	

@@ -11,3 +11,10 @@ EXPORTS
 	XInputWaitForGuideButton @101
 	XInputCancelGuideButtonWait @102
 	XInputPowerOffController @103
+	DummyExport1 @104
+	DummyExport2 @105
+	DummyExport3 @106
+	DummyExport4 @107
+	DummyExport5 @108
+	DummyExport6 @109
+	DummyExport7 @110
