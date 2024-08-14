@@ -501,7 +501,7 @@
 	
 	<!-- Signature 1.22.2 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- Changes in virtual method offset would require code in dll to be updated. Change in rbx+4C8 also would require update -->
+	<!-- Changes in virtual method offset would require code in dll to be updated. Change in rbx+4C8 or register used also would require update -->
 	<!-- The patch must hold the whole conditional code.  -->
 	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviour" type="notify" search_start="0xBC9FC" >
 		<Instruction code="83 BB XX XX 00 00 0D" comment="cmp dword ptr [rbx+XXXXh], 0Dh; 0xD = golden freezer" />
@@ -518,6 +518,27 @@
 		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
 		
 		<Notify value="OnGoldenFreezerSkinBehaviourLocated" />
+	</Patch>
+	
+	<!-- Signature 1.22.1 -->
+	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
+	<!-- Changes in virtual method offset would require code in dll to be updated. Change in registers used, too -->
+	<!-- The patch must hold the whole conditional code.  -->
+	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviourUntransform" type="notify" search_start="0xBBD16" >
+		<Instruction code="83 BF XX XX 00 00 0D" comment="cmp dword ptr [rdi+XXXXh], 0Dh; 0xD = golden freezer" />
+		<Instruction code="75 30" comment="jne end_if" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="FF 90 F8 03 00 00" comment="call qword ptr [rax+3F8h]" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
+		
+		<Notify value="OnGoldenFreezerSkinBehaviourUntransformLocated" />
 	</Patch>
 	
 </EternityPatchFile>

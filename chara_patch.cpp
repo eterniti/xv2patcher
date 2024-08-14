@@ -1888,6 +1888,15 @@ void GoldenFreezerSkinBehaviour(void *common_chara, Battle_Mob *mob)
 	}
 }
 
+void GoldenFreezerSkinBehaviourUntransform(void *common_chara, Battle_Mob *mob)
+{
+	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
+	{
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x3F8, 1, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 1, (uintptr_t)"SKIN_");
+	}
+}
+
 PUBLIC void OnGoldenFreezerSkinBehaviourLocated(uint8_t *addr, size_t size)
 {
 	// mov rcx, [rbx+4C8h]; nop
@@ -1897,6 +1906,20 @@ PUBLIC void OnGoldenFreezerSkinBehaviourLocated(uint8_t *addr, size_t size)
 	// Set call to my code
 	PatchUtils::Write8(addr, 0xE8);
 	PatchUtils::HookCall(addr, nullptr, (void *)GoldenFreezerSkinBehaviour); addr += 5; size -= 5;
+	// Nop the remaining code
+	//DPRINTF("Noped size: %Id\n", size);
+	PatchUtils::Nop(addr, size);
+}
+
+PUBLIC void OnGoldenFreezerSkinBehaviourUntransformLocated(uint8_t *addr, size_t size)
+{
+	// mov rcx, rsi; nop
+	PatchUtils::Write32(addr, 0x90F18948); addr += 4; size -= 4;
+	// mov rdx, rdi; nop
+	PatchUtils::Write32(addr, 0x90FA8948); addr += 4; size -= 4;
+	// Set call to my code
+	PatchUtils::Write8(addr, 0xE8);
+	PatchUtils::HookCall(addr, nullptr, (void *)GoldenFreezerSkinBehaviourUntransform); addr += 5; size -= 5;
 	// Nop the remaining code
 	//DPRINTF("Noped size: %Id\n", size);
 	PatchUtils::Nop(addr, size);
