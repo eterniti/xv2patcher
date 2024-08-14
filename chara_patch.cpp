@@ -1007,6 +1007,7 @@ PUBLIC void PreBakeSetup(size_t)
 			bcs_hair_colors[data.cus_aura_id] = data.bcs_hair_color;
 			bcs_eyes_colors[data.cus_aura_id] = data.bcs_eyes_color;	
 			cus_aura_bh64_lookup[data.cus_aura_id] = data.behaviour_64;
+			cus_aura_gfs_bh[data.cus_aura_id] = data.golden_freezer_skin_bh;
 
 			if (data.bcs_additional_colors.length() > 0)
 			{
