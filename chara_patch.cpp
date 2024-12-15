@@ -37,6 +37,11 @@ typedef uint64_t (* ResultPortraits2Type)(Battle_HudCockpit *pthis, int idx, voi
 typedef int (* Behaviour10FuncType)(void *, uint32_t, void *);
 typedef void (* ApplyCacMatsType)(uint64_t *, uint32_t, const char *);
 typedef void (* AurBpeType)(void *, uint32_t, uint32_t, uint32_t);
+typedef void (* RequestPartsetsType)(void *, CharaResourcePartsetsRequest *, uint32_t);
+typedef void (* MobFunc1Type)(Battle_Mob *, void *);
+typedef void (* HpDamageType)(Battle_Mob *, float, float, uint32_t);
+typedef void (* ChangePartsetType)(CommonChara *, uint32_t partset);
+typedef void (* MobTransformType)(Battle_Mob *, uint32_t, int32_t, int32_t);
 
 
 // These constants are the ones in CharaSele.as
@@ -47,7 +52,7 @@ static constexpr const int SkillMax = 8;
 static constexpr const int CharaVarIndexNum = 32;
 static constexpr const int CharacterMax = 256; // 1.17: 128->256
 static constexpr const int CustomListMax = 512; // 1.17: 256->512
-static constexpr const int CharacterTableData = 15;  // 1.22: 14->15
+static constexpr const int CharacterTableData = 17;  // 1.23: 15->17
 static constexpr const int CharacterTableMax = 512; // 1.10: 350->512
 static constexpr const int ReceiveType_FlagUseCancel = 0;
 static constexpr const int ReceiveType_PlayerFriNum = 1;
@@ -94,41 +99,45 @@ static constexpr const int ReceiveType_CharaVariationStart = ReceiveType_CharaSe
 static constexpr const int ReceiveType_CharaVariationEnd = ReceiveType_CharaVariationStart + CharaVarIndexNum - 1; // 0x2248
 static constexpr const int ReceiveType_DLCUnlockFlag = ReceiveType_CharaVariationEnd + 1; // 0x2249
 static constexpr const int ReceiveType_DLCUnlockFlag2 = ReceiveType_DLCUnlockFlag + 1; // 0x224A
-static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_DLCUnlockFlag2 + 1; // 0x224B
-static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224B
+static constexpr const int ReceiveType_CharaSingleUnlock = ReceiveType_DLCUnlockFlag2 + 1; // 0x224B     
+static constexpr const int ReceiveType_CharaSingleUnlock2 = ReceiveType_CharaSingleUnlock + 1;  // 0x224C    
+static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_CharaSingleUnlock2 + 1; // 0x224D
+static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224D
 
-static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224c
-static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x224D
-static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x224D
-static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x224E
-static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x224F
-static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x2250
-static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2251
-static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2252
-static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2253
-static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2254
-static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2255
-static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2256
-static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x2257
-static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x2258
-static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x2259
-static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x225A
-static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225B (New in 1.22)
-static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x404d
+static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224E
+static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x224F
+static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x224F
+static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x2250
+static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x2251
+static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x2252
+static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2253
+static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2254
+static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2255
+static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2256
+static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2257
+static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2258
+static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x2259
+static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x225A
+static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x225B
+static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x225C
+static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225D (New in 1.22)
+static constexpr const int ReceiveType_CharaSingleUnlockKey = ReceiveType_ChouGokuaku + 1; // 0x225E (New in 1.23) 
+static constexpr const int ReceiveType_CharaSingleUnlockKey2 = ReceiveType_CharaSingleUnlockKey + 1; // 0x225F (New in 1.23) 
+static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x444F
 
-static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x404E
-static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x404F
-static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x4050
-static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x424f
-static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x4250
-static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x444f
-static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x4450
-static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 0x464f
-static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x4650
-static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x484f
-static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x4850
+static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x4450
+static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x4451
+static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x4452;
+static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x4651
+static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x4652
+static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x4851
+static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x4852
+static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 04A51
+static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x4A52
+static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x4C51
+static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x4C52
 
-static_assert(ReceiveType_Num == 0x4850, "Error (ReceiveType_Num)");
+static_assert(ReceiveType_Num == 0x4C52, "Error (ReceiveType_Num)");
 
 extern "C" 
 {
@@ -163,6 +172,8 @@ static int n_ReceiveType_CharaVariationStart;
 static int n_ReceiveType_CharaVariationEnd;
 static int n_ReceiveType_DLCUnlockFlag;
 static int n_ReceiveType_DLCUnlockFlag2;
+static int n_ReceiveType_CharaSingleUnlock;
+static int n_ReceiveType_CharaSingleUnlock2;
 static int n_ReceiveType_JoyConSingleFlag;
 static int n_ReceiveType_WaitLoadNum;
 
@@ -183,6 +194,8 @@ static int n_ReceiveType_AvatarSlotID;
 static int n_ReceiveType_AfterTU9Order;
 static int n_ReceiveType_CustomCostumeEx;
 static int n_ReceiveType_ChouGokuaku;
+static int n_ReceiveType_CharaSingleUnlockKey;
+static int n_ReceiveType_CharaSingleUnlockKey2;
 static int n_ReceiveType_CharacterTableEnd;
 
 static int n_ReceiveType_UseCustomList;
@@ -214,10 +227,16 @@ static ResultPortraits2Type ResultPortraits2;
 static Behaviour10FuncType Behaviour10Func;
 static ApplyCacMatsType ApplyCacMats;
 static AurBpeType AurBpe;
+static RequestPartsetsType RequestPartsets;
+static MobFunc1Type MobFunc1;
+static HpDamageType HpDamage;
+static ChangePartsetType CommonChara_ChangePartset;
+static MobTransformType MobTransform;
 
 static std::unordered_map<void *, uint64_t> send_map;
 
 static void *bh10_untransform_ra;
+static void *changepartset_untransform_ra;
 
 static uint8_t *find_blob_string(uint8_t *blob, size_t size, const char *str)
 {
@@ -342,7 +361,9 @@ PUBLIC void CharaSetup(IggyBaseCtorType orig)
 	n_ReceiveType_CharaVariationEnd = n_ReceiveType_CharaVariationStart + CharaVarIndexNum - 1;
 	n_ReceiveType_DLCUnlockFlag = n_ReceiveType_CharaVariationEnd + 1;	
 	n_ReceiveType_DLCUnlockFlag2 = n_ReceiveType_DLCUnlockFlag + 1;
-	n_ReceiveType_JoyConSingleFlag = n_ReceiveType_DLCUnlockFlag2 + 1;
+	n_ReceiveType_CharaSingleUnlock = n_ReceiveType_DLCUnlockFlag2 + 1; 
+	n_ReceiveType_CharaSingleUnlock2 = n_ReceiveType_CharaSingleUnlock + 1; 
+	n_ReceiveType_JoyConSingleFlag = n_ReceiveType_CharaSingleUnlock2 + 1;
 	n_ReceiveType_WaitLoadNum = n_ReceiveType_JoyConSingleFlag; 	
 	
 	n_ReceiveType_CostumeNum = n_ReceiveType_JoyConSingleFlag + 1; 
@@ -362,6 +383,8 @@ PUBLIC void CharaSetup(IggyBaseCtorType orig)
 	n_ReceiveType_AfterTU9Order = n_ReceiveType_AvatarSlotID + 1;
 	n_ReceiveType_CustomCostumeEx = n_ReceiveType_AfterTU9Order + 1;
 	n_ReceiveType_ChouGokuaku = n_ReceiveType_CustomCostumeEx + 1;
+	n_ReceiveType_CharaSingleUnlockKey = n_ReceiveType_ChouGokuaku + 1;
+	n_ReceiveType_CharaSingleUnlockKey2 = n_ReceiveType_CharaSingleUnlockKey + 1;
 	n_ReceiveType_CharacterTableEnd = n_ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; 
 	
 	n_ReceiveType_UseCustomList = n_ReceiveType_CharacterTableEnd + 1;	
@@ -463,6 +486,10 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 			maped = n_ReceiveType_DLCUnlockFlag;
 		else if (code == ReceiveType_DLCUnlockFlag2)
 			maped = n_ReceiveType_DLCUnlockFlag2;
+		else if (code == ReceiveType_CharaSingleUnlock)
+			maped = n_ReceiveType_CharaSingleUnlock;
+		else if (code == ReceiveType_CharaSingleUnlock2)
+			maped = n_ReceiveType_CharaSingleUnlock2;
 		else if (code == ReceiveType_JoyConSingleFlag)
 			maped = n_ReceiveType_JoyConSingleFlag;
 		else if (code == ReceiveType_CostumeNum)
@@ -540,6 +567,16 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 		else if (code == ReceiveType_ChouGokuaku)
 		{
 			maped = n_ReceiveType_ChouGokuaku;
+			special = true;
+		}
+		else if (code == ReceiveType_CharaSingleUnlockKey)
+		{
+			maped = n_ReceiveType_CharaSingleUnlockKey;
+			special = true;
+		}
+		else if (code == ReceiveType_CharaSingleUnlockKey2)
+		{
+			maped = n_ReceiveType_CharaSingleUnlockKey2;
 			special = true;
 		}
 		else if (code == ReceiveType_UseCustomList)
@@ -671,7 +708,7 @@ PUBLIC void IncreaseChaselMemory(uint32_t *psize)
 	uint32_t old = *psize;
 	PatchUtils::Write32(psize, Utils::Align2(0x2910+(n_CharacterMax*32), 0x100));
 	
-	DPRINTF("Chasel object memory succesfully changed from 0x%x to 0x%x\n", old, *psize);
+	DPRINTF("Chasel object memory successfully changed from 0x%x to 0x%x\n", old, *psize);
 }
 
 PUBLIC void SetupIncreaseChaselSlotsArray(Func1Type orig)
@@ -854,6 +891,91 @@ static bool aur_bpe_flag2[LOOKUP_SIZE];
 uint8_t cus_aura_bh64_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
 static bool cus_aura_gfs_bh[LOOKUP_SIZE];
 
+// // Mesh destruction defs
+static std::unordered_map<uint32_t, std::vector<DestructionLevelMap>> cms_to_dlmap; // Once set in PreBakeSetup, it should remain read only
+
+struct DestructionState
+{
+	int level;
+	float accum_damage;
+	uint32_t time_stamp;
+	std::vector<DestructionLevelMap> *pdlmaps;
+	
+	DestructionState()
+	{
+		level = -1; // Non-destroyed
+		accum_damage = 0.0f;
+		time_stamp = 0;
+		this->pdlmaps = nullptr;
+	}
+	
+	void SetMaps(std::vector<DestructionLevelMap> *ptr)
+	{
+		pdlmaps = ptr;
+	}
+	
+	inline int NumLevels()
+	{
+		return (int)pdlmaps->size();
+	}
+	
+	inline bool IsLastStage()
+	{
+		return (level == (NumLevels()-1));
+	}
+	
+	inline void AddDamage(float dmg)
+	{
+		if (dmg <= 0.0f)
+			return;
+		
+		size_t i = (size_t)(level+1);
+		const DestructionLevelMap &dlm = (*pdlmaps)[i];
+		uint32_t tick = GetTickCount();		
+		
+		if (tick-time_stamp <= dlm.time)
+		{
+			accum_damage += dmg;
+		}
+		else
+		{
+			time_stamp = tick;
+			accum_damage = dmg;
+		}
+	}
+	
+	inline bool DestructionReached(float base_hp)
+	{
+		size_t i = (size_t)(level+1);
+		const DestructionLevelMap &dlm = (*pdlmaps)[i];
+		
+		bool ret;
+		
+		if (dlm.is_percentage)
+		{
+			ret = (accum_damage >= dlm.damage*base_hp);
+		}
+		else
+		{
+			ret = (accum_damage >= dlm.damage);
+		}
+		
+		return ret;
+	}
+	
+	inline void AdvanceDestruction()
+	{
+		level++;
+		time_stamp = 0;
+		accum_damage = 0.0f;
+	}
+};
+
+static std::unordered_map<Battle_Mob *, DestructionState> mob_to_ds; // Set not far from creation, elements deleted in destructor of Battle_Mob 
+static std::unordered_map<CommonChara *, Battle_Mob *> common_chara_to_mob; // Set not far from object creation, elements deleted in destructor of Battle_Mob 
+
+// //
+
 // Aliases
 static std::unordered_map<std::string, std::string> ttc_files_map;
 
@@ -914,6 +1036,7 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[31] = 0x38;
 	cus_aura_lookup[32] = 0x3A;
 	cus_aura_lookup[33] = 0x3B;
+	cus_aura_lookup[34] = 0x3C;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -947,7 +1070,7 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[51] = 280;
 	aur_bpe_map[52] = 281;
 	aur_bpe_map[53] = 302;
-	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = 320;
+	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = aur_bpe_map[60] = 320;
 	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
 	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
 	// Original Golden Freezer Skin behaviour
@@ -1041,6 +1164,22 @@ PUBLIC void PreBakeSetup(size_t)
 			aur_bpe_flag1[aur_id] = it.second.flag1;
 			aur_bpe_flag2[aur_id] = it.second.flag2;
 		}
+	}
+	
+	for (auto &it : pbk.GetDestructionMap())
+	{
+		cms_to_dlmap[it.first] = std::vector<DestructionLevelMap>();
+		cms_to_dlmap[it.first].reserve(it.second.levels.size());
+		
+		for (DestructionLevel &dl : it.second.levels)
+		{
+			cms_to_dlmap[it.first].push_back(DestructionLevelMap());
+			if (!dl.CompileMap(&cms_to_dlmap[it.first].back()))
+			{
+				UPRINTF("Should not be here because this error should have been caught before.\n");
+				exit(-1);
+			}
+		}		
 	}
 }
 
@@ -1286,7 +1425,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x135)); // buf+0x135 -> the address of end of switch	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x13C)); // buf+0x13C -> the address of end of switch	
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
@@ -1384,9 +1523,9 @@ typedef void (* SaveBcsType)(void *, uint64_t, const char *);
 void SetBcsColor(void *pthis, int color, int transform, const char *part, bool save)
 {	
 	uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-	SetBcsColorType SetBcsColorV = (SetBcsColorType)vtable[0x408/8];
-	SaveBcsType Save1 = (SaveBcsType)vtable[0x3F8/8];
-	SaveBcsType Save2 = (SaveBcsType)vtable[0x400/8];
+	SetBcsColorType SetBcsColorV = (SetBcsColorType)vtable[0x410/8];
+	SaveBcsType Save1 = (SaveBcsType)vtable[0x400/8];
+	SaveBcsType Save2 = (SaveBcsType)vtable[0x408/8];
 	
 	//DPRINTF("Setting %s:%d (transform=%d,save=%d)\n", part, color, transform, save);
 	
@@ -1574,7 +1713,7 @@ void RemoveAccessoriesPatched(void *pthis, Battle_Mob *mob)
 	if (do_call)
 	{
 		uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x3A0/8];
+		RemoveAccessoriesType RemoveAccessories = (RemoveAccessoriesType) vtable[0x3A8/8];
 		
 		RemoveAccessories(pthis, 5); // 5 = hair part
 	}
@@ -1595,32 +1734,6 @@ PUBLIC void ApplyConditionalRemoveHairAccessories(uint8_t *addr)
 	// Fourth patch, hook the method +0x398
 	PatchUtils::Write16(addr+33, 0xE890);
 	PatchUtils::HookCall(addr+33+1, nullptr, (void *)RemoveAccessoriesPatched);
-}
-
-typedef void (* ChangePartsetType)(Battle_Mob *, int, int, int);
-static ChangePartsetType ChangePartset;
-
-bool test_144 = false;
-
-PUBLIC void SetupChangePartset(ChangePartsetType orig)
-{
-	test_144 = true;
-	ChangePartset = orig;
-}
-
-PUBLIC void ChangePartsetPatched(Battle_Mob *pthis, int partset, int unk1, int trans_control)
-{
-	//DPRINTF("Change partset: cms 0x%x partset=%d unk1=%d trans_control=0x%x default=%d\n", pthis->cms_id, partset, unk1, trans_control, pthis->default_partset);
-	if (partset == 272 && unk1 == 1 && (trans_control == 0x32 || trans_control == 0x33))
-	{
-		pthis->default_partset = 273;
-	}
-	else if (partset == 280 && unk1 == 1 && trans_control == 0x36)
-	{
-		pthis->default_partset = 281;
-	}
-	
-	ChangePartset(pthis, partset, unk1, trans_control);
 }
 
 typedef void (* UntransformType)(Battle_Mob *, int);
@@ -1862,7 +1975,7 @@ PUBLIC void LoadEEPKPatched(void *pthis, void *rdx, uint32_t r8d, void *rbx, voi
 			//int32_t aur2 = (int32_t)PatchUtils::Read32(rbx, 0xC);
 			//DPRINTF("Aur 1 = %d, Aur2 = %d\n", aur1, aur2);
 			//if (aur1 == aur2 && aur1 >= 0)
-			if (true)
+			if (aur1 >= 0)
 			{
 				AURAura *auras = (AURAura *)(((uint8_t *)hdr) + hdr->auras_offset);
 				
@@ -1883,8 +1996,8 @@ void GoldenFreezerSkinBehaviour(void *common_chara, Battle_Mob *mob)
 {
 	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
 	{
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x3F8, 0, (uintptr_t)"SKIN_");
 		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 0, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x408, 0, (uintptr_t)"SKIN_");
 	}
 }
 
@@ -1892,8 +2005,8 @@ void GoldenFreezerSkinBehaviourUntransform(void *common_chara, Battle_Mob *mob)
 {
 	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
 	{
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x3F8, 1, (uintptr_t)"SKIN_");
 		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 1, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x408, 1, (uintptr_t)"SKIN_");
 	}
 }
 
@@ -1923,6 +2036,189 @@ PUBLIC void OnGoldenFreezerSkinBehaviourUntransformLocated(uint8_t *addr, size_t
 	// Nop the remaining code
 	//DPRINTF("Noped size: %Id\n", size);
 	PatchUtils::Nop(addr, size);
+}
+
+PUBLIC void SetupRequestPartsets(RequestPartsetsType orig)
+{
+	RequestPartsets = orig;
+}
+
+PUBLIC void SetupMobFunc1(MobFunc1Type orig)
+{
+	MobFunc1 = orig;
+}
+
+PUBLIC void SetupHpDamage(HpDamageType orig)
+{
+	HpDamage = orig;
+}
+
+PUBLIC void OnMobTransformLocated(void *address)
+{
+	MobTransform = (MobTransformType)GetAddrFromRel(address);
+}
+
+PUBLIC void ChangePartsetCallRAFromUntransformLocated(void *address)
+{
+	changepartset_untransform_ra = address;
+}
+
+PUBLIC void RequestPartsetsPatched(void *pthis, CharaResourcePartsetsRequest *req, uint32_t unk)
+{
+	if (req)
+	{
+		auto it = cms_to_dlmap.find(req->cms_id);
+		if (it != cms_to_dlmap.end())
+		{
+			std::unordered_set<uint32_t> add_partsets;
+			
+			for (DestructionLevelMap &dlm : it->second)
+			{
+				for (auto &it2: dlm.map)
+				{
+					for (uint32_t partset: it2.second)
+					{
+						add_partsets.insert(partset);
+					}
+				}					
+			}
+			
+			if (add_partsets.size() > 0)
+			{
+				req->partsets.Reserve(req->partsets.Size()+add_partsets.size(), stdvector32_reserve);
+			}
+			
+			for (uint32_t partset: add_partsets)
+			{
+				//DPRINTF("Adding partset %d to load.\n", partset);
+				req->partsets.PushBack(partset, stdvector32_reserve);
+			}
+		}
+		
+		
+	}
+	
+	RequestPartsets(pthis, req, unk);
+}
+
+PUBLIC void CommonChara_ChangePartsetPatched(CommonChara *pthis, uint32_t partset)
+{
+	static bool recursion_protection = false; 
+	if (recursion_protection)
+	{
+		CommonChara_ChangePartset(pthis, partset);
+		return;
+	}
+	
+	DPRINTF("CommonChara_ChangePartset called %d\n", partset);
+	
+	auto it = common_chara_to_mob.find(pthis);
+	if (it == common_chara_to_mob.end())
+	{
+		CommonChara_ChangePartset(pthis, partset);
+		return;
+	}
+	
+	Battle_Mob *mob = it->second;
+	
+	auto it2 = mob_to_ds.find(mob);
+	if (it2 == mob_to_ds.end())
+	{
+		CommonChara_ChangePartset(pthis, partset);
+		return;
+	}	
+	const DestructionState &ds = it2->second;
+	
+	if (ds.level < 0)
+	{
+		CommonChara_ChangePartset(pthis, partset);
+		return;
+	}
+	
+	const DestructionLevelMap &dlm = (*ds.pdlmaps)[(size_t)ds.level];
+	uint64_t key = Utils::Make64(partset, mob->default_partset);
+	
+	auto it3 = dlm.map.find(key);
+	if (it3 == dlm.map.end())
+	{
+		DPRINTF("Warning: no mapping found in state %d for %u:%u\n", ds.level+1, partset, mob->default_partset);
+		CommonChara_ChangePartset(pthis, partset);
+		return;
+	}
+	
+	for (size_t i = 0; i < it3->second.size(); i++)
+	{
+		uint32_t p = it3->second[i];
+		DPRINTF("+-+-+-+ Doing partset %u\n", p);
+		CommonChara_ChangePartset(pthis, p);
+		
+		if (i == (it3->second.size()-1) && mob->IsTransformed() && BRA(0) != changepartset_untransform_ra)
+		{
+			DPRINTF("(Special handling for this partset)\n");
+			recursion_protection = true;
+			MobTransform(mob, p, 1, mob->trans_control);
+			recursion_protection = false;
+		}
+	}
+}
+
+PUBLIC void SetMobDestructionMaps(Battle_Mob *pthis, void *unk)
+{
+	MobFunc1(pthis, unk); // After the function, the important fields of Battle_Mob are filled, including the cms and common_chara 
+	auto it = cms_to_dlmap.find(pthis->cms_id);
+	if (it != cms_to_dlmap.end())
+	{
+		if (!pthis->common_chara)
+		{
+			//DPRINTF("****Warning: common_chara is not set for mob %p 0x%x. Destruction cannot work.\n", pthis, pthis->cms_id);
+			return;
+		}
+		
+		//DPRINTF("Setting maps for mob %p, with cms=0x%x\n", pthis, pthis->cms_id);
+		mob_to_ds[pthis] = DestructionState();
+		mob_to_ds[pthis].SetMaps(&it->second);
+		common_chara_to_mob[pthis->common_chara] = pthis;
+		
+		if (PatchUtils::GetVirtualFunction(pthis->common_chara, CHANGE_PARTSET_VIRTUAL) != (void *)CommonChara_ChangePartsetPatched)
+			PatchUtils::HookVirtual(pthis->common_chara, CHANGE_PARTSET_VIRTUAL, (void **)&CommonChara_ChangePartset, (void *)CommonChara_ChangePartsetPatched);		
+	}
+}
+
+void OnDeleteMob_Destruction(Battle_Mob *pthis)
+{
+	if (pthis->common_chara)
+		common_chara_to_mob.erase(pthis->common_chara);
+
+	mob_to_ds.erase(pthis);
+}
+
+PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
+{
+	float prev_hp = pthis->hp;
+	HpDamage(pthis, dmg, f3, u4);
+	float c_dmg = prev_hp - pthis->hp;
+	
+	//DPRINTF("Hp damage %f\n", c_dmg);
+	
+	if (c_dmg > 0.0f)
+	{
+		auto it = mob_to_ds.find(pthis);
+		if (it != mob_to_ds.end())
+		{
+			DestructionState &ds = it->second;
+			
+			if (!ds.IsLastStage())
+			{
+				ds.AddDamage(c_dmg);
+				if (ds.DestructionReached(pthis->hp_start))
+				{
+					ds.AdvanceDestruction();
+					//DPRINTF("Destruction advanced to state %d\n", ds.level);
+					pthis->ChangePartset(pthis->GetCurrentPartset()); // Update
+				}
+			}
+		}
+	}
 }
 
 } // extern "C"

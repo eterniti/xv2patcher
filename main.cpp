@@ -25,6 +25,7 @@ HMODULE myself;
 std::string myself_path;
 IniFile ini;
 DWORD initial_tick;
+void (*stdvector32_reserve)(StdVector<uint32_t> *, size_t);
 
 static bool in_game_process()
 {
@@ -297,7 +298,7 @@ PUBLIC int Function73(int arg0, bool arg1)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32 || arg0 == 0x37)
+		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32 || arg0 == 0x37 || arg0 == 0x39)
 			return 1;
 	}
 	
@@ -334,7 +335,7 @@ PUBLIC int Function138(int arg0)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23 || arg0 == 0x24)
+		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x25)
 			return 1;
 	}
 	
@@ -433,6 +434,11 @@ PUBLIC bool SetupAlliesPatched(void *pthis, void *rbp)
 PUBLIC void SetupSetupAllies(SetupAlliesType orig)
 {
 	SetupAllies = orig;
+}
+
+PUBLIC void OnStdVector32ReserveLocated(void *address)
+{
+	stdvector32_reserve = (void (*)(StdVector<uint32_t> *, size_t))GetAddrFromRel(address);
 }
 
 #define XV2_PATCHER_TAG	0x50325658 /* XV2P */
@@ -795,6 +801,7 @@ PUBLIC void MobDtorPatched(Battle_Mob *pthis)
 {
 	OnDeletedMob_AI(pthis);	
 	OnDeletedMob_Control(pthis);
+	OnDeleteMob_Destruction(pthis);
 	
 	Battle_Mob_Destructor(pthis);
 }

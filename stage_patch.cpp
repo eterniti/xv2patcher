@@ -17,8 +17,8 @@
 #define LOOKUP_SIZE	0x1000
 
 // Address of stagegt within XG::Game::Battle::Core::MainSystem 
-#define STAGEGT_ADDRESS	0x6558
-#define MAINSYSTEM_SIZE	0xEA20
+#define STAGEGT_ADDRESS	0x6560
+#define MAINSYSTEM_SIZE	0xEA30
 
 static uint8_t *orig_stage_defs1;
 static uint8_t *new_stage_defs1;

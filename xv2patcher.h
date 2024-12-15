@@ -16,13 +16,13 @@
 
 #define CONTENT_ROOT	"../"
 
-#define MINIMUM_GAME_VERSION	1.221f
+#define MINIMUM_GAME_VERSION	1.23f
 
 #define SLOTS_FILE         		"data/XV2P_SLOTS.x2s"
 #define SLOTS_FILE_STAGE		"data/XV2P_SLOTS_STAGE.x2s"
 #define SLOTS_FILE_STAGE_LOCAL	"data/XV2P_SLOTS_STAGE_LOCAL.x2s"
 
-#define XV2_PATCHER_VERSION	"4.3"
+#define XV2_PATCHER_VERSION	"4.4"
 
 typedef void (* IGGYSetTraceCallbackType)(void *callback, void *param);
 typedef void (* IGGYSetWarningCallbackType)(void *callback, void *param);
@@ -31,6 +31,7 @@ extern std::string myself_path;
 extern IniFile ini;
 
 extern Battle_Core_MainSystem **pms_singleton;
+extern void (*stdvector32_reserve)(StdVector<uint32_t> *, size_t);
 
 extern void iggy_trace_callback(void *param, void *unk, const char *str, size_t len);
 extern void iggy_warning_callback(void *param, void *unk, uint32_t len, const char *str);

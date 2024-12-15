@@ -806,11 +806,11 @@ This part is divided into X subparts.
 	
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
 	<!-- This patch is debug only, not needed in release version -->	
-	<!-- Signature 1.21 -->
-	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x86235" >
+	<!-- Signature 1.23 -->
+	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x8B5A5" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 20 EA 00 00" comment="mov ecx, 0xEA20" />
+		<Instruction code="B9 30 EA 00 00" comment="mov ecx, 0xEA30" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
 		<Instruction code="48 85 C0" comment="test eax, eax" />
@@ -823,11 +823,11 @@ This part is divided into X subparts.
 	
 	<!-- This patch has the same signature as the above one, but it needs to be always below  -->
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
-	<!-- Signature 1.21 -->
-	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x86235" >
+	<!-- Signature 1.23 -->
+	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x8B5A5" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 20 EA 00 00" comment="mov ecx, 0xEA20" />
+		<Instruction code="B9 30 EA 00 00" comment="mov ecx, 0xEA30" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
 		<Instruction code="48 85 C0" comment="test eax, eax" />
@@ -1196,8 +1196,8 @@ This part is divided into X subparts.
 	</Patch>
 	
 	<!-- If this breaks, we need to change STAGEGT_ADDRESS in the dll -->
-	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x83ED8" comment="signature 1.21" >
-		<Instruction code="48 81 C1 58 65 00 00" comment="add rcx, 6558h" />		
+	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x88788" comment="signature 1.23" >
+		<Instruction code="48 81 C1 60 65 00 00" comment="add rcx, 6560h" />		
 		<Instruction code="44 8B 86 D4 00 00 00" comment="mov r8d, [rsi+0D4h]" />
 		<Instruction code="8B D0" comment="mov edx, eax" />
 		<Instruction code="E8 XXXXXXXX" comment="call stage_findgate" />

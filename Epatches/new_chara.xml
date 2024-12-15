@@ -31,10 +31,10 @@ Also, the size must be patched.
 
 -->
 
-	<!-- Signature 1.22.1 -->
+	<!-- Signature 1.23 -->
 	<!-- Note: if there were a change in the r8d parameter, this means that charasele.iggy changed and the .dll side has to be updated too to match -->
-	<Patch name="ChaselMainPatch" type="Hook" search_start="0x5C0FF3" comment="Takes place in chasel_ctor." >
-		<Instruction code="41 B8 50 48 00 00" comment="mov r8d, 4850h; r8d = ReceiveType_Num" />
+	<Patch name="ChaselMainPatch" type="Hook" search_start="0x5D3BF3" comment="Takes place in chasel_ctor." >
+		<Instruction code="41 B8 52 4C 00 00" comment="mov r8d, 4C52h; r8d = ReceiveType_Num" />
 		<Instruction code="E8 XXXXXXXX" comment="call base::ctor" />
 		<Instruction code="90" comment="nop" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, chasel_vtable" />
@@ -68,13 +68,13 @@ Also, the size must be patched.
 		<Hook type="resolve_target" inst_index="3" value="AS3SendFlag_Hook" setup="AS3SendFlagSetup"/>
 	</Patch>
 	
-	<!-- Signature 1.17 -->
-	<Patch name="PatchReceiveTypeString" type="hook" search_start="0x4F612C" comment="Takes place in chasel_func13." >
+	<!-- Signature 1.23 -->
+	<Patch name="PatchReceiveTypeString" type="hook" search_start="0x5D9F6C" comment="Takes place in chasel_func13." >
 		<Instruction code="8D 97 00 FE FF FF" comment="lea edx, [rdi-200h]" />
 		<Instruction code="4C 8B C0" comment="mov r8, rax" />
-		<Instruction code="49 8B CF" comment="mov rcx, r15" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_string" />
-		<Instruction code="49 8B 87 88 03 00 00" comment="mov rax, [r15+388h]" />
+		<Instruction code="48 8B 86 88 03 00 00" comment="mov rax, [rsi+388h]" />
 		
 		<Hook type="resolve_target" inst_index="3" value="AS3SendString_Hook" setup="AS3SendStringSetup" />
 	</Patch>	

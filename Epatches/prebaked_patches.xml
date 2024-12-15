@@ -135,24 +135,24 @@
 		<Hook type="call" value="UseAutobattlePortrait" />
 	</Patch>-->
 	
-	<!-- Signature is 1.22.1 -->
+	<!-- Signature is 1.23 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
 	<!-- If the number of behaviors change, the following changes has to be done in common code and patcher: 
 	<!-- * Update BEHAVIOUR_MAX in Xv2PreBakedFile.h
 		 * Update CusAuraToAurAura in Xenoverse2.cpp with the newer values (new "case:")	
-		 * Update cus_aura_lookup in PreBakeSetup with newwer values
+		 * Update cus_aura_lookup in PreBakeSetup with newer values
 		 * Update the behaviour max in chara_patch_asm.S (GetCABehaviour11 and GetCABehaviour64)
 	-->
-	<Patch name="CusAuraMapPatch" type="notify" search_start="0xF4BC8" >
-		<Instruction code="83 F8 21" comment="cmp eax, 21h; if cus aura id is greater than 33" />
-		<Instruction code="0F 87 2C 01 00 00" comment="ja end_switch" />
+	<Patch name="CusAuraMapPatch" type="notify" search_start="0xF8888" >
+		<Instruction code="83 F8 22" comment="cmp eax, 22h; if cus aura id is greater than 34" />
+		<Instruction code="0F 87 33 01 00 00" comment="ja end_switch" />
 		<Instruction code="48 63 C8" comment="movsxd rcx, eax" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, XXXXXXXX" />
 		<Instruction code="8B 94 88 XX XX XX XX" comment="mov edx, ds:XXXXXXXX[rax+rcx*4]; edx = switch jump relative" />
 		<Instruction code="48 03 D0" comment="add rdx, rax" />
 		<Instruction code="FF E2" comment="jmp rdx; jump to case" />
 		<Instruction code="BB 05 00 00 00" comment="mov ebx, 5; real_aura = 5" />
-		<Instruction code="E9 0C 01 00 00" comment="jmp end_switch" />
+		<Instruction code="E9 13 01 00 00" comment="jmp end_switch" />
 			
 		<Notify value="CusAuraMapPatch" />
 	</Patch>
@@ -287,7 +287,7 @@
 		<Hook type="call" inst_index="5" value="Behaviour13" />
 	</Patch>
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.23 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. -->
 	<!-- The patch is internally 5 patches, 
 	    1: to destroy the conditional
@@ -295,7 +295,7 @@
 		3: Hook the method 
 		4: Destroy the call to set eyes (as that is already handled by patcher)
 		5: skip conditional to handle SSJ Blue Evolution (already handled by patcher) -->
-	<Patch name="CusAuraPatchBcsHairColor" type="notify" search_start="0xB9BA4" >
+	<Patch name="CusAuraPatchBcsHairColor" type="notify" search_start="0xBF5C7" >
 		<Instruction code="83 BF XXXX 00 00 18" comment="cmp dword ptr [rdi+XXXXh], 18h; comparison with ss blue" />
 		<Instruction code="75 3C" comment="jne +3C" />
 		<Instruction code="48 8B 8F C8 04 00 00" comment="mov rcx, [rdi+4C8h]; If this one change, update address of 'common_chara' in Battle_Mob" />
@@ -303,22 +303,22 @@
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="41 8D 50 3C" comment="lea edx, [r8+3Ch]; edx = 60" />
-		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]; If this one changes, update address of method in SetBcsColor" />
+		<Instruction code="FF 90 10 04 00 00" comment="call qword ptr [rax+410h]; If this one changes, update address of method in SetBcsColor" />
 		<Instruction code="48 8B 8F C8 04 00 00" comment="mov rcx, [rdi+4C8h]" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, 'eye_'" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="41 8D 50 3C" comment="lea edx, [r8+3Ch]; edx = 60" />
-		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]" />
+		<Instruction code="FF 90 10 04 00 00" comment="call qword ptr [rax+410h]" />
 		<Instruction code="83 BF XXXX 00 00 19" comment="cmp dword ptr [rdi+XXXXh], 19h; comparison with ss blue evolution" />
 		<Instruction code="75 3C" comment="jne +3C" />
 		
 		<Notify value="ApplyBcsHairColorPatchUntransform" />	
 	</Patch>
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.23 -->
 	<!-- This patch is pretty much like the above one, and as sensitive as the above one -->
-	<Patch name="CusAuraPatchBcsHairColor2" type="notify" search_start="0xBA6C8" >
+	<Patch name="CusAuraPatchBcsHairColor2" type="notify" search_start="0xC0177" >
 		<Instruction code="83 BB XXXX 00 00 18" comment="cmp dword ptr [rbx+XXXX], 18h; comparison with ss blue" />
 		<Instruction code="75 40" comment="jne +40" />
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
@@ -326,37 +326,37 @@
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, 'HAIR_'" />
 		<Instruction code="BA 3C 00 00 00" comment="mov edx, 60" />
 		<Instruction code="44 8D 42 C5" comment="lea r8d, [rdx-3Bh]" />
-		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]" />	
+		<Instruction code="FF 90 10 04 00 00" comment="call qword ptr [rax+410h]" />	
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, 'eye_'" />
 		<Instruction code="BA 3C 00 00 00" comment="mov edx, 60" />
 		<Instruction code="44 8D 42 C5" comment="lea r8d, [rdx-3Bh]" />
-		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]" />	
+		<Instruction code="FF 90 10 04 00 00" comment="call qword ptr [rax+410h]" />	
 		<Instruction code="83 BB XXXX 00 00 19" comment="cmp dword ptr [rbx+XXXXh], 19h; comparison with ss blue evolution" />
 		<Instruction code="75 40" comment="jne +40" />
 	
 		<Notify value="ApplyBcsHairColorPatchTransform" />	
 	</Patch>
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.23 -->
 	<!-- If patch breaks, update address of the Save methods in SetBcsColor -->
-	<Patch name="ProtectSaveBcsColorsVirtuals" type="notify" search_start="0xBA655" >
-		<Instruction code="FF 90 F8 03 00 00" comment="call qword ptr[rax+3F8]" />
+	<Patch name="ProtectSaveBcsColorsVirtuals" type="notify" search_start="0xC0104" >
+		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr[rax+400]" />
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'HAIR_'" />
 		<Instruction code="33 D2" comment="xor rdx, rdx" />
-		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr[rax+400]" />
+		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr[rax+408]" />
 		
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.23 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. -->
 	<!-- The patch is internally 4 patches, two to destroy the conditionals (the conditionals are done in the dll instead),
 	<!-- one to change the second parameter to include the Battle_Mob pointer, and the final one to hook the method -->	
-	<Patch name="CusAuraPatchRemoveHairAccessories" type="notify" search_start="0xBA469" >
+	<Patch name="CusAuraPatchRemoveHairAccessories" type="notify" search_start="0xBFF0D" >
 		<Instruction code="83 BB XXXX 00 00 02" commment="cmp dword ptr [rbx+XXXXh], 2" />
 		<Instruction code="75 1E" comment="je +1E" />
 		<Instruction code="F6 83 B0 00 00 00 01" comment="test  byte ptr [rbx+0B0h], 1" />
@@ -364,20 +364,9 @@
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8]" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="BA 05 00 00 00" comment="mov edx, 5" />
-		<Instruction code="FF 90 A0 03 00 00" comment="call qword ptr [rax+3A0h]; if this one changes, update the address of the method in RemoveAccessoriesPatched" />
+		<Instruction code="FF 90 A8 03 00 00" comment="call qword ptr [rax+3A0h]; if this one changes, update the address of the method in RemoveAccessoriesPatched" />
 		
 		<Notify value="ApplyConditionalRemoveHairAccessories" />
-	</Patch>
-	
-	<!-- Signature 1.22.1 -->
-	<Patch name="TestNum144" type="hook" enabled="test_144" search_start="0xEF4B3" >
-		<Instruction code="66 83 F9 FF" comment="cmp cx, -1" />
-		<Instruction code="8D 14 19" comment="lea edx, [rcx+rbx]" />
-		<Instruction code="0F 4E D1" comment="cmovle edx, ecx" />
-		<Instruction code="49 8B 0C 24" comment="mov rcx, [r12]" />
-		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob_ChangePartset" />
-		
-		<Hook type="call" inst_index="4" value="ChangePartsetPatched" setup="SetupChangePartset" />	
 	</Patch>
 	
 	<!-- Signature 1.091 -->
@@ -436,10 +425,10 @@
 	
 	<!-- This patch may break in the dll on any change. -->
 	<!-- When the patch breaks, implementation of default values of aur_bpe_map in PreBakeSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
-	<!-- Signature 1.22.1 -->
-	<Patch name="PatchAurBpe" type="notify" search_start="0xF4F36" >
+	<!-- Signature 1.23 -->
+	<Patch name="PatchAurBpe" type="notify" search_start="0xF8BF6" >
 		<Instruction code="8D 42 E6" comment="lea eax, [rdx-1Ah]" />
-		<Instruction code="83 F8 21" comment="cmp eax, 21" />
+		<Instruction code="83 F8 22" comment="cmp eax, 22" />
 		<Instruction code="0F 87 XXXXXXXX" comment="ja default_case" />
 				
 		<Notify inst_index="2" value="AurToBpePatch" />
@@ -499,46 +488,127 @@
 		<Notify value="CusAuraPatchBH64" />
 	</Patch>
 	
-	<!-- Signature 1.22.2 -->
+	<!-- Signature 1.23 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- Changes in virtual method offset would require code in dll to be updated. Change in rbx+4C8 or register used also would require update -->
+	<!-- Changes in virtual method offset would require code in dll to be updated (GoldenFreezerSkinBehaviour & GoldenFreezerSkinBehaviourUntransform). 
+	     Change in rbx+4C8 or register used also would require update (OnGoldenFreezerSkinBehaviourLocated) -->
 	<!-- The patch must hold the whole conditional code.  -->
-	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviour" type="notify" search_start="0xBC9FC" >
+	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviour" type="notify" search_start="0xC013C" >
 		<Instruction code="83 BB XX XX 00 00 0D" comment="cmp dword ptr [rbx+XXXXh], 0Dh; 0xD = golden freezer" />
 		<Instruction code="75 32" comment="jne end_if" />
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
 		<Instruction code="48 8B 01" comment="lea rax, [rcx]" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="FF 90 F8 03 00 00" comment="call qword ptr [rax+3F8h]" />
+		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
 		<Instruction code="48 8B 8B C8 04 00 00" comment="mov rcx, [rbx+4C8h]" />
 		<Instruction code="48 8B 01" comment="lea rax, [rcx]" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
+		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]" />
 		
 		<Notify value="OnGoldenFreezerSkinBehaviourLocated" />
 	</Patch>
 	
-	<!-- Signature 1.22.1 -->
+	<!-- Signature 1.23 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- Changes in virtual method offset would require code in dll to be updated. Change in registers used, too -->
+	<!-- Changes in virtual method offset would require code in dll to be updated (GoldenFreezerSkinBehaviour & GoldenFreezerSkinBehaviourUntransform). 
+	     Change in rbx+4C8 or register used also would require update (OnGoldenFreezerSkinBehaviourLocated) -->
 	<!-- The patch must hold the whole conditional code.  -->
-	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviourUntransform" type="notify" search_start="0xBBD16" >
+	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviourUntransform" type="notify" search_start="0xBF6F6" >
 		<Instruction code="83 BF XX XX 00 00 0D" comment="cmp dword ptr [rdi+XXXXh], 0Dh; 0xD = golden freezer" />
 		<Instruction code="75 30" comment="jne end_if" />
 		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
 		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
 		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
-		<Instruction code="FF 90 F8 03 00 00" comment="call qword ptr [rax+3F8h]" />
+		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
 		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
 		<Instruction code="4C 8D 05 XXXXXXXX" comment="lea r8, 'SKIN_'" />
 		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
 		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
-		<Instruction code="FF 90 00 04 00 00" comment="call qword ptr [rax+400h]" />
+		<Instruction code="FF 90 08 04 00 00" comment="call qword ptr [rax+408h]" />
 		
 		<Notify value="OnGoldenFreezerSkinBehaviourUntransformLocated" />
+	</Patch>
+	
+	<!--Signature 1.23 -->	
+	<Patch name="HookCharaResourceBaseRequestPartsets" type="hook" search_start="0x166C26" >
+		<Instruction code="E8 XXXXXXXX" comment="call request_partsets" />
+		<Instruction code="C7 45 EF 00 00 00 00" comment="mov dword ptr [rbp-11h], 0" />
+		<Instruction code="48 89 5D F7" comment="mov [rbp-09h], rbx" />
+		<Instruction code="48 8B C6" comment="mov rax, rsi" />
+		<Instruction code="48 C1 E0 04" comment="shl rax, 4" />
+		
+		<Hook type="call" value="RequestPartsetsPatched" setup="SetupRequestPartsets" />
+	</Patch>
+	
+	<!--Signature 1.23 -->	
+	<Patch name="SetupMobDestructionMaps" type="hook" search_start="0x1542C0" >
+		<Instruction code="4B 8B 8C FD XX XX 00 00" comment="mov rcx, [r13+r15*8+XXXXh]; rcx = mainsystem->mobs[r15]" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />		
+		<Instruction code="33 FF" comment="xor edi, edi" />
+		<Instruction code="4D 8D B5 E0 00 00 00" comment="lea r14, [r13+0E0h]" />
+		
+		<Hook type="call" inst_index="1" value="SetMobDestructionMaps" setup="SetupMobFunc1" />
+	</Patch>
+	
+	<!--Signature 1.23 -->	
+	<Patch name="HookHpDamage" type="hook" search_start="0xBC7CC" >
+		<Instruction code="45 8B CD" comment="mov r9d, r13d" />		
+		<Instruction code="41 0F 28 D0" comment="movaps xmm2, xmm8" />
+		<Instruction code="0F 28 CE" comment="movaps xmm1, xmm6" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />	
+		<Instruction code="E8 XXXXXXXX" comment="call hp_damage" />
+		<Instruction code="E8 XXXXXXXX" comment="call is_gbb_mode" />			
+		
+		<!-- Note: there are other 5 calls to this function, but only hooking this one. The others *may* be used for different damage sources such as debug or script/quest -->
+		<Hook type="call" inst_index="4" value="HpDamagePatched" setup="SetupHpDamage" />
+	</Patch>
+	
+	<!-- Signature 1.23 -->
+	<Patch name="LocateMobTransform" type="notify" search_start="0xF3163" >
+		<Instruction code="66 83 F9 FF" comment="cmp cx, -1" />
+		<Instruction code="8D 14 19" comment="lea edx, [rcx+rbx]" />
+		<Instruction code="0F 4E D1" comment="cmovle edx, ecx" />
+		<Instruction code="49 8B 0C 24" comment="mov rcx, [r12]" />
+		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob_ChangePartset" />
+		
+		<Notify inst_index="4" inst_offset="1" value="OnMobTransformLocated" />	
+	</Patch>
+	
+	<!-- Signature 1.23 -->
+	<!-- This function also protects the virtual D0. If D0 changes CHANGE_PARTSET_VIRTUAL in game_defs.h -->
+	<Patch name="LocateChangePartsetCallRAFromUntransform" type="notify" search_start="0xBF52A" >
+		<Instruction code="8B 97 B8 00 00 00" comment="mov edx, [rdi+0B8h]" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="FF 90 D0 00 00 00" comment="call virtual D0" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		
+		<!-- The notified address is the one after the call (the ra) -->		
+		<Notify inst_index="4" value="ChangePartsetCallRAFromUntransformLocated" />	
+	</Patch>
+	
+	<!--Signature 1.23 -->
+	<!-- If 0x58C changes, relocate CommonChara::current_partset in game_defs.h -->
+	<Patch name="ProtectCurrentPartset" type="notify" search_start="0x269A10" >
+		<Instruction code="89 97 8C 05 00 00" comment="mov [rdi+58Ch], edx" />
+		<Instruction code="4C 8D 87 XX XX 00 00" comment="lea r8, [rdi+XXXXh]" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
+		<Instruction code="8B D6" comment="mov edx, esi" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!--Signature 1.23 -->
+	<!-- If 0x2248 changes, relocate BattleMob::current_partset in game_defs.h. Hint: it is very likely that this var will be located at -4 from trans_control -->
+	<Patch name="ProtectTransPartset" type="notify" search_start="0xC00CC" >
+		<Instruction code="0F 57 C9" comment="xorps xmm1, xmm1" />
+		<Instruction code="FF 90 50 01 00 00" comment="call qword ptr [rax+150h]" />
+		<Instruction code="89 BB 48 22 00 00" comment="mov [rbx+2248h], edi" />		
+		
+		<Notify value="NULL" />
 	</Patch>
 	
 </EternityPatchFile>

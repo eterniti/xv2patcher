@@ -6,8 +6,9 @@ extern "C"
 {
 
 extern uint8_t auto_btl_portrait_lookup[LOOKUP_SIZE];	
-extern bool test_144;
 
 const std::string &GetSlotsData();	
+
+extern "C" void OnDeleteMob_Destruction(Battle_Mob *pthis);
 	
 }

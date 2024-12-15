@@ -22,14 +22,14 @@ ret1:
 	.def	GetCABehaviour11;	.scl	2;	.type	32;	.endef
 	
 GetCABehaviour11:	
-	mov edx, [rbx+0x223C]
+	mov edx, [rbx+0x224C]
 	# AFTER HERE, EDX MUST NOT BE OVERWRITTEN OR IT WILL OVERWRITE BEHAVIOUR10
 	cmp edx, 8191
 	ja orig2
 	lea rcx, cus_aura_bh11_lookup[rip]
 	movsx r8, edx
 	movzx ecx, BYTE PTR [rcx+r8]
-	cmp ecx, 33 # must match behaviour max in Xv2PreBakedFile
+	cmp ecx, 34 # must match behaviour max in Xv2PreBakedFile
 	ja orig2
 	lea eax, [rcx-1]
 	cmp eax, 0x1B
@@ -53,7 +53,7 @@ ret2:
 	
 ForceTeleport:
 
-	mov ecx, [rbx+0x223C]
+	mov ecx, [rbx+0x224C]
 	cmp ecx, 8191
 	ja default_teleport
 	lea rdx, force_teleport[rip]
@@ -72,7 +72,7 @@ ForceTeleport:
 	
 default_teleport:
 
-	cmp  [rbx+0x223C], eax
+	cmp  [rbx+0x224C], eax
 	jne no_teleport
 
 teleport:	
@@ -166,12 +166,12 @@ if_not_bpe:
 	.def	GetCABehaviour64;	.scl	2;	.type	32;	.endef
 	
 GetCABehaviour64:
-	mov eax, [rbx+0x223C]
+	mov eax, [rbx+0x224C]
 	cmp eax, 8191
 	ja orig3
 	lea rcx, cus_aura_bh64_lookup[rip]
 	movzx ecx, BYTE PTR [rax+rcx]
-	cmp ecx, 33 # must match behaviour max in Xv2PreBakedFile
+	cmp ecx, 34 # must match behaviour max in Xv2PreBakedFile
 	ja orig3
 	mov eax, ecx
 	

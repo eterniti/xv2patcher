@@ -2,6 +2,7 @@
 
 #include "CusFile.h"
 #include "BcmFile.h"
+#include "PatchUtils.h"
 
 #include "vc_defs.h"
 
@@ -63,6 +64,32 @@ struct Battle_Command
 };
 CHECK_FIELD_OFFSET(Battle_Command, bcm, 0xDC0);
 
+struct CharaResourcePartsetsRequest
+{
+	uint32_t cms_id; // 00
+	uint8_t unk_04[0x10-4]; 
+	StdVector<uint32_t> partsets; // 10
+	// ...
+};
+CHECK_FIELD_OFFSET(CharaResourcePartsetsRequest, cms_id, 0);
+CHECK_FIELD_OFFSET(CharaResourcePartsetsRequest, partsets, 0x10);
+
+#define CHANGE_PARTSET_VIRTUAL 0xD0
+
+struct CommonChara
+{
+	void **vtbl; // 0000
+	uint8_t unk_08[0x58C-8]; 
+	uint32_t current_partset; // 058C
+	// ...
+	
+	inline void ChangePartset(uint32_t partset)
+	{
+		PatchUtils::InvokeVirtualRegisterFunction(this, CHANGE_PARTSET_VIRTUAL, partset);
+	}
+};
+CHECK_FIELD_OFFSET(CommonChara, current_partset, 0x58C);
+
 // (Game object) XG::Game::Battle::Mob
 // Size: 0x2850 (1.08)
 // Update 1.20: +4 displacement of multiple fields that had been stable for long time (e.g. hp F8 -> FC)
@@ -73,15 +100,16 @@ struct Battle_Mob
 	uint8_t unk_08[0x50-8];
 	uint32_t is_cpu; // 0050 - 1 if controlled by AI
 	uint8_t unk_54[0xB0-0x54];
-	uint8_t flags; // 00B0  Known flag: 1 -> cac 0x10 -> character transformed?
-	uint8_t unk_B1[0xB8-0xB1];
+	uint8_t flags; // 00B0  Known flag: 1 -> cac 0x10 -> character transformed
+	uint8_t unk_B1[0xB4-0xB1];
+	uint32_t unk_B4; // Seems cms id as well. Probably one of them is the initial cms, and the other the current one, as skills like boo race transformation can change cms
 	uint32_t default_partset; // 00B8 (the initial partset)
 	uint32_t cms_id; // 00BC
-	uint32_t unk_C0;
+	uint32_t unk_C0; // Seems the same as initial partset? doesn't change with transforms. It seems to be continiously accessed in battle
 	int32_t body; // C4 (filled only for cacs)
 	uint8_t unk_C8[0x100-0xC8];
 	float hp; // 0100
-	uint32_t unk_104; 
+	float hp_start; // 0104 assume this one is always below the previous one
 	uint32_t unk_108;
 	float ki;	// 010C
 	uint8_t unk_110[0x16C-0x110];
@@ -91,13 +119,14 @@ struct Battle_Mob
 	uint8_t unk_2F8[0x3B0-0x2F8]; 
 	int32_t unk_interface_var; // 03B0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
 	uint8_t unk_3B4[0x4C8-0x3B4];
-	void *common_chara; // 4C8 - XG::Game::Common::Chara, the one that has the BCS file content inside
+	CommonChara *common_chara; // 4C8 - XG::Game::Common::Chara, the one that has the BCS file content inside
 	uint64_t unk_4D0;
 	Battle_Command *battle_command; // 04D8
-	uint8_t unk_4E0[0x2084-0x4E0]; 
-	int32_t loaded_var; // 2084 ; if >= 0, char is loaded
-	uint8_t unk_2088[0x223C-0x2088];
-	int32_t trans_control; // 223C
+	uint8_t unk_4E0[0x2094-0x4E0]; 
+	int32_t loaded_var; // 2094 ; if >= 0, char is loaded
+	uint8_t unk_2088[0x2248-0x2098];
+	uint32_t trans_partset; // 2248
+	int32_t trans_control; // 224C
 	// ...
 	// ...
 	
@@ -109,6 +138,22 @@ struct Battle_Mob
 	inline bool IsTransformed() const
 	{
 		return (flags & 0x10);
+	}
+
+	inline uint32_t GetCurrentPartset()
+	{
+		if (!common_chara)
+			return default_partset;
+		
+		return common_chara->current_partset;
+	}
+	
+	inline void ChangePartset(uint32_t partset)
+	{
+		if (!common_chara)
+			return;
+		
+		common_chara->ChangePartset(partset);
 	}
 };
 CHECK_FIELD_OFFSET(Battle_Mob, is_cpu, 0x50);
@@ -123,8 +168,9 @@ CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x268);
 CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
 CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4C8);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4D8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2084);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x223C);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2094);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x2248);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x224C);
 
 // 1.20. size 0x180 -> 0x190
 // 1.21 size 0x190 -> 0x1A0

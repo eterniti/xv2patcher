@@ -101,6 +101,8 @@ PUBLIC void CpkGetFileInfo_Setup(CpkGetFileInfoType orig)
 
 PUBLIC int CpkGetFileInfo_Patched(uint8_t *cpk_object, const char *path, uint8_t *ret_entry, uint32_t *result)
 {
+	//DPRINTF("RA = %p\n", (void *)PatchUtils::RelAddress(BRA(0)));
+	//PrintStackTrace(3);
 	int ret = orig_CpkGetFileInfo(cpk_object, path, ret_entry, result);	
 	
 	if (!*result)

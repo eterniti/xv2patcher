@@ -52,20 +52,7 @@ struct AICharacter
 		{
 			base_trans_control = -1;
 			num_transforms = 0;
-		}
-		
-		if (test_144 && base_trans_control == 0x30 && num_transforms == 4)
-		{
-			num_transforms = 3;			
-		}
-		else if (test_144 && base_trans_control == 0x33 && num_transforms == 2)
-		{
-			num_transforms = 1;
-		}
-		else if (test_144 && base_trans_control == 0x34 && num_transforms == 4)
-		{
-			num_transforms = 3;
-		}
+		}		
 
 		flag_for_awaken_usage = false;
 		last_tick = 0;

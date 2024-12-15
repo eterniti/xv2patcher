@@ -176,8 +176,7 @@ PUBLIC void OnBattleCreateCharPatched(Battle_Core_MainSystem *pthis, SelectCharI
 	if (info->char_index >= MAX_MOBS)
 		return;
 	
-	Battle_Mob *mob = pthis->mobs[info->char_index];
-	
+	Battle_Mob *mob = pthis->mobs[info->char_index];	
 	//DPRINTF("Mob 0x%x is %p  Team: %d\n", mob->cms_id, mob, info->team);
 	
 	//if (mob->is_cpu)

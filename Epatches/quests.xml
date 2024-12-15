@@ -15,13 +15,13 @@
 		<Notify value="OnModHlqPatchLocated" />
 	</Patch>
 	
-	<Patch name="ExtendQEDConditions" type="hook" search_start="0x7B0E10" comment="addr 1.21" >
+	<Patch name="ExtendQEDConditions" type="hook" search_start="0x8005A0" comment="addr 1.23" >
 		<Instruction code="40 53" comment="push rbx" />
 		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
 		<Instruction code="48 63 02" comment="movsxd rax, dword ptr [rdx]" />
 		<Instruction code="33 DB" comment="xor ebx, ebx" />
-		<Instruction code="83 F8 41" comment="cmp eax, 41" />
-		<Instruction code="0F 87 7E 03 00 00" comment="ja xxx" />
+		<Instruction code="83 F8 43" comment="cmp eax, 43" />
+		<Instruction code="0F 87 98 03 00 00" comment="ja xxx" />
 		
 		<Hook value="QedCondHooked" setup="SetupQedCond" />
 	</Patch>
