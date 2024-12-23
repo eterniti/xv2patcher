@@ -313,7 +313,7 @@
 		<Write value="83 FB 00 74 XX" />>
 	</Patch>
 	
-	<!-- This patch may be used for more than one functionality. Signature: 1.21 -->
+	<!-- This patch may be used for more than one functionality. Signature: 1.23 -->
 	<Patch name="LocateStdVector32Reserve" type="notify" search_start="0x16660F" addr="1.23" >
 		<Instruction code="48 8D 4D B7" comment="lea rcx, [rbp-49h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call std::vector::reserve" />

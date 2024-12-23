@@ -541,7 +541,7 @@
 		<Instruction code="48 C1 E0 04" comment="shl rax, 4" />
 		
 		<Hook type="call" value="RequestPartsetsPatched" setup="SetupRequestPartsets" />
-	</Patch>
+	</Patch>	
 	
 	<!--Signature 1.23 -->	
 	<Patch name="SetupMobDestructionMaps" type="hook" search_start="0x1542C0" >

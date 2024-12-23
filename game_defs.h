@@ -135,9 +135,19 @@ struct Battle_Mob
 		return (flags & 1);
 	}
 	
-	inline bool IsTransformed() const
+	inline bool IsTransformed1() const
 	{
 		return (flags & 0x10);
+	}
+	
+	inline bool IsTransformed2() const
+	{
+		return (trans_control >= 0);
+	}
+	
+	inline bool IsTransformed() const
+	{
+		return (IsTransformed1() || IsTransformed2());
 	}
 
 	inline uint32_t GetCurrentPartset()

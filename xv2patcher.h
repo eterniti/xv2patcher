@@ -52,5 +52,13 @@ static inline size_t RelAddress(void *addr)
 	return (size_t)addr - (size_t)GetModuleHandle(nullptr);
 }
 
+static inline Battle_Core_MainSystem *GetMainSystem()
+{
+	if (!pms_singleton)
+		return nullptr;
+	
+	return *pms_singleton;
+}
+
 
 #endif // XV2PATCHER

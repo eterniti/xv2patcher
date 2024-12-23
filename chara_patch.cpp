@@ -2094,8 +2094,6 @@ PUBLIC void RequestPartsetsPatched(void *pthis, CharaResourcePartsetsRequest *re
 				req->partsets.PushBack(partset, stdvector32_reserve);
 			}
 		}
-		
-		
 	}
 	
 	RequestPartsets(pthis, req, unk);
@@ -2187,7 +2185,15 @@ PUBLIC void SetMobDestructionMaps(Battle_Mob *pthis, void *unk)
 void OnDeleteMob_Destruction(Battle_Mob *pthis)
 {
 	if (pthis->common_chara)
+	{
 		common_chara_to_mob.erase(pthis->common_chara);
+	}
+	else
+	{	
+		// We should not be here
+		// common_chara is deleted as part of Mob delete (1.23, function BD500 -called by destructor-: BD684 -> call to CommonChara destructor, BD68A -> set field to NULL)
+		// and this hook is happening before the original function
+	}
 
 	mob_to_ds.erase(pthis);
 }
