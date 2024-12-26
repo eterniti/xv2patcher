@@ -12,13 +12,13 @@ OBJS += ../eternity_common/BaseFile.o ../eternity_common/IniFile.o
 OBJS += ../eternity_common/Stream.o ../eternity_common/MemoryStream.o ../eternity_common/FixedMemoryStream.o ../eternity_common/FileStream.o
 OBJS += ../eternity_common/PatchUtils.o ../eternity_common/EPatchFile.o
 OBJS += ../eternity_common/Misc/IggyFile.o
-OBJS += ../eternity_common/DBXV2/MsgFile.o ../eternity_common/DBXV2/IdbFile.o ../eternity_common/DBXV2/QsfFile.o
+OBJS += ../eternity_common/DBXV2/MsgFile.o ../eternity_common/DBXV2/IdbFile.o ../eternity_common/DBXV2/QsfFile.o ../eternity_common/DBXV2/CusFile.o
 OBJS += ../eternity_common/DBXV2/Xv2PreBakedFile.o ../eternity_common/DBXV2/Xv2StageDefFile.o ../eternity_common/DBXV2/Xv2PatcherSlotsFile.o
 OBJS += ../eternity_common/tinyxml/tinyxml.o ../eternity_common/tinyxml/tinystr.o ../eternity_common/tinyxml/tinyxmlerror.o ../eternity_common/tinyxml/tinyxmlparser.o
 CFLAGS +=-Wall -I. -I../eternity_common -std=gnu99 -mms-bitfields -s -O2 -masm=intel -shared -Wl,--subsystem,windows,--kill-at,--enable-stdcall-fixup
 CFLAGS += -static -static-libgcc -static-libstdc++
 CFLAGS += -DXV2 
-CXXFLAGS +=-Wall -Wno-strict-aliasing -I../eternity_common -I../eternity_common/DBXV2 -O2 -std=c++11 -mms-bitfields -DTIXML_USE_STL -DXV2_STAGEDEF_SIMPLE -DIDB_SIMPLE
+CXXFLAGS +=-Wall -Wno-strict-aliasing -I../eternity_common -I../eternity_common/DBXV2 -O2 -std=c++11 -mms-bitfields -DTIXML_USE_STL -DXV2_STAGEDEF_SIMPLE -DIDB_SIMPLE -DCUS_SIMPLE
 CXXFLAGS += -static-libgcc -static-libstdc++ -static -Wl,--subsystem,windows,--kill-at 
 CPPFLAGS += -DDINPUT -DXV2 -DNO_ZLIB 
 LDFLAGS=-L. -static dinput.def

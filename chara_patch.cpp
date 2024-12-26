@@ -1381,7 +1381,7 @@ PUBLIC uint64_t ResultPortraits2Patched(Battle_HudCockpit *pthis, int idx, void 
 {
 	uint32_t *undo = nullptr;
 	
-	if (idx >= 0 && idx < 0xE)
+	if (idx >= 0 && idx < MAX_MOBS)
 	{
 		Battle_HudCharInfo *info = &pthis->char_infos[idx];
 		uint32_t cms_entry = info->cms_entry;
@@ -2223,6 +2223,66 @@ PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
 					pthis->ChangePartset(pthis->GetCurrentPartset()); // Update
 				}
 			}
+		}
+	}
+}
+
+static void CollectAdditionalPortraits(int32_t cms, std::vector<int32_t> &ret)
+{
+	static bool loaded = false;
+	static CusFile cus;
+	
+	if (!loaded)
+	{
+		loaded = true;
+		const std::string cus_path = myself_path + CONTENT_ROOT + "data/system/custom_skill.cus";
+		cus.LoadFromFile(cus_path, false);
+	}
+	
+	if (cus.GetNumSkillSets() == 0) // if cus couldn't be loaded (probably because of not being in data, but in the cpk)
+	{
+		// Add default broly
+		if (cms == 0xD8)
+			ret.push_back(0xDB);
+		
+		return;
+	}
+	
+	for (size_t i = 0; i < cus.GetNumSkillSets(); i++)
+	{
+		const CusSkillSet &ss = cus.GetSkillSet(i);
+		if (ss.char_id == (uint32_t)cms)
+		{
+			if (ss.char_skills[CUS_SKILL_SLOT_AWA] != 0xFFFF)
+			{
+				CusSkill *aw = cus.FindAwakenSkillByID(ss.char_skills[CUS_SKILL_SLOT_AWA]);
+				if (aw && (int16_t)aw->model >= 0)
+				{
+					//DPRINTF("Adding model 0x%x\n", aw->model);
+					ret.push_back((int32_t)aw->model);
+				}
+			}
+		}
+	}
+}
+
+PUBLIC void AddPortraitPatched(Battle_HudCockpit *pthis, int32_t cms)
+{
+	for (size_t i = 0; i < MAX_PORTRAITS; i++)
+	{
+		if (pthis->portrait_cms[i] == cms)
+			return;
+		
+		if (pthis->portrait_cms[i] < 0)
+		{
+			pthis->portrait_cms[i] = cms;
+			std::vector<int32_t> additional;
+			CollectAdditionalPortraits(cms, additional);
+			
+			for (int32_t add: additional)
+				AddPortraitPatched(pthis, add);
+			
+			return;
 		}
 	}
 }

@@ -8,6 +8,7 @@
 
 #define MAX_MOBS			14
 #define MAX_MOBS_HUD		7
+#define MAX_PORTRAITS		64
 
 enum
 {
@@ -216,9 +217,12 @@ struct Battle_HudCockpit
 {
 	uint8_t unk_00[0x580]; 
 	Battle_HudCharInfo char_infos[MAX_MOBS]; // 1.16, changed from offset 0x4F0 to 0x540; 1.21: changed from offset 0x540 to 0x580
+	uint8_t unk_1C40[0x1EE10-0x1C40];
+	int32_t portrait_cms[MAX_PORTRAITS];
 	// ...
 };
 CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x580);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, portrait_cms, 0x1EE10);
 
 // 1.10 structure grow from 0x1D0 to 0x1D4. team variable went from offset 0x10 to 0x14
 // 1.13v2 structure grow from 0x1D4 to 0x1D8

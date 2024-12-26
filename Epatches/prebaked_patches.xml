@@ -611,4 +611,15 @@
 		<Notify value="NULL" />
 	</Patch>
 	
+	<!-- This patch is a reimplementation of the demon patch -->
+	<!-- Signature 1.23 -->
+	<!-- Warning: the function is fully reimplemented, so any significant change may need to change the reimplementation -->
+	<!-- if 1EE10 change, update Battle_HudCockpit::portrait_cms offset in game_defs.h -->
+	<Patch name="PatchAddPortrait" type="hook" search_start="0x1AF880" >
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="48 8D 81 10 EE 01 00" comment="lea rax, [rcx+1EE10h]" />
+		
+		<Hook value="AddPortraitPatched" />
+	</Patch>
+	
 </EternityPatchFile>
