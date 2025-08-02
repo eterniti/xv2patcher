@@ -3,11 +3,11 @@
 
 	<!-- All addreses are 1.08 unless stated otherwise -->		
 	
-	<Patch name="PatchGameVersionString" type="hook" search_start="0x4F7D65" comment="signature 1.16" >
+	<Patch name="PatchGameVersionString" type="hook" search_start="0x4F7D65" comment="signature 1.24.03" >
 		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, '%ls'; comment=version_string" />
 		<Instruction code="E8 XX XX XX XX" />
 		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
-		<Instruction code="BA 04 00 00 00" comment="mov edx, 4" />
+		<Instruction code="BA 05 00 00 00" comment="mov edx, 5" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XX XX XX XX" comment="call send_method" />
 		
@@ -200,7 +200,7 @@
 	<!-- This patch is used by more than one functionality -->
 	<!-- This will also be called from derived class for ohzaru mob -->
 	<!-- This patch will break in almost every update *sigh* -->
-	<Patch name="PatchMobDtor" type="hook" search_start="0xB5F80" comment="signature based on 1.23" >
+	<Patch name="PatchMobDtor" type="hook" search_start="0xB5F80" comment="signature based on 1.24.03" >
 		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF  FF" comment="mov qword ptr[rsp+20h], -2" />
@@ -210,7 +210,7 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="4C 8B 87 20 3C 00 00" comment="mov r8, [rdi+3C20h]" />
+		<Instruction code="4C 8B 87 38 3C 00 00" comment="mov r8, [rdi+3C38h]" />
 		
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
 	</Patch>
