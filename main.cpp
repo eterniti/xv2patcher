@@ -1365,7 +1365,8 @@ extern "C" BOOL WINAPI EXPORT DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOI
 			set_debug_level(1); 	
 
 			if (in_game_process())
-			{					
+			{
+				SetEnvironmentVariableW(L"EOS_USE_ANTICHEATCLIENTNULL", L"1");
 				done = true;
 				
 				CreateMutexA(nullptr, FALSE, "XV2PATCHER_INSTANCE");
