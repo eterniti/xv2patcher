@@ -67,12 +67,11 @@
 	</Patch>
 	
 	<!-- When there is change in this event, review if the patch in the dll needs update -->
-	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x3B6FEA" comment="signature 1.21" >
+	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x3B6FEA" comment="signature 1.24.03" >
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="0F 44 CE" comment="cmovz ecx, esi; (esi = zero constant here)" />
+		<Instruction code="B8 00 00 00 00" comment="mov eax, 0" />
+		<Instruction code="0F 44 D8" comment="cmovz ecx, esi; (esi = zero constant here)" />
 		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
-		<Instruction code="89 47 08" comment="mov [rdi+8], eax" />
-		<Instruction code="89 4F 0C" comment="mov [rdi+0Ch], ecx" />
 		
 		<Notify value="OnPatchLobbyScriptIsOpenedEventLocated" />
 	</Patch>

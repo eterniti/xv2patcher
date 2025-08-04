@@ -110,14 +110,14 @@
 		<Hook type="call" inst_index="6" value="DummyMobUntransformForMobControl" />
 	</Patch>
 
-	<!-- Just to protect the index 0x2084 (loaded_var) in the Battle_Mob object -->
-	<!-- Signature 1.23 -->
+	<!-- Just to protect the index 0x20A4 (loaded_var) in the Battle_Mob object -->
+	<!-- Signature 1.24.03 -->
 	<Patch name="ProtectMobLoadedVar" type="notify" search_start="0x808E90" comment="Takes place in qed cond 30" >
-		<Instruction code="83 B8 94 20 00 00 01" comment="cmp dword ptr [rax+2094h], 1" />
+		<Instruction code="83 B8 A4 20 00 00 01" comment="cmp dword ptr [rax+20A4h], 1" />
 		<Instruction code="77 30" comment="ja +0x30" />
-		<Instruction code="48 83 B8 80 1F 00 00 00" comment="cmp qword ptr [rax+1F80h], 0" />
+		<Instruction code="48 83 B8 90 1F 00 00 00" comment="cmp qword ptr [rax+1F90h], 0" />
 		<Instruction code="74 26" comment="je +0x26" />
-		<Instruction code="8B 88 94 20 00 00" comment="mov ecx, [rax+2094h]" />
+		<Instruction code="8B 88 A4 20 00 00" comment="mov ecx, [rax+20A4h]" />
 		
 		<Notify value="NULL" />		
 	</Patch>

@@ -95,15 +95,16 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- Signature 1.23 -->
+	<!-- Signature 1.24.03 -->
 	<Patch name="PatchSkillCommand" type="hook" search_start="0xEA3F0" >	
 		<Instruction code="48 8B C4" comment="mov rax, rsp" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="48 83 EC 70" comment="sub rsp, 70h" />
+		<Instruction code="48 C7 40 B8 FE FF FF FF" comment=" mov qword ptr [rax-48h], 0FFFFFFFFFFFFFFFEh" />
 		<Instruction code="48 89 58 08" comment="mov [rax+8], rbx" />
 		<Instruction code="48 89 68 10" comment="mov [rax+10h], rbp" />
 		<Instruction code="48 89 70 18" comment="mov [rax+18h], rsi" />
 		<Instruction code="48 89 78 20" comment="mov [rax+20h], rdi" />
-		<Instruction code="41 56" comment="push r14" />
-		<Instruction code="48 83 EC 60" comment="sub rsp, 60h" />
 		<Instruction code="0F 29 70 E8" comment="movaps xmmword ptr [rax-18h], xmm6" />
 		
 		<Hook value="SkillCommandPatched" setup="SetupSkillCommand" />	
@@ -202,9 +203,9 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x224C: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xB975F" comment="addr 1.23" >
-		<Instruction code="83 BF 4C 22 00 00 0C" comment="cmp dword ptr [rdi+224Ch], 0Ch" />
+	<!-- 0x225C: trans_control -->
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xB975F" comment="addr 1.24.03" >
+		<Instruction code="83 BF 5C 22 00 00 0C" comment="cmp dword ptr [rdi+224Ch], 0Ch" />
 		<Instruction code="75 XX" comment="jnz +0xXX" />
 		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
 		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
@@ -224,10 +225,10 @@
 	</Patch>
 	
 	<!-- rsi+0x3B0: unknown_interface_var -->
-	<Patch name="CheckBattleMobAlign7" type="notify" search_start="0xBCE92" comment="addr 1.22.1" >
+	<Patch name="CheckBattleMobAlign7" type="notify" search_start="0xBCE92" comment="addr 1.24.03" >
 		<Instruction code="48 98" comment="cdqe" />
-		<Instruction code="48 8B B4 C5 58 3A 00 00" comment="mov rsi, [rbp+rax*8+3A58h]" />
-		<Instruction code="8B B6 B0 03 00 00" comment="mov esi, [rsi+3B0h]" />
+		<Instruction code="48 8B AC C6 58 3A 00 00" comment="mov rbp, [rsi+rax*8+3A58h]" />
+		<Instruction code="8B AD B0 03 00 00" comment="mov ebp, [rbp+3B0h]" />
 		<Instruction code="EB 07" comment="jmp +7" />
 		
 		<Notify value="NULL" />
