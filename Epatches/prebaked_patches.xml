@@ -263,11 +263,11 @@
 		<Hook value="CusAuraPatchInt3" />
 	</Patch> -->	
 	
-	<!-- Signature is 1.21 -->
+	<!-- Signature is 1.24.03 -->
 	<Patch name="CusAuraPatchTeleport" type="notify" search_start="0xB5892" comment="This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes." >
 		<Instruction code="39 83 XXXXXXXX" comment="cmp [rbx+XXXXh], eax" />
 		<Instruction code="74 0A" comment="je teleport" />
-		<Instruction code="E9 8C 09 00 00" comment="jmp no_teleport" />
+		<Instruction code="E9 7C 09 00 00" comment="jmp no_teleport" />
 		<Instruction code="48 8B 74 24 48" comment="mov rsi, [rsp+48h]" />
 		<Instruction code="41 0F BA E7 09" comment="bt r15d, 9" />
 	
@@ -425,10 +425,10 @@
 	
 	<!-- This patch may break in the dll on any change. -->
 	<!-- When the patch breaks, implementation of default values of aur_bpe_map in PreBakeSetup must be reviewed. Also implementation of Xenoverse2::GetAuraExtra may need update. -->
-	<!-- Signature 1.23 -->
+	<!-- Signature 1.24.03 -->
 	<Patch name="PatchAurBpe" type="notify" search_start="0xF8BF6" >
 		<Instruction code="8D 42 E6" comment="lea eax, [rdx-1Ah]" />
-		<Instruction code="83 F8 22" comment="cmp eax, 22" />
+		<Instruction code="83 F8 23" comment="cmp eax, 23" />
 		<Instruction code="0F 87 XXXXXXXX" comment="ja default_case" />
 				
 		<Notify inst_index="2" value="AurToBpePatch" />
@@ -601,12 +601,12 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!--Signature 1.23 -->
-	<!-- If 0x2248 changes, relocate BattleMob::current_partset in game_defs.h. Hint: it is very likely that this var will be located at -4 from trans_control -->
+	<!--Signature 1.24.03 -->
+	<!-- If 0x2258 changes, relocate BattleMob::current_partset in game_defs.h. Hint: it is very likely that this var will be located at -4 from trans_control -->
 	<Patch name="ProtectTransPartset" type="notify" search_start="0xC00CC" >
 		<Instruction code="0F 57 C9" comment="xorps xmm1, xmm1" />
 		<Instruction code="FF 90 50 01 00 00" comment="call qword ptr [rax+150h]" />
-		<Instruction code="89 BB 48 22 00 00" comment="mov [rbx+2248h], edi" />		
+		<Instruction code="89 BB 58 22 00 00" comment="mov [rbx+2258h], edi" />		
 		
 		<Notify value="NULL" />
 	</Patch>

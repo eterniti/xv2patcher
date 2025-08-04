@@ -1037,6 +1037,7 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[32] = 0x3A;
 	cus_aura_lookup[33] = 0x3B;
 	cus_aura_lookup[34] = 0x3C;
+	cus_aura_lookup[35] = 0x3D;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -1071,6 +1072,7 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[52] = 281;
 	aur_bpe_map[53] = 302;
 	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = aur_bpe_map[60] = 320;
+	aur_bpe_map[61] = 340;
 	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
 	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
 	// Original Golden Freezer Skin behaviour
@@ -1504,7 +1506,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x999)); // buf+0x999 -> address return for no teleport   
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x989)); // buf+0x989 -> address return for no teleport   
 }
 
 PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)

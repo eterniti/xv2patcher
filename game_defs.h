@@ -125,9 +125,9 @@ struct Battle_Mob
 	Battle_Command *battle_command; // 04D8
 	uint8_t unk_4E0[0x2094-0x4E0]; 
 	int32_t loaded_var; // 2094 ; if >= 0, char is loaded
-	uint8_t unk_2088[0x2248-0x2098];
-	uint32_t trans_partset; // 2248
-	int32_t trans_control; // 224C
+	uint8_t unk_2088[0x2258-0x2098];
+	uint32_t trans_partset; // 2258
+	int32_t trans_control; // 225C
 	// ...
 	// ...
 	
@@ -180,8 +180,8 @@ CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
 CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4C8);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4D8);
 CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2094);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x2248);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x224C);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x2258);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x225C);
 
 // 1.20. size 0x180 -> 0x190
 // 1.21 size 0x190 -> 0x1A0
