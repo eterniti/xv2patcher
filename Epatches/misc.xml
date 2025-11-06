@@ -41,6 +41,24 @@
 		<Write value="E9 B6 01 00 00   90" />
 	</Patch>-->	
 	
+	<!-- New patch implementation for 1.24+, provided by HAWGT -->
+	<!-- Signature 1.24.1 -->
+	<Patch name="Pollution, go away!" type="write" search_start="0x2AF6D4" >
+		<Instruction code="48 89 5C 24 10" comment="mov [rsp+arg_8], rbx" />
+		<Instruction code="48 89 74 24 18" comment="mov [rsp+arg_10], rsi" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
+		<Instruction code="48 83 79 08 00" comment="cmp qword ptr [rcx+8], 0" />
+		<Instruction code="49 8B F0" comment="mov rsi, r8" />
+		<Instruction code="48 8B DA" comment="mov rbx, rdx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="75 1B" comment="jnz short loc_1402B578A" />
+		<Instruction code="48 8B CA" comment="mov rcx, rdx ; this" />
+		
+		<!-- xor al, al; retn; fill nop -->
+		<Write value="30 C0 C3 90 90" />
+	</Patch>
+	
 	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x2D1CC0" comment="address 1.25.1" >
 		<Instruction code="48 89 7C 24 20" comment="mov [rsp+arg_18], rdi" />
 		<Instruction code="41 56" comment="push r14" />

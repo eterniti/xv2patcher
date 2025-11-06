@@ -1360,7 +1360,7 @@ VOID WINAPI GetStartupInfoW_Patched(LPSTARTUPINFOW lpStartupInfo)
 		ini.AddIntegerConstant("auto", 0);
 		set_debug_level(default_log_level);				
 		
-		bool iggy_trace, iggy_warning, offline_mode, exception_handler;
+		bool iggy_trace, iggy_warning, offline_mode, exception_handler, excessive_air_contamination;
 		
 		start();
 		started = true;
@@ -1369,6 +1369,7 @@ VOID WINAPI GetStartupInfoW_Patched(LPSTARTUPINFOW lpStartupInfo)
 		ini.GetBooleanValue("Patches", "iggy_warning", &iggy_warning, false);
 		ini.GetBooleanValue("Patches", "offline_mode", &offline_mode, false);
 		ini.GetBooleanValue("Debug", "exception_handler", &exception_handler, false);
+		ini.GetBooleanValue("Patches", "excessive_air_contamination", &excessive_air_contamination, false);
 		
 		if (iggy_trace)
 		{
@@ -1399,6 +1400,12 @@ VOID WINAPI GetStartupInfoW_Patched(LPSTARTUPINFOW lpStartupInfo)
 			ini.GetMultipleStringsValues("Debug", "exception_ignore_modules", ignore_modules);			
 			AddVectoredExceptionHandler(1, ExceptionHandler);
 			PatchUtils::ParseMsvcRTTI();
+		}
+		
+		
+		if (excessive_air_contamination)
+		{
+			SetEnvironmentVariableW(L"EOS_USE_ANTICHEATCLIENTNULL", L"1");
 		}
 	}
 	
