@@ -59,11 +59,11 @@ CHECK_STRUCT_SIZE(SkillSlot, 0x10);
 struct Battle_Command
 {
 	void **vtbl; // 000
-	uint8_t unk_08[0xDC0-8];
-	BCMEntry bcm; // 0DC0 - trans_modifier is at 0x64  - Maybe not all the entry is stored
+	uint8_t unk_08[0xEC0-8];
+	BCMEntry bcm; // 0EC0 - trans_modifier is at 0x64  - Maybe not all the entry is stored
 	// ...
 };
-CHECK_FIELD_OFFSET(Battle_Command, bcm, 0xDC0);
+CHECK_FIELD_OFFSET(Battle_Command, bcm, 0xEC0);
 
 struct CharaResourcePartsetsRequest
 {
@@ -80,8 +80,8 @@ CHECK_FIELD_OFFSET(CharaResourcePartsetsRequest, partsets, 0x10);
 struct CommonChara
 {
 	void **vtbl; // 0000
-	uint8_t unk_08[0x58C-8]; 
-	uint32_t current_partset; // 058C
+	uint8_t unk_08[0x5A4-8]; 
+	uint32_t current_partset; // 05A4
 	// ...
 	
 	inline void ChangePartset(uint32_t partset)
@@ -89,7 +89,7 @@ struct CommonChara
 		PatchUtils::InvokeVirtualRegisterFunction(this, CHANGE_PARTSET_VIRTUAL, partset);
 	}
 };
-CHECK_FIELD_OFFSET(CommonChara, current_partset, 0x58C);
+CHECK_FIELD_OFFSET(CommonChara, current_partset, 0x5A4);
 
 // (Game object) XG::Game::Battle::Mob
 // Size: 0x2850 (1.08)
@@ -119,15 +119,15 @@ struct Battle_Mob
 	SkillSlot skills[SKILL_NUM]; // 0268
 	uint8_t unk_2F8[0x3B0-0x2F8]; 
 	int32_t unk_interface_var; // 03B0  Somehow controls the portrait and audio? We need this for the "Take control of ally" functionality
-	uint8_t unk_3B4[0x4C8-0x3B4];
-	CommonChara *common_chara; // 4C8 - XG::Game::Common::Chara, the one that has the BCS file content inside
-	uint64_t unk_4D0;
-	Battle_Command *battle_command; // 04D8
-	uint8_t unk_4E0[0x2094-0x4E0]; 
-	int32_t loaded_var; // 2094 ; if >= 0, char is loaded
-	uint8_t unk_2088[0x2248-0x2098];
-	uint32_t trans_partset; // 2248
-	int32_t trans_control; // 224C
+	uint8_t unk_3B4[0x4D8-0x3B4];
+	CommonChara *common_chara; // 4D8 - XG::Game::Common::Chara, the one that has the BCS file content inside
+	uint64_t unk_4E0;
+	Battle_Command *battle_command; // 04E8
+	uint8_t unk_4F0[0x2114-0x4F0]; 
+	int32_t loaded_var; // 2114 ; if >= 0, char is loaded
+	uint8_t unk_2118[0x22C8-0x2118];
+	uint32_t trans_partset; // 22C8
+	int32_t trans_control; // 22CC
 	// ...
 	// ...
 	
@@ -166,6 +166,11 @@ struct Battle_Mob
 		
 		common_chara->ChangePartset(partset);
 	}
+	
+	inline CUSSkill *GetAwakenSkill()
+	{
+		return skills[SKILL_AWAKEN].skill;
+	}
 };
 CHECK_FIELD_OFFSET(Battle_Mob, is_cpu, 0x50);
 CHECK_FIELD_OFFSET(Battle_Mob, flags, 0xB0);
@@ -177,11 +182,11 @@ CHECK_FIELD_OFFSET(Battle_Mob, ki, 0x10C);
 CHECK_FIELD_OFFSET(Battle_Mob, stamina, 0x16C);
 CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x268);
 CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
-CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4C8);
-CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4D8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2094);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x2248);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x224C);
+CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4D8);
+CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4E8);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2114);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x22C8);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x22CC);
 
 // 1.20. size 0x180 -> 0x190
 // 1.21 size 0x190 -> 0x1A0
@@ -215,14 +220,14 @@ CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry2, 0x3C);
 // Size unknown
 struct Battle_HudCockpit
 {
-	uint8_t unk_00[0x580]; 
-	Battle_HudCharInfo char_infos[MAX_MOBS]; // 1.16, changed from offset 0x4F0 to 0x540; 1.21: changed from offset 0x540 to 0x580
-	uint8_t unk_1C40[0x1EE10-0x1C40];
+	uint8_t unk_00[0x590]; 
+	Battle_HudCharInfo char_infos[MAX_MOBS]; 
+	uint8_t unk_1C40[0x1F2F0-0x1C50]; 
 	int32_t portrait_cms[MAX_PORTRAITS];
 	// ...
 };
-CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x580);
-CHECK_FIELD_OFFSET(Battle_HudCockpit, portrait_cms, 0x1EE10);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x590);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, portrait_cms, 0x1F2F0);
 
 // 1.10 structure grow from 0x1D0 to 0x1D4. team variable went from offset 0x10 to 0x14
 // 1.13v2 structure grow from 0x1D4 to 0x1D8
@@ -238,7 +243,6 @@ CHECK_STRUCT_SIZE(UnkMobStruct, 0x1F0);
 CHECK_FIELD_OFFSET(UnkMobStruct, team, 0x18);
 
 // (Game object) XG::Game::Battle::Core::MainSystem
-// Size 0x9BF0 (1.10v2)
 struct Battle_Core_MainSystem
 {
 	void **vtbl; // 0000
@@ -246,13 +250,13 @@ struct Battle_Core_MainSystem
 	UnkMobStruct unk_mob_data[MAX_MOBS]; // 00E0	
 	uint8_t unk_1C00[0x3A58-0x1C00]; 
 	Battle_Mob *mobs[MAX_MOBS]; // 3A58
-	uint8_t unk_3AC8[0x4358-0x3AC8];
-	Battle_HudCockpit *cockpit; // 4358
+	uint8_t unk_3AC8[0x4A58-0x3AC8];
+	Battle_HudCockpit *cockpit; // 4A58
 	//...
 };
 CHECK_FIELD_OFFSET(Battle_Core_MainSystem, unk_mob_data, 0xE0);
 CHECK_FIELD_OFFSET(Battle_Core_MainSystem, mobs, 0x3A58);
-CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x4358);
+CHECK_FIELD_OFFSET(Battle_Core_MainSystem, cockpit, 0x4A58);
 
 // (Game object)
 // Size unknown
@@ -281,18 +285,21 @@ struct AIBehaviourSpecial
 // 1.20.1 mob, 0x10 -> 0x28
 // 1.20.1 ai_decision, 0x28 -> 0x40
 // 1.20.1 type, 0x154 -> 0x174
+//
+// 1.25.1 mob 0x28->0x30
+// 1.25.1 ai_decision 0x40->0x48
 struct AIDef
 {
-	uint8_t unk_00[0x28]; 
-	Battle_Mob *mob; // 0028
-	uint8_t unk_30[0x40-0x30]; 
-	uint32_t ai_decision; // 0040
-	uint8_t unk_44[0x174-0x44]; 
+	uint8_t unk_00[0x30]; 
+	Battle_Mob *mob; // 0030
+	uint8_t unk_38[0x48-0x38]; 
+	uint32_t ai_decision; // 0048
+	uint8_t unk_4C[0x174-0x4C]; 
 	uint32_t type;	// 0x174 - A number between [0-10], both included. Seem to be 2 when long range attack? or maybe means a single-step attack.
 	//...
 };
-CHECK_FIELD_OFFSET(AIDef, mob, 0x28);
-CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x40);
+CHECK_FIELD_OFFSET(AIDef, mob, 0x30);
+CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x48);
 CHECK_FIELD_OFFSET(AIDef, type, 0x174);
 
 struct BattleInterface
@@ -317,6 +324,4 @@ struct QuestManager
 CHECK_FIELD_OFFSET(QuestManager, mode, 0xA0);
 
 
-// (Game object)
-// Size 0x180
 

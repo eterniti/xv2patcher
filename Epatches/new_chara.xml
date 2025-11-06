@@ -164,15 +164,15 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 
 -->
 
-	<!-- Signature updated in 1.21 -->
-	<!-- Don't forget to update the size in the dll code too on signature change -->
-	<!-- If size changes, patches below that have "It is important to update this when the size of the object change" need to have the size changed too -->
+	<!-- Signature updated in 1.25.1 -->
+	<!-- Don't forget to update CHASEL_SIZE in the dll code too on signature change -->
+	<!-- IF SIZE CHANGES, PATCHES BELOW THAT HAVE "It is important to update this when the size of the object change" need to have the size changed too -->
 	<!-- Remember size is also in chara_patch_asm.S, in ModifyArrayOffset4Asm function -->
-	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x393D85" >
+	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x3D0BF4" >
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
 		<Instruction code="41 83 C8 FF" comment="or r8d, 0FFFFFFFFh" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 10290000" comment="mov ecx, 2910h" />
+		<Instruction code="B9 30290000" comment="mov ecx, 2930h" />
 		<Instruction code="FF 15 XXXXXXXX" comment="call operator new" />
 		<Instruction code="4C 8B D0" comment="mov r10, rax" />
 		
@@ -213,7 +213,7 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<Write inst_index="0" inst_offset="3" value="10 29" />
+		<Write inst_index="0" inst_offset="3" value="30 29" />
 	</Patch>
 	
 	<Patch name="ModifyArrayOffset2" type="write" search_start="0x4F1B87" comment="Takes place in chasel_func15, the function with most of the destructor implementation." >
@@ -225,14 +225,14 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Instruction code="90" comment="nop" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<Write inst_index="0" inst_offset="3" value="10 29" />
+		<Write inst_index="0" inst_offset="3" value="30 29" />
 	</Patch>
 	
 	<!-- Signature updated in 1.21 -->
-	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x5B400D" comment="Takes place in chasel_func5." >
+	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x6123CD" comment="Takes place in chasel_func5." >
 		<Instruction code="48 8D 96 E0 05 00 00" comment="lea rdx, [rsi+5E0h]" />
 		<Instruction code="48 C7 44 24 30 00 00 00 00" comment="mov qword ptr[rsp+30h], 0" />
-		<Instruction code="48 8D 8E 10 28 00 00" comment="lea rcx, [rsi+2810h]" />
+		<Instruction code="48 8D 8E 30 28 00 00" comment="lea rcx, [rsi+2830h]" />
 		<Instruction code="49 8B DE" comment="mov rbx, r14" />
 		<Instruction code="89 6C 24 28" comment="mov [rsp+28h], ebp" />
 		<Instruction code="48 C1 E3 05" comment="shl rbx, 5" />
@@ -243,22 +243,22 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Instruction code="48 83 BC 33 F0 05 00 00 00" comment="cmp qword ptr [rbx+rsi+5F0h], 0" />
 		
 		<!-- It is important to update this when the size of the object change -->
-		<!-- 2910 = size of object, 2920 = size of object + 0x10 -->
-		<Write value="XXXXXX10290000 XXXXXXXXXXXXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXX XXXXXXXX XXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXXXXXX XXXXXXXX2029"  /> 
+		<!-- 2930 = size of object, 2940 = size of object + 0x10 -->
+		<Write value="XXXXXX30290000 XXXXXXXXXXXXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXX XXXXXXXX XXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXXXXXX XXXXXXXX4029"  /> 
 	</Patch>
 	
 	<!-- Added in version 1.10v2. 
 	     This patch exists because their compiler wrote 0x5E0, as 0x2F << 5. This patch is likely to be gone in the future if the address (0x5E0) changes and
 	     compiler is unable to do such fancy things with other number -_-  
+		 PATCH IS VERY SENSITIVE TO ANY CHANGE!
 		 
-		 IMPORTANT: while this patch exists, remember to update the reference to the size of the chasel object in chara_patch_asm.S too
+		 THE INSTRUCTION AFTER THIS PATCH WILL BE CONSIDERED THE RETURN ADDRESS OF THE PATCH. THE WHOLE CODE IN THE SIGNATURE WILL BE WIPED
 	-->
 	<Patch name="ModifyArrayOffset4" type="notify" search_start="0x530FC5" comment="Takes place in chasel_func5, just after ModifyArrayOffset3_Multi">
 		<Instruction code="4D 8D 46 2F" comment="lea r8, [r14+2Fh]" />
 		<Instruction code="49 C1 E0 05" comment="shl r8, 5" />
 		<Instruction code="4C 03 C6" comment="add r8, rsi" />
 		<Instruction code="49 83 78 18 08" comment="cmp qword ptr [r8+18h], 8" />
-		<Instruction code="72 03" comment="jb +3" />
 		
 		<Notify value="ModifyArrayOffset4" />
 	</Patch>

@@ -122,6 +122,7 @@ PUBLIC int CpkGetFileInfo_Patched(uint8_t *cpk_object, const char *path, uint8_t
 			}
 			
 			*(uint32_t *)&ret_entry[0x20] = (uint32_t)file_size;
+			*(uint64_t *)&ret_entry[0x18] = (uint64_t)file_size; // Uncomp size
 			*result = true;
 			return 0;
 		}

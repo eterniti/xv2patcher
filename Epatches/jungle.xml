@@ -4,6 +4,93 @@
 <!-- DON'T ENABLE THIS FILE!!!!!!!!!!!!!!! -->
 <EternityPatchFile name="Jungle" enabled="false" comment="experiments">	
 
+	<Patch name="jun195" type="write" search_start="0x15ED60" comment="addr 1.24.01" >
+		<Instruction code="83 FB 03 73 32 41 8B 06" />
+		<Write value="XX XX 64" />
+	</Patch>
+	
+	<Patch name="jun194" type="log" search_start="0x1B4DB0" comment="addr 1.24.01" >	
+		<Instruction code="83 FA 02 0F 87 35 01 00  00" />
+		<Log ra="true" when="before" function="bhd_met_func" value="a1,a2,a3,a4,a5,a6,a7,a8" types="ptr,s32,s32,s32,ptr,ptr,ptr,ptr" select="01110000" extra="?,d,d,d,?,?,?,?" />
+	</Patch>
+	
+	<!--<Patch name="jun193" type="log" search_start="0x1BD4B0" comment="addr 1.24.01" >	
+		<Instruction code="E8 XXXXXXXX 90 48 8D 55 C0 48 83 7D D8 10" />
+		<Log hook_type="call" ra="true" when="before" function="bhd_met_func" value="a1,a2,a3" types="ptr,s32,s32," select="011" extra="?,d,d" />
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun192" type="log" search_start="0x577D0" comment="addr 1.23" >		
+		<Log ra="true" when="before" function="vector_increase" value="vec,rdx" types="vcvectoru32,u64" select="11" extra="d,?" />
+	</Patch>-->
+	
+	<!--<Patch name="jun191" type="hook" search_start="0x166C26" comment="addr 1.23" >
+		<Instruction code="E8" />
+		<Hook type="call" value="schedule_partsets_load_patched" setup="setupppp" />
+	</Patch>
+	
+	<Patch name="jun190" type="log" search_start="0x108700" comment="addr 1.23" >		
+		<Log ra="true" when="before" function="resourcebase_partsets" value="this,list,u32" types="ptr,ptr:0x10,u32" select="011" extra="?,0x40,d" />
+	</Patch>-->
+	
+	<!--<Patch name="jun189" type="log" search_start="0x2B1BD0" comment="addr 1.23" >		
+		<Log ra="true" when="before" function="cus_get_skillid_by_1" value="cus,id1" types="ptr,u32" select="01" extra="?,d" />
+	</Patch>
+	
+	<Patch name="jun190" type="log" search_start="0x2B1CD0" comment="addr 1.23" >		
+		<Log ra="true" when="before" function="cus_get_skill_by_type_and_id1" value="cus,type,id1" types="ptr,u32,u32" select="011" extra="?,d,d" />
+	</Patch> -->
+	
+	<!--<Patch name="jun188" type="log" search_start="0x2876F0" comment="addr 1.23" >
+		<Instruction code="40 55" />
+		
+		<Log ra="true" when="before" function="mmm" value="this" types="ptr:0xE0" select="1" extra="0x40"/>
+	</Patch>-->
+	
+	
+	<!--<Patch name="jun187" type="log" search_start="0x28A7C0" comment="addr 1.23" >
+		<Instruction code="48 85 D2" />
+		
+		<Log ra="true" when="before" function="mmm" value="this,rdx,r8d,r9d" types="ptr,ptr,u32,u32" select="0111" extra="?,64,?,?" />
+	</Patch>-->
+	
+	<!--<Patch name="jun186" type="log" search_start="0x289700" comment="addr 1.23" >
+		<Instruction code="4D 85 C0" />
+		
+		<Log ra="true" when="before" function="mmm" value="this,edx,r8d,r9d" types="ptr,u32,u32,u32" select="0111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun185" type="log" search_start="0x2C9AA0" comment="addr 1.23" >
+		<Instruction code="48 83 EC 38" />
+		
+		<Log ra="true" when="before" function="load_file_maybe" value="path,edx,r8d" types="cstr,u32,u32" select="111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun184" type="log" search_start="0xBF3E0" comment="addr 1.23" >
+		<Instruction code="48 8B C4" />
+		
+		<Log ra="true" when="before" function="Mob_Untransform" value="cms,edx" types="u32:0xBC,u32" select="11" />
+	</Patch>
+	
+	<Patch name="jun183" type="log" search_start="0xBFB90" comment="addr 1.23" >
+		<Instruction code="44 89 44 24 18" />
+		
+		<Log ra="true" when="before" function="Mob_ChangePartset" value="cms,partset,r8d,trans_control" types="u32:0xBC,u32,u32,u32" select="1111" />
+	</Patch>-->
+	
+	<!--<Patch name="jun182" type="log" search_start="0x269DF0" comment="addr 1.23" >
+		<Instruction code="40 57" />
+		
+		<Log ra="true" when="before" function="CommonChara_D8" value="this,partset,r8d,r9d" types="ptr,u32,u32,u32" select="0111" />
+	</Patch>	
+
+	
+	<Patch name="jun180" type="log" search_start="0x2699E0" comment="addr 1.23" >
+		<Instruction code="40 57" />
+		
+		<Log ra="true" when="before" function="CommonChara_D0" value="this,partset" types="ptr,u32" select="01" />
+	</Patch>-->
+	
 	<!--<Patch name="jun179" type="hook" search_start="0x2EF3F0" comment="addr 1.11" >
 		<Instruction code="4C 8B C9" />
 		

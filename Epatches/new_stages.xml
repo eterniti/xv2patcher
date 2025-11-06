@@ -121,11 +121,11 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>
 	
-	<!-- Signature: 1.21 (first time signature break since first implementation in 1.08) -->
-	<Patch name="PatchStageDef1Top7" type="notify" search_start="0x3DD6DE" comment="Takes place in lcmap_func1" >
+	<!-- Signature: 1.25.1 -->
+	<Patch name="PatchStageDef1Top7" type="notify" search_start="0x41D0CE" comment="Takes place in lcmap_func1" >
 		<Instruction code="4C 8B 3D XXXXXXXX" comment="mov r15, cs:stage_defs1" />
-		<Instruction code="BF 10 00 00 00" comment="mov edi, 10h" />		
-		<Instruction code="48 81 C3 A0 00 00 00" comment="add rbx, A0h" />		
+		<Instruction code="BF 11 00 00 00" comment="mov edi, 11h" />		
+		<Instruction code="48 81 C3 A8 00 00 00" comment="add rbx, A8h" />		
 		<Instruction code="48 89 74 24 40" comment="mov [rsp+40h], rsi" />
 		<Instruction code="8D 6F FF" comment="lea ebp, [rdi-1]" />
 		<Instruction code="0F 1F 80 00 00 00 00" comment="long nop" />
@@ -193,22 +193,24 @@ This part is divided into X subparts.
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Top" />
 	</Patch>	
 	
-	<!-- Signature 1.11 -->
-	<Patch name="PatchStageDef1Off8_2" type="notify" search_start="0x140886" comment="Takes place in stagew_func1" >
-		<Instruction code="48 8D 3D XXXXXXXX" comment="lea rdi, stage_defs1_p8" />
+	<!-- Signature 1.25.1 (first signature fail since 1.11) -->
+	<Patch name="PatchStageDef1Off8_2" type="notify" search_start="0xAACC6" comment="Takes place in stagew_func1" >
+		<Instruction code="48 8D 1D XXXXXXXX" comment="lea rbx, stage_defs1_p8" />
 		<Instruction code="41 B8 04 00 00 00" comment="mov r8d, 4" />	
-		<Instruction code="48 8B 3C CF" comment="mov rdi, [rdi+rcx*8]" />
+		<Instruction code="48 8B 1C CB" comment="mov rbx, [rbx+rcx*8]" />
 		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, 'NLBY'" />
-		<Instruction code="48 8B CF" comment="mod rcx, rdi" />	
+		<Instruction code="48 8B CB" comment="mod rcx, rbx" />	
 		<Instruction code="FF 15 XXXXXXXX" comment="call strncmp" />
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="74 1A" comment="jz +1A" />
+		<Instruction code="74 4E" comment="jz +4E" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Off8" />
 	</Patch>
 	
-	<!-- signature 1.14.1V2 -->
-	<Patch name="PatchStageDef1Off8_3+4" type="notify" search_start="0x2E4622" matches="2" comment="Takes place in stagex_func1 AND stagex_func2" >
+	<!-- 1.25.1
+	  Since 1.25.1: Splitted in two patches. There is only one match now, the one of stagex_func2. The one used by stagex_func1 has its own signature in the new patch below
+	-->
+	<Patch name="PatchStageDef1Off8_3" type="notify" search_start="0x2C1002" matches="1" comment="Takes place in stagex_func2" >
 		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, stage_defs1_p8" />
 		<Instruction code="48 8B 14 CA" comment="mov rdx, [rdx+rcx*8]" />		
 		<Instruction code="80 3A 00" comment="cmp byte ptr[rdx], 0" />	
@@ -218,7 +220,18 @@ This part is divided into X subparts.
 		<Instruction code="49 83 C8 FF" comment="or r8, -1" />
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Off8" />
-	</Patch>	
+	</Patch>
+
+	<!-- New patch in 1.25.1. -->
+	<!-- Signature 1.25.1 -->
+	<Patch name="PatchStageDef1Off8_4" type="notify" search_start="0x2EF640" comment="Takes place in a function only called by stagex_func1" >
+		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_defs1_p8" />
+		<Instruction code="48 8D 04 80" comment="lea rax, [rax+rax*4]" />
+		<Instruction code="48 8B 04 C1" comment="mov rax, [rcx+rax*8]" />
+		<Instruction code="C3" comment="retn" />
+	
+		<Notify inst_index="0" inst_offset="3" value="PatchStageDef1Off8" />
+	</Patch>
 	
 	<Patch name="PatchStageDef1Off8_5" type="notify" search_start="0x2AA61E" comment="Takes place in vcdplayer_func1" >
 		<Instruction code="48 8D 1D XXXXXXXX" comment="lea rbx, stage_defs1_p8" />
@@ -295,12 +308,14 @@ This part is divided into X subparts.
 	
 	<!-- In 1.11, this patch changed, since now the address was a RVA, and not spitted in two parts.
 	     Below, commented, is the old patch. 
-		 Notice the patch function called in the patch (PatchStageDef1Off8_Absolute) is different to the old patch -->
-	<Patch name="PatchStageDef1Off8_11" type="notify" search_start="0x5A7126" comment="Takes place in misc_func1" >
-		<Instruction code="48 8B 94 CF XXXXXXXX" comment="mov rdx, ds:rva stage_def1_plus8[rdi+rcx*8]" />
+		 Notice the patch function called in the patch (PatchStageDef1Off8_Absolute) is different to the old patch 
+		 Signature 1.25.1
+     -->
+	<Patch name="PatchStageDef1Off8_11" type="notify" search_start="0x6B41F6" comment="Takes place in misc_func1" >
+		<Instruction code="49 8B 94 CC XXXXXXXX" comment="mov rdx, ds:rva stage_def1_plus8[r12+rcx*8]" />
 		<Instruction code="48 85 D2" comment="test rdx, rdx" />
-		<Instruction code="74 1F" comment="jz +1F" />
-		<Instruction code="38 1A" comment="cmp [rdx], bl" />
+		<Instruction code="74 20" comment="jz +20" />
+		<Instruction code="80 3A 00" comment="cmp byte ptr [rdx], 0" />
 		<Instruction code="75 05" comment="jnz +5" />
 		
 		<Notify inst_index="0" inst_offset="4" value="PatchStageDef1Off8_Absolute" />
@@ -444,13 +459,13 @@ This part is divided into X subparts.
 		<Notify inst_index="2" inst_offset="3" value="PatchStageSsidToIdx" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="PatchStageSsidToIdx3" type="notify" search_start="0x5B7F21" comment="Takes place in stagesele_func2" >
-		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h" />
+	<!-- Signature 1.25.1 -->
+	<Patch name="PatchStageSsidToIdx3" type="notify" search_start="0x616201" comment="Takes place in stagesele_func2" >
+		<Instruction code="BE 28 00 00 00" comment="mov esi, 28h" />
 		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
 		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
-		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
+		<Instruction code="48 8D AF C8 06 00 00" comment="lea rbp, [rdi+6C8h]" />
 		<Instruction code="44 8D 6E FE" comment="lea r13d, [rsi-2]; Num of ss stages" />
 				
 		<Notify inst_index="2" inst_offset="3" value="PatchStageSsidToIdx" />
@@ -546,25 +561,25 @@ This part is divided into X subparts.
 	
 <!-- Part 5: Redirecting the accesses to the stage_sounds array -->	
 
-	<!-- Signature 1.22.1 -->
-	<Patch name="PatchStageSounds" type="notify" search_start="0x16949D" comment="Takes place in btlsound_func1" >
+	<!-- Signature 1.25.1 -->
+	<Patch name="PatchStageSounds" type="notify" search_start="0x177DED" comment="Takes place in btlsound_func1" >
 		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_sounds" />
 		<Instruction code="48 8B 0C C1" comment="mov rcx, [rcx+rax*8]" />
 		<Instruction code="48 85 C9" comment="test rcx, rcx" />
 		<Instruction code="74 DA" comment="jz -26" />
-		<Instruction code="C7 43 10 7A 01 00 00" comment="mov dword ptr [rbx+10h], 17Ah" /> 
+		<Instruction code="C7 43 10 9A 01 00 00" comment="mov dword ptr [rbx+10h], 19Ah" /> 
 		
 		<Notify inst_index="0" inst_offset="3" value="PatchStageSoundsMain" />
 	</Patch>
 	
 <!-- Part 6: Redirecting the accesses to the stage_music array -->
 
-	<!-- Signature 1.22.1 (patch first broken in 1.22.1 -->
-	<Patch name="PatchStageMusic" type="notify" search_start="0x38276D" comment="Takes place in btlnormal_func1" >
+	<!-- Signature 1.25.1 -->
+	<!-- Note: since 1.25.1, stage_music is not longer a int32 array, but an array of a structure with two int32 -->
+	<Patch name="PatchStageMusic" type="notify" search_start="0x3B889D" comment="Takes place in btlnormal_func1" >
 		<Instruction code="48 8D 0D XXXXXXXX" comment="lea rcx, stage_music" />
-		<Instruction code="41 83 C8 FF" comment="or r8d, -1" />
-		<Instruction code="83 7B 58 00" comment="cmp dword ptr [rbx+58h], 0" />
-		<Instruction code="8B 14 81" comment="mov edx, [rcx+rax*4]" />
+		<Instruction code="48 63 43 1C" comment="movsxd rax, dword ptr [rbx+1Ch]" />
+		<Instruction code="8B 14 C1" comment="mov edx, [rcx+rax*8]" />
 	
 		<Notify inst_index="0" inst_offset="3" value="PatchStageMusicMain" />
 	</Patch>
@@ -574,10 +589,10 @@ This part is divided into X subparts.
 
 	<!-- Stage limits are removed in patcher 4.2 by changing all conditions. The patches assume that the stage id will never be a positive number that is past the limit of actual numbers of stage... which is hopefully true -->
 
-	<!-- Signature 1.20 -->
-	<Patch name="PatchStageNum1+2" type="write" search_start="0x251096" matches="2" comment="Takes place in stagex_func1 AND stagex_func2" >		
+	<!-- Signature 1.25.1 -->
+	<Patch name="PatchStageNum1+2" type="write" search_start="0x2C0FC6" matches="2" comment="Takes place in stagex_func1 AND stagex_func2" >		
 		<Instruction code="83 7C 24 6C 49" comment="cmp dword ptr [rsp+6Ch], 49h -> stage num" />
-		<Instruction code="0F 83 89 00 00 00" comment="jnb +0x89" />
+		<Instruction code="0F 83 XXXX 00 00" comment="jnb +0xXXXX" />
 		<Instruction code="48 8B 15 XXXXXXXX" comment="mov rdx, cs:XXXXXXXX" />
 		<Instruction code="80 3A 00" comment="cmp byte ptr [rdx], 0" />
 		<Instruction code="75 05" comment="jnz +5" />
@@ -592,18 +607,16 @@ This part is divided into X subparts.
 	</Patch>
 
 	
-	<!-- This patch is just below PatchStageDef1Off8_11. !-->
-	<!-- Signature 1.20 -->
-	<Patch name="PatchStageNum3" type="write" search_start="0x59289D" comment="Takes place in misc_func1" >
+	<!-- This patch is just below PatchStageDef1Off8_11 !-->
+	<!-- Signature 1.25.1 -->
+	<Patch name="PatchStageNum3" type="write" search_start="0x6B41C2" comment="Takes place in misc_func1" >
 		<Instruction code="41 83 FE 48" comment="cmp r14d, 48h; 48 -> num of stages-1" />
-		<Instruction code="77 30" comment="ja +30h" />
-		<Instruction code="4B 8D 0C B6" comment="lea rcx, [r14+r14*4]" />
-		<Instruction code="48 8B 94 CF XXXXXXXX" comment="mov rdx, ds:rva stage_def1_plus8[rdi+rcx*8]" />		
-		<Instruction code="48 85 D2" comment="test rdx, rdx" />
+		<Instruction code="0F 87 XXXXXXXX" comment="ja +XXXXXXXXh" />
+		<Instruction code="48 C7 45 BF 0F 00 00 00" comment="mov qword ptr[rbp-41h], 0Fh" />
 		
 		<!-- if (unsigned)sid > 0x48: jump -> if (signed)sid < 0: jump -->
 		<!-- cmp r14d, 0; jl +0xXX -->
-		<Write value="XX XX XX 00   7C XX" />
+		<Write value="XX XX XX 00   0F 8C XXXXXXXX" />
 		<!-- Old notify patch -->
 		<!--<Notify inst_index="0" inst_offset="3" value="PatchStageNumM1_8" />-->
 	</Patch>
@@ -677,11 +690,25 @@ This part is divided into X subparts.
 		<!-- <Notify inst_index="0" inst_offset="2" value="PatchStageNumM1_8" /> -->
 	</Patch>
 	
+	<!-- Signature 1.25.1. Patch added in 1.25.1 -->
+	<Patch name="PatchStageNum9" type="write" search_start="0x2EF610 " comment="This function takes place in called_by_stagex_func1" >	
+		<Instruction code="83 F9 49" comment="cmp ecx, 49h; 49 -> num of stages" />
+		<Instruction code="7C 08" comment="jl +08" />
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, empty string" />
+		<Instruction code="C3" comment="retn" />
+		
+		<!-- if (signed)sid < 0x49: jump -> if (signed)sid >= 0: jump -->
+		<!-- cmp ecx, 0; jge +0xXX -->
+		<Write value="XX XX 00   7D XX" />
+		<!-- Old notify patch -->
+		<!-- <Notify inst_index="0" inst_offset="2" value="PatchStageNumM1_8" /> -->
+	</Patch>
+	
 <!-- Part 8: Patching the stage_eve function -->
 
 	<!-- This is a debug patch to dump the original stages data before we do any patch on it" -->
 	<!-- Signature 1.20 -->
-	<Patch name="DumpEve" type="notify" enabled="IsDebuggingStages()" search_start="0x27B560" comment="The hooked function is stage_eve" >
+	<Patch name="DumpEve" type="notify" enabled="WillDumpEve()" search_start="0x27B560" comment="The hooked function is stage_eve" >
 		<Instruction code="48 83 EC 28" comment="sub rsp, 28h" />
 		<Instruction code="4C 63 C9" comment="movsx r9, ecx" />
 		<Instruction code="4C 8B D2" comment="mov r10, rdx" />
@@ -730,9 +757,9 @@ This part is divided into X subparts.
 <!-- Part 9: Misc patches -->
 
 	<!-- 
-		There are two implementations of this function, depending on if the SetFarClip function was inlined by their compiler or not.
-		The implementation 1: not-inlined. Worked until 1.09, and then worked briefly again in 1.17.1 
-		The implementation 2: inlined. Worked from 1.10 until 1.17. Then, again in 1.17.2
+		There are two implementations of this function, depending on if their compiler is in the mood of inlining SetFarClip or not (this is constantly changing)
+		The implementation 1: not-inlined. 
+		The implementation 2: inlined.
 	
 	<!-- Type 1. Signature: 1.17.1 -->
 	<!--<Patch name="OverrideFarClip" type="hook" search_start="0x940D5" comment="Takes place in stagew_func1" >
@@ -748,12 +775,12 @@ This part is divided into X subparts.
 		<Hook type="call" inst_index="7" value="OverrideFarClipT1" setup="SetupSetFarClipT1" />	
 	</Patch>-->	
 	
-	<!-- Type 2 Signature 1.09 -->
-	<Patch name="OverrideFarClip" type="hook" search_start="0x13E4D0" comment="Hooked function is stagew_func1" >
-		<Instruction code="40 53" comment="push rbx" />
+	<!-- Type 2. Signature 1.25.1 -->
+	<Patch name="OverrideFarClip" type="hook" search_start="0xAAC00" comment="Hooked function is stagew_func1" >
+		<Instruction code="40 57" comment="push rdi" />
 		<Instruction code="48 83 EC 60" comment="sub rsp, 60h" />
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XG_Game_Battle_Core_MainSystem_singleton" />
-		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
 		<Instruction code="0F 29 74 24 50" comment="mov [rsp+50h], xmm6" />
 		<Instruction code="0F 29 7C 24 40" comment="mov [rsp+40h], xmm7" />
 		<Instruction code="0F 57 FF" comment="xorps xmm7, xmm7" />
@@ -762,33 +789,32 @@ This part is divided into X subparts.
 		<Hook value="OverrideFarClipT2" setup="SetupSetFarClipT2" />
 	</Patch>
 	
-	<!-- This patch is only to protect the implementation of OverrideFarClip -->
-	<!-- Any change in the 0xD0 would require the OverrideFarClip to be updated in the dll -->
-	<!-- Signature 1.17 -->
-	<!-- Patch removed in 1.17v2 because the implementation has changed and is not longer needed. -->
-	<!--
-	<Patch name="ProtectOverrideFarClip" type="notify" search_start="0x93FF3" comment="Takes place in stagew_func1" >
+	<!-- This patch is only to protect the implementation of OverrideFarClipT2 -->
+	<!-- When patch changes to OverrideFarClipT1, comment this patch -->
+	<!-- Any change in the 0xD0 would require the OverrideFarClipT2 to be updated in the dll -->
+	<!-- Signature 1.25.1 -->
+	<Patch name="ProtectOverrideFarClip" type="notify" search_start="0xAAD67" comment="Takes place in stagew_func1" >
 		<Instruction code="83 88 EC 00 00 00 06" comment="or dword ptr [rax+0ECh], 6" />
 		<Instruction code="F3 0F 11 B0 D0 00 00 00" comment="movss dword ptr [rax+0D0h], xmm6" />
-		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
+		<Instruction code="48 8B 07" comment="mov rax, [rdi]" />
 		<Instruction code="0F 28 74 24 50" comment="movaps xmm6, [rsp+50h]" />
 		
 		<Notify value="NULL" />
-	</Patch> -->
+	</Patch> 
 	
 	<!-- This patch is required by the one above to get the current stage id -->
 	<!-- This patch doesn't only locates the singleton, but it also "protects" the implementation of the GetCurrentStage in the DLL -->
-	<!-- Any change in the 4368 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
-	<!-- Signature 1.22.1 -->
-	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0xA2004" comment="Takes place in stagew_func1" >
+	<!-- Any change in the 4A68 and/or 928 would require the implementation of GetCurrentStage to be corrected -->
+	<!-- Signature 1.25.1 -->
+	<Patch name="LocateCoreMainSystemForStages" type="notify" search_start="0xAAC84" comment="Takes place in stagew_func1" >
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, cs:XG_Game_Battle_Core_MainSystem_singleton" />
 		<Instruction code="0F 2F F7" comment="comiss xmm6, xmm7" />
-		<Instruction code="76 72" comment="jbe +72" />
+		<Instruction code="0F 86 XXXXXXXX" comment="jbe +XXXXXXXX" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
-		<Instruction code="74 6D" comment="je +6D" />
-		<Instruction code="48 8B 88 68 43 00 00" comment="mov rcx, [rax+4368h]" />
+		<Instruction code="0F 84 XXXXXXXX" comment="je +XXXXXXXX" />
+		<Instruction code="48 8B 88 68 4A 00 00" comment="mov rcx, [rax+4A68h]" />
 		<Instruction code="48 85 C9" comment="test rcx, rcx" />
-		<Instruction code="74 61" comment="je 61" />
+		<Instruction code="0F 84 XXXXXXXX" comment="je XXXXXXXX" />
 		<Instruction code="48 63 81 28 09 00 00" comment="movsxd eax, [rcx+928h]; eax = stage_id" />
 		
 		<Notify inst_index="0" inst_offset="3" value="OnCoreMainSystemLocated_Stages" />
@@ -807,13 +833,13 @@ This part is divided into X subparts.
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
 	<!-- This patch is debug only, not needed in release version -->	
 	<!-- Signature 1.23 -->
-	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x8B5A5" >
+	<Patch name="SetMainSystemCtorDeadMemory" type="hook" enabled="IsDebuggingStages()" search_start="0x8F9C5" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 30 EA 00 00" comment="mov ecx, 0xEA30" />
+		<Instruction code="B9 00 F4 00 00" comment="mov ecx, 0xF400" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
-		<Instruction code="48 85 C0" comment="test eax, eax" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 0B" comment="jz +0xB" />
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XG::Game::Battle::Core::MainSystem ctor" />
@@ -824,13 +850,13 @@ This part is divided into X subparts.
 	<!-- This patch has the same signature as the above one, but it needs to be always below  -->
 	<!-- This patch needs change in the dll when/if stagems size changes (number before new call) -->
 	<!-- Signature 1.23 -->
-	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x8B5A5" >
+	<Patch name="IncreaseCoreMainSystemMemory" type="notify" search_start="0x8F9C5" >
 		<Instruction code="41 83 C8 FF" comment="or r8d, FFFFFFFF" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="B9 30 EA 00 00" comment="mov ecx, 0xEA30" />
+		<Instruction code="B9 00 F4 00 00" comment="mov ecx, 0xF400" />
 		<Instruction code="FF15 XXXXXXXX" comment="call new[]" />
 		<Instruction code="48 89 44 24 68" comment="mov [rsp+68h], rax" />
-		<Instruction code="48 85 C0" comment="test eax, eax" />
+		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 0B" comment="jz +0xB" />
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call XG::Game::Battle::Core::MainSystem ctor" />
@@ -853,11 +879,11 @@ This part is divided into X subparts.
 		<Hook value="HookedMainSystem_Dtor" setup="SetupMainSystem_Dtor" />
 	</Patch>
 	
-	<!-- Patch introduced in 1.21. Signature 1.21.2 -->
-	<!-- The purpose of this patch is just to ensure that the imitation in stages_patch.cpp remains valid -->
+	<!-- Patch introduced in 1.21. Signature 1.24.1 -->
+	<!-- The purpose of this patch is just to ensure that the imitation in stages_patch.cpp (IsGbbMode function) remains valid -->
 	<!-- A change in the 0x14 would require an update in the BattleInterface definition game_defs.h -->
-	<!-- This patch failed in 1.21.2 because they relocated the function from around 1/2 the exe to < 1/10, and it went beyond default search size -->
-	<Patch name="ProtectIsGbbMode" type="notify" search_start="0x7DB90" >
+	<!-- The two times this patch got broken is because they relocated it and it went beyond default search size. It is kind of weird that they keep moving the function... -->
+	<Patch name="ProtectIsGbbMode" type="notify" search_start="0x8380E0" search_down="0x2000000" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::Battle::BattleInterface singleton" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="83 79 14 01" comment="cmp word ptr [rcx+14h], 1" />
@@ -867,17 +893,17 @@ This part is divided into X subparts.
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- Patch introduced in 1.21. Signature 1.21 -->
+	<!-- Patch introduced in 1.21. Signature 1.25.1 -->
 	<!-- This patch has two purposes. One is to locate the QuestManager singleton -->
 	<!-- The second purpose is to ensure that our code in stage_patch.cpp to imitate the check of GBB mode remains valid -->
-	<!-- This code is weird. It's something like "if x <= 0x12 && x == 0x10 gbb mode else normal mode" but the condition x <= 0x12 is redundant with x == 0x10 -->
+	<!-- This code is weird. It's something like "if x <= 0x12(0x13 in 1.25.1) && x == 0x10 gbb mode else normal mode" but the condition x <= 0x12 is redundant with x == 0x10 -->
 	<!-- On a change of A0, QuestManager::mode in game_defs has to be updated. On a change of logic, the IsGbbMode function in stages_patch.cpp may need a change -->
-	<Patch name="LocateQuestManagerSingleton" type="notify" search_start="0x13B665" comment="Takes place in stagegt_default but it has another match in another stagegt function too" >
+	<Patch name="LocateQuestManagerSingleton" type="notify" search_start="0x14B505" comment="Takes place in stagegt_default but it has another match in another stagegt function too" >
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XG::Game::Quest::QuestManager singleton" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 1F" comment="jz +1F" />
 		<Instruction code="8B 88 A0 00 00 00" comment="mov ecx, [rax+0A0h]" />
-		<Instruction code="83 F9 12" comment="cmp ecx, 12h" />
+		<Instruction code="83 F9 13" comment="cmp ecx, 13h" />
 		<Instruction code="7D 14" comment="jge +0x14" />
 		<Instruction code="83 F9 10" comment="cmp ecx, 10h" />
 		<Instruction code="75 0F" comment="jnz +0x14" />
@@ -1155,39 +1181,39 @@ This part is divided into X subparts.
 		<Hook value="GetStageNamePatched" setup="SetupGetStageName" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="LocateGameDataSingleton" type="notify" search_start="0x5B7F12" comment="Takes place in stagesele_func2" >
+	<!-- Signature 1.25.1 -->
+	<Patch name="LocateGameDataSingleton" type="notify" search_start="0x6161F2" comment="Takes place in stagesele_func2" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::GameData::singleton" />
 		<Instruction code="83 CA FF" comment="or rdx, -1" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_selected_before_object" />
-		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h; num_ss_stages+1" />
+		<Instruction code="BE 28 00 00 00" comment="mov esi, 28h; num_ss_stages+1" />
 		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
 		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
-		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
+		<Instruction code="48 8D AF C8 06 00 00" comment="lea rbp, [rdi+6C8h]" />
 		
 		<Notify inst_index="0" inst_offset="3" value="OnGameDataSingleton_Located" />
 	</Patch>
 	
 	<!-- This patch has same signature as above one -->
-	<Patch name="LocateGetSelectedBeforeObject" type="notify" search_start="0x5B7F12" comment="Takes place in stagesele_func2" >
+	<Patch name="LocateGetSelectedBeforeObject" type="notify" search_start="0x6161F2" comment="Takes place in stagesele_func2" >
 		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, XG::Game::GameData::singleton" />
 		<Instruction code="83 CA FF" comment="or rdx, -1" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_selected_before_object" />
-		<Instruction code="BE 27 00 00 00" comment="mov esi, 27h; num_ss_stages+1" />
+		<Instruction code="BE 28 00 00 00" comment="mov esi, 28h; num_ss_stages+1" />
 		<Instruction code="48 89 44 24 70" comment="mov [rsp+70h], rax" />
 		<Instruction code="4C 8D 25 XXXXXXXX" comment="lea r12, ssid_to_idx" />
 		<Instruction code="48 8D 9F 08 02 00 00" comment="lea rbx, [rdi+208h]" />
-		<Instruction code="48 8D AF A8 06 00 00" comment="lea rbp, [rdi+6A8h]" />
+		<Instruction code="48 8D AF C8 06 00 00" comment="lea rbp, [rdi+6C8h]" />
 		
 		<Notify inst_index="2" inst_offset="1" value="OnGetSelectedBeforeObject_Located" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="LocateHasStageBeenSelectedBefore" type="notify" search_start="0x5B7FD8" comment="Takes place in stagesele_func2" >
+	<!-- Signature 1.25.1 -->
+	<Patch name="LocateHasStageBeenSelectedBefore" type="notify" search_start="0x6162B8" comment="Takes place in stagesele_func2" >
 		<Instruction code="41 8B D6" comment="mov edx, r14d" />
 		<Instruction code="E8 XXXXXXXX" comment="call has_stage_been_selected_before" />
-		<Instruction code="8D 56 4A" comment="lea edx, [rsi+4Ah]" />
+		<Instruction code="8D 56 4C" comment="lea edx, [rsi+4Ch]" />
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
@@ -1196,8 +1222,8 @@ This part is divided into X subparts.
 	</Patch>
 	
 	<!-- If this breaks, we need to change STAGEGT_ADDRESS in the dll -->
-	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x88788" comment="signature 1.23" >
-		<Instruction code="48 81 C1 60 65 00 00" comment="add rcx, 6560h" />		
+	<Patch name="ProtectGatesReimplementation" type="notify" search_start="0x8CB68" comment="signature 1.25.1" >
+		<Instruction code="48 81 C1 38 6F 00 00" comment="add rcx, 6F38h" />		
 		<Instruction code="44 8B 86 D4 00 00 00" comment="mov r8d, [rsi+0D4h]" />
 		<Instruction code="8B D0" comment="mov edx, eax" />
 		<Instruction code="E8 XXXXXXXX" comment="call stage_findgate" />

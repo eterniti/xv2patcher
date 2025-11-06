@@ -17,8 +17,8 @@
 #define LOOKUP_SIZE	0x1000
 
 // Address of stagegt within XG::Game::Battle::Core::MainSystem 
-#define STAGEGT_ADDRESS	0x6560
-#define MAINSYSTEM_SIZE	0xEA30
+#define STAGEGT_ADDRESS	0x6F38
+#define MAINSYSTEM_SIZE	0xF400
 
 static uint8_t *orig_stage_defs1;
 static uint8_t *new_stage_defs1;
@@ -44,7 +44,7 @@ static Xv2StageDefFile x2sta;
 static std::map<std::string, size_t> str_map;
 static char *strings;
 
-void StageDef1Breakpoint(void *pc, void *addr)
+void StageDef1Breakpoint(void *pc, void *addr, EXCEPTION_POINTERS *)
 {
 	UPRINTF("Old stage def1 was accessed. Look at log for more info.\n");
 	
@@ -54,7 +54,7 @@ void StageDef1Breakpoint(void *pc, void *addr)
 	exit(-1);
 }
 
-void StageSsidToIdxBreakpoint(void *pc, void *addr)
+void StageSsidToIdxBreakpoint(void *pc, void *addr, EXCEPTION_POINTERS *)
 {
 	UPRINTF("Old ssid_to_idx was accessed. Look at log for more info.\n");
 	
@@ -64,7 +64,7 @@ void StageSsidToIdxBreakpoint(void *pc, void *addr)
 	exit(-1);
 }
 
-void StageF6Breakpoint(void *pc, void *addr)
+void StageF6Breakpoint(void *pc, void *addr, EXCEPTION_POINTERS *)
 {
 	UPRINTF("Old stage_f6 was accessed. Look at log for more info.\n");
 	
@@ -74,7 +74,7 @@ void StageF6Breakpoint(void *pc, void *addr)
 	exit(-1);
 }
 
-void StageDef2Breakpoint(void *pc, void *addr)
+void StageDef2Breakpoint(void *pc, void *addr, EXCEPTION_POINTERS *)
 {
 	UPRINTF("Old stage def2 was accessed. Look at log for more info.\n");
 	
@@ -84,7 +84,7 @@ void StageDef2Breakpoint(void *pc, void *addr)
 	exit(-1);
 }
 
-void StageGtBreakpoint(void *pc, void *addr)
+void StageGtBreakpoint(void *pc, void *addr, EXCEPTION_POINTERS *)
 {
 	UPRINTF("Old stagegt was accessed. Look at log for more info.\n");
 	
@@ -98,6 +98,11 @@ extern "C"
 {
 	
 PUBLIC bool IsDebuggingStages()
+{
+	return false;
+}
+
+PUBLIC bool WillDumpEve()
 {
 	return false;
 }
@@ -229,9 +234,7 @@ PUBLIC void PatchStageDef1Off8_2(uint8_t *buf)
 
 PUBLIC void PatchStageDef1Off8_Absolute(uint32_t *buf)
 {
-	//DPRINTF("Address: %p\n", *buf + (uintptr_t)GetModuleHandle(nullptr));	
 	PatchUtils::Write32(buf, Utils::DifPointer(new_stage_defs1+8, GetModuleHandle(nullptr)));
-	//DPRINTF("Addruss: %p\n", *buf + (uintptr_t)GetModuleHandle(nullptr));	
 }
 
 PUBLIC void PatchStageDef1BFnmsOff8(void *buf)
@@ -483,14 +486,15 @@ PUBLIC void PatchStageMusicMain(void *buf)
 	orig_stage_music = (uint8_t *)GetAddrFromRel(buf);
 	DPRINTF("Original stage_music located at %p (rel 0x%Ix)\n", orig_stage_music, RelAddress(orig_stage_music));
 	
-	new_stage_music = (uint8_t *)PatchUtils::AllocateIn32BitsArea(buf, x2sta.GetNumStages() * sizeof(uint32_t));
+	new_stage_music = (uint8_t *)PatchUtils::AllocateIn32BitsArea(buf, x2sta.GetNumStages() * sizeof(XV2StageMusic));
 	DPRINTF("New stage_music allocated at %p\n", new_stage_music);
 	
-	uint32_t *music = (uint32_t *)new_stage_music;
+	XV2StageMusic *music = (XV2StageMusic *)new_stage_music;
 	
 	for (size_t i = 0; i < x2sta.GetNumStages(); i++)
 	{
-		music[i] = x2sta[i].bgm_cue_id;
+		music[i].bgm_cue_id = x2sta[i].bgm_cue_id;
+		music[i].bgm_unk1 = x2sta[i].bgm_unk1;
 	}
 	
 	// Clear this as we don't need it anymore
@@ -556,7 +560,7 @@ PUBLIC void SetupStageEve(StageEveType orig)
 	StageEve = orig;
 	
 	// Note, this function will trigger the memory breakpoint, so disable that when dumping
-	if (IsDebuggingStages())
+	if (WillDumpEve())
 	{
 		static bool done = false;
 		
@@ -702,7 +706,7 @@ static bool IsGbbMode()
 	if (!qms)
 		return false;
 	
-	// Simplified the code to remove the redundant <= 0x12
+	// Simplified the code to remove the redundant <= 0x12 (0x13 in 1.25.1)
 	//return (qms->mode <= 0x12 && qms->mode == 0x10)
 	return (qms->mode == 0x10);
 }
@@ -950,7 +954,7 @@ int GetCurrentStage()
 	if (!mainsystem_singleton)
 		return -1;
 	
-	int *object = (int *)(mainsystem_singleton[0x4368/8]);
+	int *object = (int *)(mainsystem_singleton[0x4A68/8]);
 	if (!object)
 		return -1;
 	

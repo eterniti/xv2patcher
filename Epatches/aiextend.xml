@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!-- This file enables extensions to the AI -->
-<EternityPatchFile name="AIExtend" enabled="ai_extend" comment="Addresses are all 1.08 unless stated otherwise in the individual patches">
+<EternityPatchFile name="AIExtend" enabled="ai_extend" >
 
 	<!-- 
 	
@@ -11,38 +11,37 @@
 		"SelectCharInfo": 0, (char_index), 0x4 (char_index2), 0xC (is_cpu), 0x10(team) 
 		UnkMobStruct: sizeof() = 0x1F0
 	-->
-	<Patch name="PatchOnBattleCreateChar" type="hook" search_start="0x14FC40" comment="signature based on 1.22.1" >
+	<Patch name="PatchOnBattleCreateChar" type="hook" search_start="0x15DD70" comment="signature based on 1.25.1" >
 		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12, r13, r14, r15" />
-		<Instruction code="48 8D AC 24 00 FD FF FF" comment="lea rbp, [rsp-300h]" />
-		<Instruction code="48 81 EC 00 04 00 00" comment="sub rsp, 400h" />
+		<Instruction code="48 8D AC 24 XXXXXXXX" comment="lea rbp, [rsp-XXXX]" />
+		<Instruction code="48 81 EC XXXXXXXX" comment="sub rsp, XXXX" />
 		<Instruction code="48 C7 45 90 FE FF FF FF" comment="mov qword ptr[rbp-70h], -2" />		
-		<Instruction code="48 89 9C 24 50 04 00 00" comment="mov [rsp+450h], rbx" />
+		<Instruction code="48 89 9C 24 XXXXXXXX" comment="mov [rsp+XXXX], rbx" />
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XXXXXXXX" />
 		<Instruction code="48 33 C4" comment="xor rax, rsp" />
-		<Instruction code="48 89 85 F0 02 00 00" comment="mov [rbp+2F0h], rax" />
+		<Instruction code="48 89 85 XXXXXXXX" comment="mov [rbp+XXXXh], rax" />
 		<Instruction code="44 89 44 24 50" comment="mov [rsp+50h], r8d" />
-		<Instruction code="4C 8B F2" comment="mov r14, rdx" />
+		<Instruction code="48 8B F2" comment="mov rsi, rdx" />
 		<Instruction code="48 89 54 24 70" comment="mov [rsp+70h], rdx" />
 		<Instruction code="4C 8B E9" comment="mov r13, rcx" />
 		<Instruction code="4C 63 3A" comment="movsxd r15, dword ptr [rdx]; r15 = char index" />
 		<Instruction code="44 89 7C 24 40" comment="mov [rsp+40h], r15d" />		
 		<Instruction code="41 83 FF 0D" comment="cmp r15d, 0xD" />
 		<Instruction code="0F 87 XXXXXXXX" comment="ja XXXXXXXX" />
-		<Instruction code="4D 8B E7" comment="mov r12, r15" />
+		<Instruction code="4D 8B F7" comment="mov r14, r15" />
 		<Instruction code="4C 89 7C 24 48" comment="mov [rsp+48h], r15" />
 		<Instruction code="4A 83 BC F9 58 3A 00 00 00" comment="cmp qword ptr [rcx+r15*8+3A58h], 0" />
 		<Instruction code="0F 85 XXXXXXXX" comment="jnz XXXXXXXX" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="8B 52 04" comment="mov edx, [rdx+4]; This seems to be char index too. What's the difference?" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
-		<Instruction code="48 8B F0" comment="mov rsi, rax" />
 		<Instruction code="48 89 44 24 60" comment="mov [rsp+60h], rax" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="0F 84 XXXXXXXX" comment="jz XXXXXXXX" />
 		<Instruction code="48 8B 18" comment="mov rbx, [rax]" />
 		<Instruction code="48 85 DB" comment="test rbx, rbx" />
 		<Instruction code="0F 84 XXXXXXXX" comment="jz XXXXXXXX" />
-		<Instruction code="49 69 CC F0 01 00 00" comment="imul rcx, r12, 1F0h" />
+		<Instruction code="49 69 CE F0 01 00 00" comment="imul rcx, r14, 1F0h" />
 		<Instruction code="49 8D BD E0 00 00 00" comment="lea rdi, [r13+0E0h]" />
 		<Instruction code="48 03 F9" comment="add rdi, rcx" />
 		<Instruction code="48 89 7C 24 68" comment="mov [rsp+68h], rdi" />
@@ -50,33 +49,33 @@
 		<Instruction code="89 0F" comment="mov [rdi], ecx" />
 		<Instruction code="8B 8B D4 00 00 00" comment="mov ecx, [rbx+D4h]" />
 		<Instruction code="89 4F 04" comment="mov [rdi+4], ecx" />
-		<Instruction code="41 8B 46 08" comment="mov eax, [r14+8]" />		
+		<Instruction code="8B 46 08" comment="mov eax, [rsi+8]" />		
 		<Instruction code="89 47 10" comment="mov [rdi+10h], eax" />
-		<Instruction code="41 8B 46 0C" comment="mov eax, [r14+0Ch]" />
+		<Instruction code="8B 46 0C" comment="mov eax, [rsi+0Ch]" />
 		<Instruction code="89 47 14" comment="mov [rdi+14h], eax" />
-		<Instruction code="41 8B 46 10" comment="mov eax, [r14+10h]" />
+		<Instruction code="8B 46 10" comment="mov eax, [rsi+10h]" />
 		
 		<Hook value="OnBattleCreateCharPatched" setup="SetupAIExtend" />
 	</Patch>
 	
-	<!-- A signature change here could mean that the AIDef struct/r8) needs update -->
-	<!-- 0x28: mob -->	
-	<Patch name="PatchAISpecial" type="hook" search_start="0x853F0" >
-		<Instruction code="48 89 5C 24 20" comment="mov [rsp+20h], rbx" />
-		<Instruction code="56 57 41 57" comment="push rsi, rdi, r15" />
+	<!-- A signature change here could mean that the AIDef struct/r8 needs update -->
+	<!-- 0x30: mob -->	
+	<Patch name="PatchAISpecial" type="hook" search_start="0x8CE90" comment="signature 1.25.1" >
+		<Instruction code="48 89 5C 24 XX" comment="mov [rsp+XXh], rbx" />
+		<Instruction code="56 57 41 56" comment="push rsi, rdi, r14" />
 		<Instruction code="48 83 EC 20" comment="sub rsp, 0x20" />
-		<Instruction code="49 8B 58 28" comment="mov rbx, [r8+28h]" />
-		<Instruction code="49 8B F8" comment="mov rdi, r8" />
-		<Instruction code="4C 8B FA" comment="mov r15, rdx" />
-		<Instruction code="48 8B F1" comment="mov rsi, rcx" />
-		<Instruction code="48 85 DB" comment="test rbx, rbx" />
+		<Instruction code="49 8B 70 30" comment="mov rsi, [r8+30h]" />
+		<Instruction code="49 8B D8" comment="mov rbx, r8" />
+		<Instruction code="4C 8B F2" comment="mov r14, rdx" />
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="48 85 F6" comment="test rbx, rbx" />
 		<Instruction code="75 10" comment="jnz +0x10" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
-		<Instruction code="48 8B 5C 24 58" comment="mov rbx, [rsp+58h]" />
+		<Instruction code="48 8B 5C 24 XX" comment="mov rbx, [rsp+XXh]" />
 		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
-		<Instruction code="41 5F 5F 5E" comment="pop r15, rdi, rsi" />
+		<Instruction code="41 5E 5F 5E" comment="pop r15, rdi, rsi" />
 		<Instruction code="C3" comment="retn" />
-		<Instruction code="48 8B 9B D8 04 00 00" comment="mov rbx, [rbx+4D8h]" />
+		<Instruction code="48 8B B6 E8 04 00 00" comment="mov rsi, rsi+4E8h]" />
 		
 		<Hook value="AISpecialPatched" setup="SetupAISpecial" />		
 	</Patch>
@@ -84,26 +83,26 @@
 	<!-- This patch has been detached from above, because the function has grown too much in 1.22 and the signature was unbearable -->
 	<!-- (Function is same as in above patch)
 	<!-- 0x174: type  (AIDef struct) -->
-	<!-- Signature: 1.22.1 -->
-	<Patch name="PatchAISpecialCheckType" type="notify" search_start="0x8547B" >
-		<Instruction code="44 8B 87 74 01 00 00" comment="mov r8d, [rdi+174h]" />
-		<Instruction code="4C 89 74 24 48" comment="mov [rsp+48h], r14" />
-		<Instruction code="45 33 F6" comment="xor r14d, r14d" />
-		<Instruction code="41 8B D6" comment="mov edx, r14d" />
+	<!-- Signature: 1.25.1 -->
+	<Patch name="PatchAISpecialCheckType" type="notify" search_start="0x8CF53" >
+		<Instruction code="44 8B 83 74 01 00 00" comment="mov r8d, [rbx+174h]" />
+		<Instruction code="8B D6" comment="mov edx, esi" />
 		<Instruction code="41 8D 40 01" comment="lea eax, [r8+1]" />
+		<Instruction code="83 F8 0C" comment="cmp eax, C" />
 	
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- Signature 1.23 -->
-	<Patch name="PatchSkillCommand" type="hook" search_start="0xEA3F0" >	
+	<!-- Signature 1.24.1 -->
+	<Patch name="PatchSkillCommand" type="hook" search_start="0xED990" >	
 		<Instruction code="48 8B C4" comment="mov rax, rsp" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="48 83 EC 70" comment="sub rsp, 70h" />
+		<Instruction code="48 C7 40 B8 FE FF FF FF" comment="mov qword ptr[rax-48h], -2" />
 		<Instruction code="48 89 58 08" comment="mov [rax+8], rbx" />
 		<Instruction code="48 89 68 10" comment="mov [rax+10h], rbp" />
 		<Instruction code="48 89 70 18" comment="mov [rax+18h], rsi" />
-		<Instruction code="48 89 78 20" comment="mov [rax+20h], rdi" />
-		<Instruction code="41 56" comment="push r14" />
-		<Instruction code="48 83 EC 60" comment="sub rsp, 60h" />
+		<Instruction code="48 89 78 20" comment="mov [rax+20h], rdi" />		
 		<Instruction code="0F 29 70 E8" comment="movaps xmmword ptr [rax-18h], xmm6" />
 		
 		<Hook value="SkillCommandPatched" setup="SetupSkillCommand" />	
@@ -112,14 +111,14 @@
 	<!-- Patches below are only to ensure struct definitions in the dll are correct -->
 	
 	<!-- Add 0xB0 to the rcx of memset to get the address of bcm field -->
-	<Patch name="CheckBattleCommandAlign" type="notify" search_start="0x23AD3A" comment="addr 1.09" >
-		<Instruction code="89 81 B0 0C 00 00" comment="mov [rcx+0CB0h], eax" />
+	<Patch name="CheckBattleCommandAlign" type="notify" search_start="0x1F93AA" comment="addr 1.25.1" >
+		<Instruction code="89 81 B0 0D 00 00" comment="mov [rcx+0DB0h], eax" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
-		<Instruction code="C7 81 B4 0C 00 00 FF FF FF FF" comment="mov dword ptr [rcx+0CB4h], -1" />
+		<Instruction code="C7 81 B4 0D 00 00 FF FF FF FF" comment="mov dword ptr [rcx+0DB4h], -1" />
 		<Instruction code="41 B8 20 01 00 00" comment="mov r8d, 120h" />
-		<Instruction code="48 C7 81 B8 0C 00 00 00 00 00 00" comment="mov qword ptr [rcx+0CB8h], 0" />
-		<Instruction code="48 C7 81 C0 0C 00 00 00 00 00 00" comment="mov qword ptr [rcx+0CC0h], 0" />
-		<Instruction code="48 81 C1 10 0D 00 00" comment="add rcx, 0D10h" />
+		<Instruction code="48 C7 81 B8 0D 00 00 00 00 00 00" comment="mov qword ptr [rcx+0DB8h], 0" />
+		<Instruction code="48 C7 81 C0 0D 00 00 00 00 00 00" comment="mov qword ptr [rcx+0DC0h], 0" />
+		<Instruction code="48 81 C1 10 0E 00 00" comment="add rcx, 0E10h" />
 		<Instruction code="E9 XXXXXXXX" comment="jmp memset" />
 		
 		<Notify value="NULL" />
@@ -140,14 +139,13 @@
 	
 	<!-- 0xBC: cms_id -->
 	<!-- 0xD0: is the cms in XG:Game:Common:Chara, and used by ApplyCacMatsPatched and SetBodyShape_Patched. If it changes, change the cms in that function (and assume costume is stored in next 32 bits) -->
-	<Patch name="CheckBattleMobAlign2" type="notify" search_start="0xB369C"  comment="signature 1.21" >
+	<Patch name="CheckBattleMobAlign2" type="notify" search_start="0xBE7D8"  comment="signature 1.25.1" >
 		<Instruction code="49 8B 06" comment="mov rax, [r14]" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 0C" comment="jz +0xC" />
 		<Instruction code="8B 80 D0 00 00 00" comment="mov eax, [rax+D0h]" />
 		<Instruction code="89 87 BC 00 00 00" comment="mov [rdi+0BCh], eax" />
-		<Instruction code="4C 89 B7 C0 04 00 00" comment="mov [rdi+4C0h], r14" />
-		
+			
 		<Notify value="NULL" />
 	</Patch>
 	
@@ -166,14 +164,14 @@
 	
 	<!-- 0x16C: stamina -->
 	<!-- Note: patch located just a little below previous one -->
-	<Patch name="CheckBattleMobAlign4" type="notify" search_start="0xCE014" comment="addr 1.22.1" >
+	<Patch name="CheckBattleMobAlign4" type="notify" search_start="0xD7F84" comment="addr 1.25.1" >
 		<Instruction code="48 8D 93 6C 01 00 00" comment="lea rdx, [rbx+16Ch]" />
 		<Instruction code="41 B8 01 00 00 00" comment="mov r8d, 1" />
 		<Instruction code="48 8D 8B XXXX 00 00" comment="lea rcx, [rbx+XXXXh]" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
 		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
-		<Instruction code="FF 90 E0 01 00 00" comment="call qword ptr [rax+1E0h]" />
+		<Instruction code="FF 90 XX XX 00 00" comment="call qword ptr [rax+XXXXh]" />
 
 		<Notify value="NULL" />
 	</Patch>
@@ -188,34 +186,33 @@
 	</Patch>
 	
 	<!-- 1.18: This patch was split from CheckBattleMobAlign5 to avoid the multiple bytes nop from breaking the signature all the time -->
-	<!-- 0x4D8: battle_command -->
-	<Patch name="CheckBattleMobAlign55" type="notify" search_start="0xAF919" comment="takes place in constructor, a bit below above patch, address 1.21" >	
-		<Instruction code="4C 89 AE C0 04 00 00" comment="mov [rsi+4C0h], r13" />
-		<Instruction code="4C 89 AE C8 04 00 00" comment="mov [rsi+4C8h], r13" />
+	<!-- 0x4D8: common_chara -->
+	<!-- 0x4E8: battle_command -->
+	<Patch name="CheckBattleMobAlign55" type="notify" search_start="0xBA819" comment="takes place in constructor, a bit below above patch, address 1.25.1" >	
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		<Instruction code="4C 89 AE D0 04 00 00" comment="mov [rsi+4D0h], r13" />
-		<Instruction code="4C 89 AE D8 04 00 00" comment="mov [rsi+4D8h], r13" />
-		<Instruction code="4C 89 AE 38 05 00 00" comment="mov [rsi+538h], r13" />
-		<Instruction code="4C 89 AE 88 05 00 00" comment="mov [rsi+588h], r13" />
-		<Instruction code="4C 89 AE 90 05 00 00" comment="mov [rsi+590h], r13" />
-		<Instruction code="4C 89 AE 98 05 00 00" comment="mov [rsi+598h], r13" />
+		<Instruction code="4C 89 AE D8 04 00 00" comment="mov [rsi+4D8h], r13" /> <!-- this -->
+		<Instruction code="4C 89 AE E0 04 00 00" comment="mov [rsi+4E0h], r13" />
+		<Instruction code="4C 89 AE E8 04 00 00" comment="mov [rsi+4E8h], r13" /> <!-- this -->
+		<Instruction code="4C 89 AE 48 05 00 00" comment="mov [rsi+548h], r13" />
 		
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x224C: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xB975F" comment="addr 1.23" >
-		<Instruction code="83 BF 4C 22 00 00 0C" comment="cmp dword ptr [rdi+224Ch], 0Ch" />
+	<!-- 0x225C: trans_control -->
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xBF12E" comment="addr 1.25.1" >
+		<Instruction code="83 BF CC 22 00 00 0C" comment="cmp dword ptr [rdi+22CCh], 0Ch" />
 		<Instruction code="75 XX" comment="jnz +0xXX" />
-		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
-		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
-		<Instruction code="FF 90 20 05 00 00" comment="call qword ptr [rax+520h]" />
+		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="FF 90 30 05 00 00" comment="call qword ptr [rax+530h]" />
 		
 		<Notify value="NULL" />	
 	</Patch>
 	
-	<!-- rdx+0x28: ai_decision. Signature: 1.20.1  -->
-	<Patch name="CheckAIDef" type="notify" search_start="0x811C0" >
-		<Instruction code="8B 42 40" comment="mov eax, [rdx+40h]" />
+	<!-- rdx+0x48: ai_decision. Signature: 1.25.1  -->
+	<Patch name="CheckAIDef" type="notify" search_start="0x8E7A0" >
+		<Instruction code="8B 42 48" comment="mov eax, [rdx+48h]" />
 		<Instruction code="83 C0 FB" comment="add eax, -5" />
 		<Instruction code="83 F8 5B" comment="cmp eax, 5Bh" />
 		<Instruction code="77 4A" comment="ja +0x4A" />
@@ -224,10 +221,10 @@
 	</Patch>
 	
 	<!-- rsi+0x3B0: unknown_interface_var -->
-	<Patch name="CheckBattleMobAlign7" type="notify" search_start="0xBCE92" comment="addr 1.22.1" >
+	<Patch name="CheckBattleMobAlign7" type="notify" search_start="0xC31DB" comment="addr 1.24.1" >
 		<Instruction code="48 98" comment="cdqe" />
-		<Instruction code="48 8B B4 C5 58 3A 00 00" comment="mov rsi, [rbp+rax*8+3A58h]" />
-		<Instruction code="8B B6 B0 03 00 00" comment="mov esi, [rsi+3B0h]" />
+		<Instruction code="48 8B AC C6 58 3A 00 00" comment="mov rbp, [rsi+rax*8+3A58h]" />
+		<Instruction code="8B AD B0 03 00 00" comment="mov ebp, [rbp+3B0h]" />
 		<Instruction code="EB 07" comment="jmp +7" />
 		
 		<Notify value="NULL" />
@@ -235,10 +232,10 @@
 	
 	<!-- 1F0: size of object UnkMobStruct -->
 	<!-- E0: offset of unk_mob_data in core mainsystem" -->
-	<Patch name="CheckCoreMSAlign" type="notify" search_start="0xCACC9" comment="addr 1.22.1" >
+	<Patch name="CheckCoreMSAlign" type="notify" search_start="0xD4BA9" comment="addr 1.25.1" >
 		<Instruction code="49 69 CD F0 01 00 00" comment="imul rcx, r13, 1F0h" />
 		<Instruction code="48 8D 04 39" comment="lea, rax, [rcx+rdi]" />
-		<Instruction code="41 83 FF 02" comment="cmp r15d, 2" />
+		<Instruction code="41 83 FF 04" comment="cmp r15d, 4" />
 		<Instruction code="75 0B" comment="jnz +B" />
 		<Instruction code="41 0F B7 8C 04 F2 00 00 00" comment="movzx ecx, word ptr [r12+rax+0F2h]" />
 		<Instruction code="EB 09" comment="jmp +9" />

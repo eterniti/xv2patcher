@@ -38,17 +38,18 @@
 		<Write inst_index="3" value="45 31 C9 90" />
 	</Patch>-->
 	
-	<!-- New signature since 1.19. Current: 1.22.1 -->
-	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xC438F" >
+	<!-- New signature since 1.19. Current: 1.25.1 -->
+	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xCDD4A" >
 		<Instruction code="BA 64 00 00 00" comment="mov edx, 64h" />
+		<Instruction code="48 8B 4C 24 XX" comment="mov rcx, [rsp+XX]" />
 		<Instruction code="41 83 C9 FF" comment="or r9d, FFFFFFFF" />
-		<Instruction code="C7 44 24 XX 01 00 00 00" comment="mov [rsp+XX], 1" />
+		<Instruction code="C7 44 24 XX 00 00 00 00" comment="mov [rsp+XX], 0" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
-		<Instruction code="48 8B CE" comment="mov rcx, rsi" />		
-		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::ChangePartSet" />
+		<Instruction code="C7 44 24 XX 01 00 00 00" comment="mov [rsp+XX], 1" />		
+		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::Transform" />
 		
 		<!-- r9: -1 to 0 -->
-		<Write inst_index="1" value="45 31 C9 90" />
+		<Write inst_index="2" value="45 31 C9 90" />
 	</Patch>	
 
 </EternityPatchFile>

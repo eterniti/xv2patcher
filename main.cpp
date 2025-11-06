@@ -298,7 +298,8 @@ PUBLIC int Function73(int arg0, bool arg1)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32 || arg0 == 0x37 || arg0 == 0x39)
+		if (arg0 == 0x16 || arg0 == 0x17 || arg0 == 0x1E || arg0 == 0x1F || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x2A || arg0 == 0x2C || 
+		    arg0 == 0x2E || arg0 == 0x30 || arg0 == 0x32 || arg0 == 0x37 || arg0 == 0x39 || arg0 == 0x3B || arg0 == 0x3D)
 			return 1;
 	}
 	
@@ -335,7 +336,8 @@ PUBLIC int Function138(int arg0)
 	
 	if (test_mode)
 	{	
-		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || arg0 == 0x22 || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x25)
+		if (arg0 == 0x15 || arg0 == 0x16 || arg0 == 0x1A || arg0 == 0x1B || arg0 == 0x1C || arg0 == 0x1D || arg0 == 0x1F || arg0 == 0x20 || arg0 == 0x21 || 
+		    arg0 == 0x22 || arg0 == 0x23 || arg0 == 0x24 || arg0 == 0x25 || arg0 == 0x26 || arg0 == 0x27)
 			return 1;
 	}
 	
@@ -1226,6 +1228,23 @@ extern "C" PUBLIC void ModifyGDrawSetting2A(uint32_t *value)
 
 std::vector<std::string> ignore_modules;
 
+static std::string AddressName(void *addr)
+{
+	std::string ret;
+	std::string addr_str = Utils::UnsignedToHexString((uint64_t)addr, true, false);
+	
+	if (PatchUtils::GetRTTISymbolObject(addr, ret))
+	{
+		ret = addr_str + " (" + ret + ")";
+	}
+	else
+	{
+		ret = addr_str;
+	}
+
+	return ret;
+}
+
 static LONG CALLBACK ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo)
 {
 	void *fault_addr;
@@ -1264,19 +1283,60 @@ static LONG CALLBACK ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo)
 		DPRINTF("Exception code=0x%x at address %p\n", (unsigned int)ExceptionInfo->ExceptionRecord->ExceptionCode, fault_addr);
 	}
 
-	DPRINTF("RIP = %p, RSP = %p, RAX = %p, RBX = %p\n", (void *)ExceptionInfo->ContextRecord->Rip, (void *)ExceptionInfo->ContextRecord->Rsp, 
-														(void *)ExceptionInfo->ContextRecord->Rax, (void *)ExceptionInfo->ContextRecord->Rbx);
+	DPRINTF("RIP = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rip).c_str());
+	DPRINTF("RSP = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rsp).c_str());
+	DPRINTF("RBP = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rbp).c_str());
+	DPRINTF("RAX = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rax).c_str());
+	DPRINTF("RBX = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rbx).c_str());
+	DPRINTF("RCX = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rcx).c_str()); 
+	DPRINTF("RDX = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rdx).c_str());
+	DPRINTF("R8 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R8).c_str());
+	DPRINTF("R9 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R9).c_str());														
+	DPRINTF("R10 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R10).c_str());
+	DPRINTF("R11 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R11).c_str());
+	DPRINTF("R12 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R12).c_str());
+	DPRINTF("R13 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R13).c_str());														
+	DPRINTF("R14 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R14).c_str());
+	DPRINTF("R15 = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->R15).c_str());
+	DPRINTF("RDI = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rdi).c_str());
+	DPRINTF("RSI = %s\n", AddressName((void *)ExceptionInfo->ContextRecord->Rsi).c_str());
 														
-	DPRINTF("RCX = %p, RDX = %p, R8 = %p,  R9 = %p\n", 	(void *)ExceptionInfo->ContextRecord->Rcx, (void *)ExceptionInfo->ContextRecord->Rdx, 
-														(void *)ExceptionInfo->ContextRecord->R8,  (void *)ExceptionInfo->ContextRecord->R9);
-														
-	DPRINTF("R10 = %p, R11 = %p, R12 = %p, R13 = %p\n", (void *)ExceptionInfo->ContextRecord->R10, (void *)ExceptionInfo->ContextRecord->R11, 
-														(void *)ExceptionInfo->ContextRecord->R12, (void *)ExceptionInfo->ContextRecord->R13);
-														
-	DPRINTF("R14 = %p, R15 = %p, RDI = %p, RSI = %p\n", (void *)ExceptionInfo->ContextRecord->R14, (void *)ExceptionInfo->ContextRecord->R15, 
-														(void *)ExceptionInfo->ContextRecord->Rdi, (void *)ExceptionInfo->ContextRecord->Rsi);
-														
-	//DPRINTF("RIP content: %I64x\n", *(uint64_t *)fault_addr);
+	//DPRINTF("RIP content: %I64x\n", *(uint64_t *)fault_addr);	
+	
+	/*DPRINTF("Stack trace:\n");
+	PatchUtils::StackTrace(ExceptionInfo);*/
+	
+	void **sp = (void **)ExceptionInfo->ContextRecord->Rsp;
+	if (PatchUtils::IsAccessible(sp))
+	{
+		DPRINTF("Stack content:\n");
+		for (int i = -32; i < 32; i++)
+		{
+			void *addr = sp[i];
+			
+			if (PatchUtils::IsAccessible(addr))
+			{
+				HMODULE mod = nullptr;
+				GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCTSTR)addr, &mod);	
+				
+				if (mod)
+				{
+					uintptr_t rel = (uintptr_t)addr - (uintptr_t)mod;
+					GetModuleFileNameA(mod, path, MAX_PATH);	
+					std::string fn = Utils::GetFileNameString(path);
+					DPRINTF("%p (%s+0x%I64x)\n", (void *)addr, fn.c_str(), rel);
+				}
+				else
+				{		
+					DPRINTF("%p\n", addr);			
+				}		
+			}
+			else
+			{
+				DPRINTF("%p\n", addr);
+			}
+		}
+	}
 														
 	DPRINTF("************************************************************************\n");
 	
@@ -1338,6 +1398,7 @@ VOID WINAPI GetStartupInfoW_Patched(LPSTARTUPINFOW lpStartupInfo)
 		{
 			ini.GetMultipleStringsValues("Debug", "exception_ignore_modules", ignore_modules);			
 			AddVectoredExceptionHandler(1, ExceptionHandler);
+			PatchUtils::ParseMsvcRTTI();
 		}
 	}
 	

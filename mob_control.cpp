@@ -129,7 +129,7 @@ static int IsPlayerEventPatched(uint64_t **pthis)
 	typedef int (* IsPlayerEventType)(void *);
 	
 	uint64_t *vtable = *pthis;
-	IsPlayerEventType IsPlayerEvent = (IsPlayerEventType) vtable[0x2D8/8];
+	IsPlayerEventType IsPlayerEvent = (IsPlayerEventType) vtable[0x2E8/8];
 	
 	return IsPlayerEvent(pthis);
 }

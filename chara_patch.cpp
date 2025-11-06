@@ -2,6 +2,9 @@
 #include <math.h>
 #include <cmath>
 #include <algorithm>
+
+#include <xbyak.h>
+
 #include "PatchUtils.h"
 #include "PscFile.h"
 #include "AurFile.h"
@@ -15,6 +18,8 @@
 
 #include <unordered_set>
 #include <unordered_map>
+
+#define CHASEL_SIZE 0x2930
 
 typedef void * (*IggyBaseCtorType)(void *, int32_t, int32_t);
 typedef void *(* ChaselDtorType)(void *, uint32_t);
@@ -706,8 +711,14 @@ PUBLIC void PatchReceiveTypeCharaSelected(void *pthis, int32_t code, uint64_t da
 PUBLIC void IncreaseChaselMemory(uint32_t *psize)
 {
 	uint32_t old = *psize;
-	PatchUtils::Write32(psize, Utils::Align2(0x2910+(n_CharacterMax*32), 0x100));
 	
+	if (old != CHASEL_SIZE)
+	{
+		UPRINTF("Critical: Correct CHASEL_SIZE!\n");
+		exit(-1);
+	}
+	
+	PatchUtils::Write32(psize, Utils::Align2(CHASEL_SIZE+(n_CharacterMax*32), 0x100));	
 	DPRINTF("Chasel object memory successfully changed from 0x%x to 0x%x\n", old, *psize);
 }
 
@@ -749,9 +760,9 @@ PUBLIC void IncreaseChaselSlotsArray2(void *arg1, uint32_t arg2, uint32_t size, 
 	func2(arg1, arg2, size, arg4);	
 }
 
-// This irrgular patch is for 1.10v2 due to the 0x5E0 = 0x2F << 5 optimization. It will likely be gone in next version if the address 0x5E0 changes.
+// This irregular patch is for 1.10v2 due to the 0x5E0 = 0x2F << 5 optimization. It will likely be gone in next version if the address 0x5E0 changes.
 // When it happens, delete this, and the asm code.
-extern void ModifyArrayOffset4Asm();
+/*extern void ModifyArrayOffset4Asm();
 PUBLIC void ModifyArrayOffset4(uint8_t *buf)
 {
 	PatchUtils::Write16((uint16_t *)buf, 0xB848); // mov rax, XXXXXXXXXXXXXX
@@ -769,6 +780,31 @@ PUBLIC void ModifyArrayOffset4(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x10)); // buf+0x10 -> address to return to
+}*/
+PUBLIC void ModifyArrayOffset4(uint8_t *addr, size_t size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			// r8 = CHASEL_SIZE + (r14 << 5) + rsi
+			mov(r8, CHASEL_SIZE);
+			mov(r9, r14);
+			shl(r9, 5);
+			add(r8, r9);
+			add(r8, rsi);
+			cmp(qword[r8+0x18], 8);
+			// Return
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);		
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), size);
 }
 
 static inline bool is_original_playable_char(int32_t chara)
@@ -872,27 +908,34 @@ static std::vector<std::string> cell_maxes = { "SIM", "SIH" }; // The original l
 static uint8_t body_shapes_lookup[LOOKUP_SIZE];
 uint8_t auto_btl_portrait_lookup[LOOKUP_SIZE]; // lookup table, we need O(1) access. 
 
-uint16_t cus_aura_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
-uint8_t cus_aura_bh11_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
+static uint16_t cus_aura_lookup[LOOKUP_SIZE]; 
+static uint8_t cus_aura_bh11_lookup[LOOKUP_SIZE]; 
 static uint32_t cus_aura_int2_lookup[LOOKUP_SIZE];
 static uint8_t cus_aura_bh10_lookup[LOOKUP_SIZE];
 static uint32_t cus_aura_int3_lookup[LOOKUP_SIZE];
-uint8_t force_teleport[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
+static uint8_t force_teleport[LOOKUP_SIZE]; 
 static uint8_t cus_aura_bh13_lookup[LOOKUP_SIZE];
-uint8_t cus_aura_bh66_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
+static uint8_t cus_aura_bh66_lookup[LOOKUP_SIZE]; 
 static uint32_t bcs_hair_colors[LOOKUP_SIZE];
 static uint32_t bcs_eyes_colors[LOOKUP_SIZE];
 static std::unordered_map<uint32_t, std::string> bcs_additional_colors;
 static uint8_t remove_hair_accessories_lookup[LOOKUP_SIZE];
-uint8_t any_dual_skill_lookup[LOOKUP_SIZE]; // This one must be accessible by chara_patch_asm.S
-int32_t aur_bpe_map[LOOKUP_SIZE]; // This one must be accessible by chara_patch_asm.S
+static uint8_t any_dual_skill_lookup[LOOKUP_SIZE]; 
+static int32_t aur_bpe_map[LOOKUP_SIZE]; 
 static bool aur_bpe_flag1[LOOKUP_SIZE];
 static bool aur_bpe_flag2[LOOKUP_SIZE];
-uint8_t cus_aura_bh64_lookup[LOOKUP_SIZE]; // This one must be accesible by chara_patch_asm.S
+static uint8_t cus_aura_bh64_lookup[LOOKUP_SIZE]; 
 static bool cus_aura_gfs_bh[LOOKUP_SIZE];
 
 // // Mesh destruction defs
 static std::unordered_map<uint32_t, std::vector<DestructionLevelMap>> cms_to_dlmap; // Once set in PreBakeSetup, it should remain read only
+
+// Transformation UI corrections
+#define MAX_SKILLS	5000
+#define MAX_TRANSFORMATION_STAGES	64
+static int ki_requirement[MAX_SKILLS][MAX_TRANSFORMATION_STAGES];
+static int *ki_requirement_ptr=nullptr; 
+//
 
 struct DestructionState
 {
@@ -982,10 +1025,10 @@ static std::unordered_map<std::string, std::string> ttc_files_map;
 // Pseudo-cacs
 std::unordered_map<uint32_t, BcsColorsMap> pcac_colors;
 
-extern void GetRealAura();
-extern void GetCABehaviour11();
-extern void ForceTeleport();
-extern void GetCABehaviour64();
+//extern void GetRealAura();
+//extern void GetCABehaviour11();
+//extern void ForceTeleport();
+//extern void GetCABehaviour64();
 
 PUBLIC void PreBakeSetup(size_t)
 {
@@ -1071,10 +1114,31 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[52] = 281;
 	aur_bpe_map[53] = 302;
 	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = aur_bpe_map[60] = 320;
+	aur_bpe_map[61] = 340;
 	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
 	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
 	// Original Golden Freezer Skin behaviour
 	cus_aura_gfs_bh[13] = true;
+	// / Original ki requirement
+	for (size_t i = 0; i < MAX_SKILLS; i++)
+	{
+		ki_requirement[i][0] = 300;
+		ki_requirement[i][1] = 400;
+		
+		for (size_t j = 2; j < MAX_TRANSFORMATION_STAGES; j++)
+		{
+			ki_requirement[i][j] = 500;
+		}
+	}
+	// 1.24.1 around 15ECBF
+	// Note here we use id2, but game uses id1. id1 to id2 for awaken = X - 25000
+	ki_requirement[5][0] = 100; ki_requirement[5][1] = 300; ki_requirement[5][2] = 500; // Kaioken
+	ki_requirement[40][0] = 100; ki_requirement[40][1] = -1; ki_requirement[40][2] = 500; // GS4 super saiyan only 1+3, without 2 (Goku GT, Gotenks) 
+	// Notice the following two skills has some kind of flag activated for them alone. Currently unknown purpose and not accessible to mods.
+	ki_requirement[800][0] = 500; ki_requirement[800][1] = 500; // Super Saiyan Blue Kaioken
+	ki_requirement[1350][0] = 500; ki_requirement[1350][1] = 500; // Pure progress
+	// /
+
 	
 	Xv2PreBakedFile pbk;
 	const std::string pbk_path = myself_path + CONTENT_ROOT + "data/pre-baked.xml";
@@ -1136,6 +1200,11 @@ PUBLIC void PreBakeSetup(size_t)
 			{
 				bcs_additional_colors[data.cus_aura_id] = data.bcs_additional_colors;
 			}
+		}
+		
+		if (data.cus_id2_owner < MAX_SKILLS && data.ki_requirement != 0 && data.integer_2 < MAX_TRANSFORMATION_STAGES)
+		{
+			ki_requirement[data.cus_id2_owner][data.integer_2] = data.ki_requirement;
 		}
 	}
 	
@@ -1407,7 +1476,7 @@ PUBLIC uint64_t ResultPortraits2Patched(Battle_HudCockpit *pthis, int idx, void 
 	return ret;
 }
 
-// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+/*
 PUBLIC void CusAuraMapPatch(uint8_t *buf)
 {
 	// movsxd  rcx, eax
@@ -1426,10 +1495,47 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x13C)); // buf+0x13C -> the address of end of switch	
-}
+}*/
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
-PUBLIC void CusAuraPatchBH11(uint8_t *buf)
+PUBLIC void CusAuraMapPatch(uint8_t *addr)
+{
+	EXECBUFFER(code_buf, addr); 
+	size_t size = 0x13C;
+	size_t fill_size = 9; // First two instructions
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			cmp(rcx, LOOKUP_SIZE);
+			jae("LRET");
+			mov(rdx, (uintptr_t)&cus_aura_lookup[0]);
+			lea(rdx, ptr[rdx+rcx*2]);
+			movzx(eax, word[rdx]);
+			cmp(ax, -1);
+			je("LRET");
+			mov(ebx, eax);			
+			// Return
+			L("LRET");
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), fill_size);
+}
+
+/*PUBLIC void CusAuraPatchBH11(uint8_t *buf)
 {
 	PatchUtils::Write16((uint16_t *)buf, 0xB948); // mov rcx, XXXXXXXXXXXXXX
 	
@@ -1445,12 +1551,69 @@ PUBLIC void CusAuraPatchBH11(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xC)); // buf+0xC -> address to return to
+}*/
+
+// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+PUBLIC void CusAuraPatchBH11(uint8_t *addr, size_t size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			mov(edx, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			cmp(edx, LOOKUP_SIZE);
+			jae("LORIG");
+			mov(rcx, (uintptr_t)&cus_aura_bh11_lookup[0]); 
+			add(rcx, rdx);			
+			movzx(ecx, byte[rcx]);
+			cmp(ecx, BEHAVIOUR_MAX);
+			ja("LORIG");
+			lea(eax, ptr[rcx-1]);
+			cmp(eax, 0x1B); // Orig instruction
+			jmp("LRET");
+			// ORIG
+			L("LORIG");
+			lea(eax, ptr[rdx-1]);
+			cmp(eax, 0x1B);
+			// Return
+			L("LRET");
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), size);
 }
 
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
 PUBLIC uint32_t CusAuraPatchInt2(Battle_Mob *pthis)
 {
-	if (pthis->IsTransformed()) // if awaken skill? needs confirm...
+	// /// Handling of Ui transformation thing
+	// This code is guaranteed to be called before the patch that leads to RedirectTransformArrayPatch. Also, no need to worry about multi thread, this function is tied to a specific thread
+	CUSSkill *skill = pthis->GetAwakenSkill();	
+	if (skill && skill->id2 < MAX_SKILLS)
+	{
+		ki_requirement_ptr = ki_requirement[skill->id2];
+	}
+	else
+	{
+		ki_requirement_ptr = ki_requirement[0]; // fallback (default values, 300, 400, 500 (and 500, 500, 500, 500, etc)
+	}
+	// ///	
+		
+	// Reimplementation
+	if (pthis->IsTransformed()) 
 	{
 		uint32_t cus_aura = (uint32_t)pthis->trans_control;
 		
@@ -1479,8 +1642,8 @@ PUBLIC uint32_t CusAuraPatchInt3(Battle_Mob *pthis)
 	return 0;
 }
 
-// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
-PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
+/*
+PUBLIC void CusAuraPatchTeleport_(uint8_t *buf)
 {
 	PatchUtils::Write16((uint16_t *)buf, 0xB948); // mov rcx, XXXXXXXXXXXXXX
 	
@@ -1504,7 +1667,65 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *buf)
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x999)); // buf+0x999 -> address return for no teleport   
+	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0x989)); // buf+0x989 -> address return for no teleport   
+}*/
+
+// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+PUBLIC void CusAuraPatchTeleport(uint8_t *addr, size_t fill_size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t teleport_addr = (uintptr_t)addr + fill_size;
+	uintptr_t no_teleport_addr = (uintptr_t)addr + 0x9C5; // Update this on any change!!!
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t teleport, uintptr_t no_teleport) : Xbyak::CodeGenerator(4096, buf)
+		{
+			mov(ecx, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			cmp(ecx, LOOKUP_SIZE);
+			jae("DEFAULT_TELEPORT");
+			
+			mov(rdx, (uintptr_t)&force_teleport[0]);
+			add(rdx, rcx);			
+			movzx(edx, byte[rdx]);
+			test(edx, edx);
+			jne("TELEPORT");
+			
+			mov(rdx, (uintptr_t)&cus_aura_bh66_lookup[0]);
+			add(rdx, rcx);			
+			movzx(edx, byte[rdx]);
+			cmp(edx, 0xFF);
+			je("DEFAULT_TELEPORT");
+			cmp(eax, edx);
+			je("TELEPORT");
+			
+			// Default teleport
+			L("DEFAULT_TELEPORT");
+			cmp(dword[rbx+offsetof(Battle_Mob, trans_control)], eax);
+			jne("NO_TELEPORT");
+			
+			// Teleport
+			L("TELEPORT");
+			jmp(ptr[rip]);
+			dq(teleport);	
+			
+			// No teleport
+			L("NO_TELEPORT");
+			xor_(eax, eax); // Needed in 1.25.1 for the "return 0". 
+			jmp(ptr[rip]);
+			dq(no_teleport);
+		}
+	};	
+	
+	Code c(code_buf, teleport_addr, no_teleport_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), fill_size);
 }
 
 PUBLIC uint32_t Behaviour13(Battle_Mob *pthis)
@@ -1523,9 +1744,9 @@ typedef void (* SaveBcsType)(void *, uint64_t, const char *);
 void SetBcsColor(void *pthis, int color, int transform, const char *part, bool save)
 {	
 	uint64_t *vtable = (uint64_t *) *(uint64_t *)pthis;
-	SetBcsColorType SetBcsColorV = (SetBcsColorType)vtable[0x410/8];
-	SaveBcsType Save1 = (SaveBcsType)vtable[0x400/8];
-	SaveBcsType Save2 = (SaveBcsType)vtable[0x408/8];
+	SetBcsColorType SetBcsColorV = (SetBcsColorType)vtable[0x420/8];
+	SaveBcsType Save1 = (SaveBcsType)vtable[0x410/8];
+	SaveBcsType Save2 = (SaveBcsType)vtable[0x418/8];
 	
 	//DPRINTF("Setting %s:%d (transform=%d,save=%d)\n", part, color, transform, save);
 	
@@ -1621,7 +1842,7 @@ PUBLIC void ApplyBcsHairColorPatchUntransform(uint8_t *addr)
 	// Second patch, replace edx=60 by rdx=rdi=Battle_Mob ptr 
 	PatchUtils::Write32(addr+0x1D, 0x90FA8948); // mov rdx, rdi; nop
 		
-	// Third patch, hook the method 0x400	
+	// Third patch, hook the method 
 	PatchUtils::Write16(addr+0x21, 0xE890);
 	PatchUtils::HookCall(addr+0x21+1, nullptr, (void *)SetBcsColorsUntransform);
 	
@@ -1641,7 +1862,7 @@ PUBLIC void ApplyBcsHairColorPatchTransform(uint8_t *addr)
 	PatchUtils::Write32(addr+0x1A, 0x90DA8948); // mov rdx, rbx; nop
 	PatchUtils::Write8(addr+0x1A+4, 0x90);
 		
-	// Third patch, hook the method 0x400	
+	// Third patch, hook the method 	
 	PatchUtils::Write16(addr+0x23, 0xE890);
 	PatchUtils::HookCall(addr+0x23+1, nullptr, (void *)SetBcsColorsTransform);
 	
@@ -1800,8 +2021,9 @@ PUBLIC StdString *TtcFilesAlias(StdString *path, const char *cms, size_t append_
 	return StringAppend(path, cms, append_len);
 }
 
-extern void CanUseAnyDualSkill();
 
+/*
+extern void CanUseAnyDualSkill();
 PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 {
 	PatchUtils::Write16((uint16_t *)buf, 0xB848); // mov rax, XXXXXXXXXXXXXX
@@ -1828,9 +2050,55 @@ PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr2, (uint64_t)(buf+0xBD)); // buf+0xBD -> address return for any dual skill
+}*/
+
+// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+PUBLIC void AnyDualSkillPatch(uint8_t *addr)
+{
+	EXECBUFFER(code_buf, addr); 
+	size_t fill_size = 0xD;
+	uintptr_t default_addr = (uintptr_t)addr + fill_size;
+	uintptr_t any_dual_skill_addr = (uintptr_t)addr + 0xBD; // Update this on any change!!!
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t default_ra, uintptr_t any_dual_skill_ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			test(byte[rbx+0xB0], 1);
+			jnz("ANY_DUAL_SKILL");
+			mov(edx, dword[rbx+offsetof(Battle_Mob, cms_id)]); 
+			cmp(edx, LOOKUP_SIZE);
+			jae("DEFAULT_USAGE");
+			mov(rax, (uintptr_t)&any_dual_skill_lookup[0]);
+			add(rax, rdx);			
+			movzx(eax, byte[rax]);
+			test(eax, eax);
+			jnz("ANY_DUAL_SKILL");
+			
+			// Default usage
+			L("DEFAULT_USAGE");
+			jmp(ptr[rip]);
+			dq(default_ra);	
+			
+			// Any dual skill
+			L("ANY_DUAL_SKILL");
+			jmp(ptr[rip]);
+			dq(any_dual_skill_ra);
+		}
+	};	
+	
+	Code c(code_buf, default_addr, any_dual_skill_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), fill_size);
 }
 
-extern void AurToBpeMap();
+/*extern void AurToBpeMap();
 
 PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instruction with the "ja"
 {
@@ -1850,7 +2118,7 @@ PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instructi
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ifbpe_ra, (uint64_t)(buf+0x60)); // buf+0x60, address to return to if bpe mapping is done
+	PatchUtils::Write64(ifbpe_ra, (uint64_t)(buf+0x67)); // buf+0x67, address to return to if bpe mapping is done
 	
 	uint64_t *ifnotbpe_ra = (uint64_t *)(abm_addr+0x25);
 	if (*ifnotbpe_ra != 0xFEDCBA987654321)
@@ -1859,7 +2127,51 @@ PUBLIC void AurToBpePatch(uint8_t *buf) // Reminder: buf points to the instructi
 		exit(-1);
 	}
 	
-	PatchUtils::Write64(ifnotbpe_ra, (uint64_t)(buf+0xDA)); // buf+0xDA, address of original default case
+	PatchUtils::Write64(ifnotbpe_ra, (uint64_t)(buf+0xE1)); // buf+0xE1, address of original default case
+}*/
+
+// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
+PUBLIC void AurToBpePatch(uint8_t *addr)
+{
+	EXECBUFFER(code_buf, addr); 
+	size_t fill_size = 6; // First instruction  (the ja, remember that the notify patch has inst_index=2)
+	uintptr_t if_bpe_addr = (uintptr_t)addr + 0x67; // Update this on any change!!!
+	uintptr_t ifnot_bpe_addr = (uintptr_t)addr + 0xE1; // Address of original default case. Update this on any change!!!
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t if_bpe_ra, uintptr_t ifnot_bpe_ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			// In its current value: edx = aur_id
+			cmp(edx, LOOKUP_SIZE);
+			jae("IFNOT_BPE");
+			mov(rax, (uintptr_t)&aur_bpe_map[0]);
+			lea(rax, ptr[rax+rdx*4]);	
+			mov(edx, dword[rax]);
+			cmp(edx, 0);
+			jl("IFNOT_BPE");
+			
+			// Bpe
+			L("IF_BPE");
+			jmp(ptr[rip]);
+			dq(if_bpe_ra);	
+			
+			// No bpe
+			L("IFNOT_BPE");
+			jmp(ptr[rip]);
+			dq(ifnot_bpe_ra);
+		}
+	};	
+	
+	Code c(code_buf, if_bpe_addr, ifnot_bpe_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), fill_size);
 }
 
 static void AurBpeCase1(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
@@ -1889,8 +2201,7 @@ PUBLIC void AurBpeCase2(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
 	AurBpe(pthis, aur, flags, unk);
 }
 
-// This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
-PUBLIC void CusAuraPatchBH64(uint8_t *buf)
+/*PUBLIC void CusAuraPatchBH64(uint8_t *buf)
 {
 	PatchUtils::Write16((uint16_t *)buf, 0xB948); // mov rcx, XXXXXXXXXXXXXX
 	
@@ -1906,6 +2217,45 @@ PUBLIC void CusAuraPatchBH64(uint8_t *buf)
 	}
 	
 	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xC)); // buf+0xC -> address to return to
+}*/
+PUBLIC void CusAuraPatchBH64(uint8_t *addr, size_t size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			mov(eax, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			cmp(eax, LOOKUP_SIZE);
+			jae("ORIG");
+			mov(rcx, (uintptr_t)&cus_aura_bh64_lookup[0]);
+			add(rcx, rax);			
+			movzx(ecx, byte[rcx]);
+			cmp(ecx, BEHAVIOUR_MAX);
+			ja("ORIG");
+			mov(eax, ecx);
+			
+			// Orig
+			L("ORIG");
+			add(eax, 0xFFFFFFFC);
+			cmp(eax, 0x1A);
+			// Return
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);	
+	
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), size);
 }
 
 // EEPK section
@@ -1996,8 +2346,8 @@ void GoldenFreezerSkinBehaviour(void *common_chara, Battle_Mob *mob)
 {
 	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
 	{
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 0, (uintptr_t)"SKIN_");
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x408, 0, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x410, 0, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x418, 0, (uintptr_t)"SKIN_");
 	}
 }
 
@@ -2005,15 +2355,15 @@ void GoldenFreezerSkinBehaviourUntransform(void *common_chara, Battle_Mob *mob)
 {
 	if (mob->trans_control >= 0 && mob->trans_control < LOOKUP_SIZE && cus_aura_gfs_bh[mob->trans_control])
 	{
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x400, 1, (uintptr_t)"SKIN_");
-		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x408, 1, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x410, 1, (uintptr_t)"SKIN_");
+		PatchUtils::InvokeVirtualRegisterFunction(common_chara, 0x418, 1, (uintptr_t)"SKIN_");
 	}
 }
 
 PUBLIC void OnGoldenFreezerSkinBehaviourLocated(uint8_t *addr, size_t size)
 {
-	// mov rcx, [rbx+4C8h]; nop
-	PatchUtils::Write64(addr, 0x90000004C88B8B48); addr += 8; size -= 8;
+	// mov rcx, [rbx+4D8h]; nop
+	PatchUtils::Write64(addr, 0x90000004D88B8B48); addr += 8; size -= 8;
 	// mov rdx, rbx; nop
 	PatchUtils::Write32(addr, 0x90DA8948); addr += 4; size -= 4;
 	// Set call to my code
@@ -2227,7 +2577,8 @@ PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
 	}
 }
 
-static void CollectAdditionalPortraits(int32_t cms, std::vector<int32_t> &ret)
+// Not needed: 1.25.1
+/*static void CollectAdditionalPortraits(int32_t cms, std::vector<int32_t> &ret)
 {
 	static bool loaded = false;
 	static CusFile cus;
@@ -2285,6 +2636,48 @@ PUBLIC void AddPortraitPatched(Battle_HudCockpit *pthis, int32_t cms)
 			return;
 		}
 	}
+}*/
+
+/*extern void TransformUiRedirectArray();
+
+PUBLIC void RedirectTransformArrayPatch(uint8_t *buf)
+{
+	PatchUtils::Write16((uint16_t *)buf, 0xB848); // mov rax, XXXXXXXXXXXXXX
+	
+	uintptr_t tra_addr = (uintptr_t) TransformUiRedirectArray;
+	PatchUtils::Write64((uint64_t *)(buf+2), tra_addr);
+	PatchUtils::Write16((uint16_t *)(buf+10), 0xE0FF); // jmp rax
+	PatchUtils::Write16(buf+12, 0x9090); // nop  (not really necessary, code wont reach here, but to not destroy asm view in a debugger)
+	
+	uint64_t *ret_addr = (uint64_t *)(tra_addr+0x10);
+	if (*ret_addr != 0xFEDCBA987654321)
+	{
+		UPRINTF("Internal error in RedirectTransformArrayPatch\n");
+		exit(-1);
+	}
+	
+	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0xE)); // buf+0xE -> game code to return
+}*/
+PUBLIC void RedirectTransformArrayPatch(uint8_t *addr, size_t size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			mov(r14, (uintptr_t)&ki_requirement_ptr);
+			mov(r14, ptr[r14]);
+			lea(r14, ptr[r14+rbx*4]); // Original instruction
+			// Return
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);		
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), size);
 }
 
 } // extern "C"

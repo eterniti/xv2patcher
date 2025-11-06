@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <EternityPatchFile name="UnlockStages" comment="This file enables the unlock of stages without modifying save data or any other files.">
 
-	<Patch name="UnlockStagesAll" type="write" search_start="0x5B7FB9" enabled="unlock_stage_all" comment="Signature is 1.21" >
+	<Patch name="UnlockStagesAll" type="write" search_start="0x616299" enabled="unlock_stage_all" comment="Signature is 1.25.1" >
 		<Instruction code="E8 XXXXXXXX" comment="call check_unlock" />
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
 		<Instruction code="8B D6" comment="mov edx, esi" />
@@ -12,7 +12,7 @@
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="41 8B D6" comment="mov edx, r14d" />
 		<Instruction code="E8 XXXXXXXX" comment="call stage_seen_before" />
-		<Instruction code="8D 56 4A" comment="lea edx, [rsi+4Ah]" />
+		<Instruction code="8D 56 4C" comment="lea edx, [rsi+4Ch]" />
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
 		<Instruction code="48 8B CF" comment = "mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call as3_send_flag" />

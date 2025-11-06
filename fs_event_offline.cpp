@@ -40,7 +40,7 @@ static int goal;
 static float resistance_multiplier;
 static int prize;
 
-static uint8_t orig_ins1[7], orig_ins2[5], orig_ins3[5];
+static uint8_t orig_ins1[7], orig_ins2[10], orig_ins3[5];
 static uint8_t *patch_addr1, *patch_addr2, *patch_addr3;
 
 static void *em_callback;
@@ -148,7 +148,7 @@ PUBLIC void SetupIsFreezerEventEnding(IsFreezerEventEndingType orig)
 
 PUBLIC int IsFreezerEventEndingPatched(void *pthis)
 {
-	static uint8_t patch2[5] = { 0xB9, 0x01, 0x00, 0x00, 0x00 }; // mov ecx, 1; (ORIGINAL CODE: test eax, eax; cmovz ecx, esi) (NOTE: esi is zero constant in this func)
+	static uint8_t patch2[10] = { 0xBB, 0x01, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90 }; // mov ebx, 1; fill with nop; (ORIGINAL CODE: test eax, eax; mov eax, 0; cmovz ebx, eax)
 	
 	switch (event_state)
 	{

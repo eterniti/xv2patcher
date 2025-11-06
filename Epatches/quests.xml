@@ -2,26 +2,26 @@
 <EternityPatchFile name="QuestPatches" comment="This file enables patches related with quest mods" >
 
 	<!-- This is an irregular patch. Implementation in the exe must be changed on any signature change -->	
-	<!-- Signature: 1.17.2 -->
-	<Patch name="ModHLQInGlobalOrb" enabled="mod_hlq_always_in_global_orb" type="notify" search_start="0x4B880B" >
+	<!-- Signature: 1.25.1 -->
+	<Patch name="ModHLQInGlobalOrb" enabled="mod_hlq_always_in_global_orb" type="notify" search_start="0x5C319B" >
 		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
 		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
 		<Instruction code="FF 50 18" comment="call qword ptr [rax+18h]" />
 		<Instruction code="83 F8 03" comment="cmp eax, 3" />
-		<Instruction code="75 XX" comment="jz XX" />
-		<Instruction code="39 AE AC 00 00 00" comment="cmp [rsi+0ACh], ebp" />
+		<Instruction code="75 XX" comment="jnz XX" />
+		<Instruction code="39 B5 AC 00 00 00" comment="cmp [rbp+0ACh], esi" />
 		<Instruction code="0F 84 XX XX 00 00" comment="jz -XXX" />		
 				
 		<Notify value="OnModHlqPatchLocated" />
 	</Patch>
 	
-	<Patch name="ExtendQEDConditions" type="hook" search_start="0x8005A0" comment="addr 1.23" >
+	<Patch name="ExtendQEDConditions" type="hook" search_start="0x83C3A0" comment="addr 1.25.1" >
 		<Instruction code="40 53" comment="push rbx" />
 		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
 		<Instruction code="48 63 02" comment="movsxd rax, dword ptr [rdx]" />
 		<Instruction code="33 DB" comment="xor ebx, ebx" />
-		<Instruction code="83 F8 43" comment="cmp eax, 43" />
-		<Instruction code="0F 87 98 03 00 00" comment="ja xxx" />
+		<Instruction code="83 F8 47" comment="cmp eax, 47h" />
+		<Instruction code="0F 87 XXXXXXXX" comment="ja xxx" />
 		
 		<Hook value="QedCondHooked" setup="SetupQedCond" />
 	</Patch>
