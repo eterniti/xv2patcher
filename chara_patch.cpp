@@ -1509,6 +1509,7 @@ PUBLIC void CusAuraMapPatch(uint8_t *addr)
 	{
 		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
 		{
+			movsxd(rcx, eax);
 			cmp(rcx, LOOKUP_SIZE);
 			jae("LRET");
 			mov(rdx, (uintptr_t)&cus_aura_lookup[0]);
