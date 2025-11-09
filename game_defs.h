@@ -49,7 +49,7 @@ enum
 // Size 0x10
 struct SkillSlot
 {
-	CUSSkill *skill; // as defined in CusFile.h
+	CUSSkill125 *skill; // as defined in CusFile.h
 	uint64_t unk_08;
 };
 CHECK_STRUCT_SIZE(SkillSlot, 0x10);
@@ -167,7 +167,7 @@ struct Battle_Mob
 		common_chara->ChangePartset(partset);
 	}
 	
-	inline CUSSkill *GetAwakenSkill()
+	inline CUSSkill125 *GetAwakenSkill()
 	{
 		return skills[SKILL_AWAKEN].skill;
 	}

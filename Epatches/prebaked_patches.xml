@@ -265,13 +265,12 @@
 	
 	<!-- Signature is 1.25.1 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- INSTRUCTION AFTER PATCH SIGNATURE WILL BE CONSIDERED ONE OF THE 2 RETURN ADDRESS OF THE PATCH (TELEPORT ADDR). THE WHOLE CODE IN THE SIGNATURE WILL BE WIPED. -->
+	<!-- THE WHOLE CODE IN THE SIGNATURE WILL BE WIPED. -->
 	<Patch name="CusAuraPatchTeleport" type="notify" search_start="0xC0B71" >
 		<Instruction code="39 83 XXXXXXXX" comment="cmp [rbx+XXXXh], eax" />
 		<Instruction code="74 0C" comment="je teleport" />
 		<Instruction code="33 C0" comment="xor eax, eax" />
 		<Instruction code="E9 B6 09 00 00" comment="jmp no_teleport" />		
-		<Instruction code="48 8B 74 24 48" comment="mov rsi, [rsp+48h]" />
 	
 		<Notify value="CusAuraPatchTeleport" />
 	</Patch>
@@ -645,6 +644,7 @@
 	<!-- This patch is complex in the dll side. Any change in signature needs a review of the code in the dll -->
 	<!-- Watch for r14 and rbx changed to other register -->
 	<!-- THE INSTRUCTION AFTER THIS PATCH WILL BE CONSIDERED THE RETURN ADDRESS OF THE PATCH. THE WHOLE CODE IN THE SIGNATURE WILL BE WIPED -->
+	<!-- THIS PATCH DEPENDS OF CusAuraPatchInt2 TO BE ENABLED. OTHERWISE -> CRASH -->
 	<Patch name="RedirectTransformArrayPatch" type="notify" search_start="0x164DBF" >
 		<Instruction code="4C 8D B5 XX XX XX XX" comment="lea r14, [rbp+XX]" />
 		<Instruction code="4D 8D 34 9E" comment="lea r14, [r14+rbx*4]" />

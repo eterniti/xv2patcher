@@ -22,7 +22,7 @@
 #define SLOTS_FILE_STAGE		"data/XV2P_SLOTS_STAGE.x2s"
 #define SLOTS_FILE_STAGE_LOCAL	"data/XV2P_SLOTS_STAGE_LOCAL.x2s"
 
-#define XV2_PATCHER_VERSION	"4.62"
+#define XV2_PATCHER_VERSION	"4.63"
 
 typedef void (* IGGYSetTraceCallbackType)(void *callback, void *param);
 typedef void (* IGGYSetWarningCallbackType)(void *callback, void *param);

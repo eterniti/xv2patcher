@@ -108,6 +108,17 @@
 		<Hook value="SkillCommandPatched" setup="SetupSkillCommand" />	
 	</Patch>
 	
+	<!-- New patch for 1.25.1. Same function as above. This patch has been added to ensure the offset where mob is matches the DLL. 
+	     This had been stable at offset 0 since beginning of game, suddenly it changed to 0x10.
+	     On change of the offset, update the value in SkillCommandPatched -->
+	<Patch name="CheckSkillCommandMob" type="notify" search_start="0xF25E0" >
+		<Instruction code="48 8B 46 10" comment="mov rax, [rsi+10h] <-- this" />
+		<Instruction code="41 83 CE FF" comment="or r14d, -1" />
+		<Instruction code="F7 40 XX XX 00 08 00" comment="test dword ptr [rax+XXXXh], 80000h" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
 	<!-- Patches below are only to ensure struct definitions in the dll are correct -->
 	
 	<!-- Add 0xB0 to the rcx of memset to get the address of bcm field -->

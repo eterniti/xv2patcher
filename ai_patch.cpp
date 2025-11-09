@@ -182,7 +182,7 @@ PUBLIC void OnBattleCreateCharPatched(Battle_Core_MainSystem *pthis, SelectCharI
 	//if (mob->is_cpu)
 	if (1) // we now include player character because of the mob control functionality
 	{
-		CUSSkill *awaken = mob->skills[SKILL_AWAKEN].skill;
+		CUSSkill125 *awaken = mob->skills[SKILL_AWAKEN].skill;
 		
 		if (!awaken)
 		{
@@ -250,7 +250,7 @@ PUBLIC uint32_t AISpecialPatched(AIBehaviourSpecial *pthis, void *unk1, AIDef *d
 					
 					if (ai_char->CanTransform() && !ai_char->flag_for_awaken_usage)
 					{
-						//DPRINTF("Flagged for awaken usage (skill slot %d)\n", skill_slot);
+						//DPRINTF("***Flagged for awaken usage (skill slot %d)\n", skill_slot);
 						ai_char->flag_for_awaken_usage = true;						
 					}
 				}
@@ -263,7 +263,7 @@ PUBLIC uint32_t AISpecialPatched(AIBehaviourSpecial *pthis, void *unk1, AIDef *d
 
 PUBLIC void SkillCommandPatched(uint64_t *pthis, uint32_t cmd)
 {
-	Battle_Mob *mob = (Battle_Mob *)pthis[0];
+	Battle_Mob *mob = (Battle_Mob *)pthis[0x10/8];
 	
 	if (IsCmdSuperOrUltra(cmd))
 	{	
@@ -289,7 +289,7 @@ PUBLIC void SkillCommandPatched(uint64_t *pthis, uint32_t cmd)
 						bool decided = false;
 						
 						int current_transform = ai_char->GetCurrentTransform();
-						//DPRINTF("Current transform of 0x%x is %d\n", mob->cms_id, current_transform);
+						//DPRINTF("***Current transform of 0x%x is %d\n", mob->cms_id, current_transform);
 						
 						int max_t, ct;
 						
@@ -370,7 +370,7 @@ PUBLIC void SkillCommandPatched(uint64_t *pthis, uint32_t cmd)
 
 										ai_char->last_tick = tick;
 										
-										//DPRINTF("0x%x will try to transform to %d\n", mob->cms_id, current_transform);
+										//DPRINTF("***0x%x will try to transform to %d. Base trans control is %d\n", mob->cms_id, current_transform, ai_char->base_trans_control);
 										decided = true;
 									}
 									

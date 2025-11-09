@@ -33,7 +33,7 @@ struct AICharacter
 	
 	AICharacter(Battle_Mob *mob, bool is_enemy) : mob(mob), is_enemy(is_enemy)
 	{
-		CUSSkill *awaken = mob->skills[SKILL_AWAKEN].skill;
+		CUSSkill125 *awaken = mob->skills[SKILL_AWAKEN].skill;
 		
 		if (awaken)
 		{

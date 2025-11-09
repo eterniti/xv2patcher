@@ -1602,7 +1602,7 @@ PUBLIC uint32_t CusAuraPatchInt2(Battle_Mob *pthis)
 {
 	// /// Handling of Ui transformation thing
 	// This code is guaranteed to be called before the patch that leads to RedirectTransformArrayPatch. Also, no need to worry about multi thread, this function is tied to a specific thread
-	CUSSkill *skill = pthis->GetAwakenSkill();	
+	CUSSkill125 *skill = pthis->GetAwakenSkill();	
 	if (skill && skill->id2 < MAX_SKILLS)
 	{
 		ki_requirement_ptr = ki_requirement[skill->id2];
@@ -1675,7 +1675,7 @@ PUBLIC void CusAuraPatchTeleport_(uint8_t *buf)
 PUBLIC void CusAuraPatchTeleport(uint8_t *addr, size_t fill_size)
 {
 	EXECBUFFER(code_buf, addr); 
-	uintptr_t teleport_addr = (uintptr_t)addr + fill_size;
+	uintptr_t teleport_addr = (uintptr_t)addr + 0x14;
 	uintptr_t no_teleport_addr = (uintptr_t)addr + 0x9C5; // Update this on any change!!!
 	
 	struct Code : Xbyak::CodeGenerator 
