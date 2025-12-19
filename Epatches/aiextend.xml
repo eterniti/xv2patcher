@@ -210,12 +210,12 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x225C: trans_control -->
-	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xBF12E" comment="addr 1.25.1" >
+	<!-- 0x22CC: trans_control -->
+	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xBF2C4" comment="addr 1.25.2" >
 		<Instruction code="83 BF CC 22 00 00 0C" comment="cmp dword ptr [rdi+22CCh], 0Ch" />
 		<Instruction code="75 XX" comment="jnz +0xXX" />
-		<Instruction code="48 8B 06" comment="mov rax, [rsi]" />
-		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="49 8B 06" comment="mov rax, [r14]" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="FF 90 30 05 00 00" comment="call qword ptr [rax+530h]" />
 		
 		<Notify value="NULL" />	

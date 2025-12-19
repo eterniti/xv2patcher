@@ -1675,7 +1675,7 @@ PUBLIC void CusAuraPatchTeleport_(uint8_t *buf)
 PUBLIC void CusAuraPatchTeleport(uint8_t *addr, size_t fill_size)
 {
 	EXECBUFFER(code_buf, addr); 
-	uintptr_t teleport_addr = (uintptr_t)addr + 0x14;
+	uintptr_t teleport_addr = (uintptr_t)addr + 0x14; // Update this on any change!!!
 	uintptr_t no_teleport_addr = (uintptr_t)addr + 0x9C5; // Update this on any change!!!
 	
 	struct Code : Xbyak::CodeGenerator 

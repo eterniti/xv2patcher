@@ -50,11 +50,11 @@
 	</Patch>
 	
 	<!-- This patch will break on the dll side if the address of the virtual method changes -->
-	<!-- Signature: 1.25.1 -->
-	<Patch name="PatchMobControlDialogueIsPlayer" type="notify" search_start="0x8063AA" >
-		<Instruction code="44 8B B4 24 C8 01 00 00" comment="mov r14d, [rbp+01C8]; original cms" />
+	<!-- Signature: 1.25.2 -->
+	<Patch name="PatchMobControlDialogueIsPlayer" type="notify" search_start="0x8071ED" >
+		<Instruction code="8B AC 24 C8 01 00 00" comment="mov ebp, [rbp+01C8]; original cms" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
-		<Instruction code="74 72" comment="jz +72" />
+		<Instruction code="74 6B" comment="jz +6B" />
 		<Instruction code="48 8B 10" comment="mov rdx, [rax]" />
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="FF 92 E8 02 00 00" comment="call qword ptr[rdx+2E8]" />
@@ -62,15 +62,15 @@
 		<Notify inst_index="5" value="OnDialogueIsPlayerLocated" />
 	</Patch>
 	
-	<!-- Signature: 1.25.1. Patch is a bit below the above one. -->
-	<Patch name="PatchMobControlDialogueGetEventCastCom" type="hook" search_start="0x806429" >
-		<Instruction code="41 8B CD" comment="mov ecx, r13d" />
+	<!-- Signature: 1.25.2. Patch is a bit below the above one. -->
+	<Patch name="PatchMobControlDialogueGetEventCastCom" type="hook" search_start="0x807264" >
+		<Instruction code="8B CB" comment="mov ecx, ebx" />
 		<Instruction code="E8 XXXXXXXX" comment="call GetEventCastComFromIndex" />
-		<Instruction code="48 8B F0" comment="mov rsi, rax" />
+		<Instruction code="4C 8B F0" comment="mov r14, rax" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
-		<Instruction code="74 7C" comment="jz +7C" />
+		<Instruction code="74 76" comment="jz +76" />
 		<Instruction code="48 8B 00" comment="mov rax, [rax]" />
-		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="FF 90 E8 02 00 00" comment="call qword ptr[rax+2E8]" />
 		
 		<Hook type="call" inst_index="1" value="GetEventCastComFromIndexPatched" setup="SetupGetEventCastComFromIndex" />
