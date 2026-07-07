@@ -155,6 +155,14 @@ static void load_dynamic_iggy_interfaces()
 	dynamic_iggy_interfaces_mtime = current_mtime;
 }
 
+typedef void *(* IggyPlayerCallbackResultPathType)(void *unk0);
+typedef void (* IggyValueSetStringUTF8RSType)(void *arg1, void *unk2, void *unk3, const char *str, size_t length);
+typedef void (* IggyValueSetS32RSType)(void *arg1, uint32_t unk2, uint32_t unk3, uint32_t value);
+
+static IggyPlayerCallbackResultPathType IggyPlayerCallbackResultPath;
+static IggyValueSetStringUTF8RSType IggyValueSetStringUTF8RS;
+static IggyValueSetS32RSType IggyValueSetS32RS;
+
 static void *get_dynamic_iggy_result(void *iggy_obj)
 {
 	void *ret = IggyPlayerCallbackResultPath(iggy_obj);
@@ -645,15 +653,9 @@ PUBLIC void OnStdVector32ReserveLocated(void *address)
 #define XV2_PATCHER_TAG	0x50325658 /* XV2P */
 
 typedef int (* ExternalAS3CallbackType)(void *custom_arg, void *iggy_obj, const char **pfunc_name);
-typedef void *(* IggyPlayerCallbackResultPathType)(void *unk0);
-typedef void (* IggyValueSetStringUTF8RSType)(void *arg1, void *unk2, void *unk3, const char *str, size_t length);
-typedef void (* IggyValueSetS32RSType)(void *arg1, uint32_t unk2, uint32_t unk3, uint32_t value);
 typedef void (* _Battle_Mob_Destructor)(void *);
 
 static ExternalAS3CallbackType ExternalAS3Callback;
-static IggyPlayerCallbackResultPathType IggyPlayerCallbackResultPath;
-static IggyValueSetStringUTF8RSType IggyValueSetStringUTF8RS;
-static IggyValueSetS32RSType IggyValueSetS32RS;
 static _Battle_Mob_Destructor Battle_Mob_Destructor;
 
 static int dispatch_dynamic_iggy_interface(const char *func_name, void *iggy_obj)
