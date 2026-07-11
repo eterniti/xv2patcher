@@ -1080,6 +1080,12 @@ PUBLIC void PreBakeSetup(size_t)
 	cus_aura_lookup[32] = 0x3A;
 	cus_aura_lookup[33] = 0x3B;
 	cus_aura_lookup[34] = 0x3C;
+	// 1.26: new base cus-auras
+	cus_aura_lookup[38] = 0x42;
+	cus_aura_lookup[39] = 0x43;
+	cus_aura_lookup[40] = 0x46;
+	cus_aura_lookup[41] = 0x46;
+	cus_aura_lookup[42] = 0x47;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
 	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
@@ -1500,8 +1506,8 @@ PUBLIC void CusAuraMapPatch(uint8_t *buf)
 // This patch is very sensitive. On any change in patch signature, it MUST BE REDONE
 PUBLIC void CusAuraMapPatch(uint8_t *addr)
 {
-	EXECBUFFER(code_buf, addr); 
-	size_t size = 0x13C;
+	EXECBUFFER(code_buf, addr);
+	size_t size = 0x15B; // 1.26: end-of-switch @addr+0x15B (was 0x13C);
 	size_t fill_size = 9; // First two instructions
 	uintptr_t return_addr = (uintptr_t)addr + size;
 	

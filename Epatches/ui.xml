@@ -6,22 +6,23 @@
 	<!-- ui_enemy_portrait group -->
 	<!-- Signature 1.21. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
 	<!-- Note: since 1.21, the switch table changed to a 8 bits index table (a table for the actually jump table) -->
-	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x1D1F1D" >
+	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x1E68E1" >
 		<Instruction code="83 F9 01" comment="cmp ecx, 1" />
-		<Instruction code="75 3D" comment="jnz +0x3D" />
+		<Instruction code="0F 85 06 01 00 00" comment="jnz" />
 		<Instruction code="48 63 45 04" comment="movsxd rax, [rbp+4]" />
-		<Instruction code="83 F8 1D" comment="cmp eax, 1Dh " />
-		<Instruction code="77 34" comment="ja +0x34" />
-		<Instruction code="41 0F B6 84 07 XXXXXXXX" comment="mov ecx, [rdi+rax*4+XXXXXXXX]"/>
-		
-		<Notify inst_index="5" inst_offset="5" value="OnLocatePortraitEnemyForEmbSwitchTable" />
+		<Instruction code="83 F8 22" comment="cmp eax, 22h" />
+		<Instruction code="0F 87 F9 00 00 00" comment="ja" />
+		<Instruction code="48 8D 15 XXXXXXXX" comment="lea rdx, module_base" />
+		<Instruction code="0F B6 84 02 XXXXXXXX" comment="movzx eax, byte [rdx+rax+table_rva]" />
+
+		<Notify inst_index="6" inst_offset="4" value="OnLocatePortraitEnemyForEmbSwitchTable" />
 	</Patch>
 	
-	<!-- Signature 1.21. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a bittest condition. -->
+	<!-- Signature 1.26. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a bittest condition. -->
 	<!-- 1.21: the bittest change has changed from 0x2C200->0x2FF80 to 0x2002C200->0x2002FF80 -->
-	<Patch name="PortraitEnemyForAutoGen" enabled="ui_enemy_portrait" type="write" search_start="0x1D1FCD" >
+	<Patch name="PortraitEnemyForAutoGen" enabled="ui_enemy_portrait" type="write" search_start="0x1E69D1" >
 		<Instruction code="83 F8 1D" comment="cmp eax, 1Dh " />
-		<Instruction code="77 8D" comment="ja -XX" />
+		<Instruction code="77 1A" comment="ja +0x1A" />
 		<Instruction code="B9 00 C2 02 20" comment="mov ecx, 2002C200h" />
 		<Instruction code="0F A3 C1" comment="bt ecx, eax" />
 				
@@ -29,48 +30,46 @@
 		<Write inst_index="2" inst_offset="1" value="80 FF 02 20" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
-	<Patch name="ShowTheRedRing" enabled="ui_enemy_portrait" type="notify" search_start="0x1D1BD5" >
-		<Instruction code="4B 8B 8C F7 XXXXXXXX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
+	<!-- Signature 1.26 -->
+	<Patch name="ShowTheRedRing" enabled="ui_enemy_portrait" type="notify" search_start="0x1E63D9" >
+		<Instruction code="4B 8B 8C F1 XX XX XX XX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
 		<Instruction code="4C 8B C5" comment="mov r8, rbp" />
 		<Instruction code="4C 2B C1" comment="sub r8, rcx" />
-		<Instruction code="BA 3A 00 00 00" comment="mov edx, 3Ah" />
+		<Instruction code="BA 3E 00 00 00" comment="mov edx, 3Ah" />
 			
 		<Notify inst_index="0" inst_offset="4" value="ShowTheRedRing" />
 	</Patch>
 	<!-- end of ui_enemy_portrait group -->
 	
 	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
-	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1ACE5E" comment="signature 1.21" >
-		<Instruction code="4C 8D 4D C0" comment="lea r9, [rbp-40h]" />		
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD09" >
 		<Instruction code="4C 8D 44 24 60" comment="lea r8, [rsp+60h]" />
+		<Instruction code="49 8B D5" comment="mov rdx, r13" />
 		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
-		<Instruction code="49 8B D4" comment="mov rdx, r12" />
 		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="E8 XXXXXXXX" comment="call battle_ui function" />
-		<Instruction code="48 63 5C 24 60" comment="movsxd rbx, [rsp+60h]" />
-		<Instruction code="83 FB FF" comment="cmp ebx, -1" />
-	
-		<Notify inst_index="5" value="OnLocateToggleBattleUIPatch" />
+		<Instruction code="48 63 7C 24 60" comment="movsxd rdi, [rsp+60h]" />
+		<Instruction code="83 FF FF" comment="cmp edi, -1" />
+
+		<Notify inst_index="4" value="OnLocateToggleBattleUIPatch" />
 	</Patch>
 	
 	<!-- Patch introduced in 1.21 -->
 	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
-	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1ACEDE" comment="signature 1.21" >
-		<Instruction code="4C 8D 4D C0" comment="lea r9, [rbp-40h]" />		
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD91" >
 		<Instruction code="4C 8D 45 80" comment="lea r8, [rbp-80h]" />
+		<Instruction code="49 8B D5" comment="mov rdx, r13" />
 		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
-		<Instruction code="49 8B D4" comment="mov rdx, r12" />
 		<Instruction code="49 8B CE" comment="mov rcx, r14" />
 		<Instruction code="E8 XXXXXXXX" comment="call battle_ui function" />
 		<Instruction code="48 63 4D 80" comment="movsxd rcx, [rbp-80h]" />
 		<Instruction code="83 F9 FF" comment="cmp ecx, -1" />
-	
-		<Notify inst_index="5" value="OnLocateToggleBattleUIPatch2" />
+
+		<Notify inst_index="4" value="OnLocateToggleBattleUIPatch2" />
 	</Patch>
 	
 	<!-- Warning: signature of this is this big because too many functions start like this -->
-	<Patch name="HookPopupPauseCtor" type="hook" search_start="0x5CA250" comment="address 1.14" > 
+	<Patch name="HookPopupPauseCtor" type="hook" search_start="0x671BF0" comment="address 1.26" > 
 		<Instruction code="48 89 4C 24 08" comment="mov [rsp+8], rcx" />
 		<Instruction code="57" comment="push rdi" />
 		<Instruction code="48 83 EC 40" comment="sub rsp, 40h" />
@@ -87,7 +86,7 @@
 	
 	<!-- Notice: the purpose of this patch is to gather the return address of the call to the popup pause ctor done in battle mode, to distinguish them from other pause menus -->
 	<!-- So, the instruction returned is the one AFTER the call -->	
-	<Patch name="LocatePopupPauseBattleRA" type="notify" search_start="0x1F510E" comment="address 1.15" >
+	<Patch name="LocatePopupPauseBattleRA" type="notify" search_start="0x17070E" comment="address 1.26" >
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="E8 XXXXXXXX" comment="call popup_pause_ctor" />
 		<Instruction code="EB 03" comment="jmp +3" />

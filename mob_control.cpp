@@ -129,7 +129,7 @@ static int IsPlayerEventPatched(uint64_t **pthis)
 	typedef int (* IsPlayerEventType)(void *);
 	
 	uint64_t *vtable = *pthis;
-	IsPlayerEventType IsPlayerEvent = (IsPlayerEventType) vtable[0x2E8/8];
+	IsPlayerEventType IsPlayerEvent = (IsPlayerEventType) vtable[0x2F0/8]; // 1.26 bumped this slot, was 0x2E8
 	
 	return IsPlayerEvent(pthis);
 }

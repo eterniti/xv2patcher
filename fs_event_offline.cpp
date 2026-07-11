@@ -40,7 +40,7 @@ static int goal;
 static float resistance_multiplier;
 static int prize;
 
-static uint8_t orig_ins1[7], orig_ins2[10], orig_ins3[5];
+static uint8_t orig_ins1[7], orig_ins2[11], orig_ins3[5];
 static uint8_t *patch_addr1, *patch_addr2, *patch_addr3;
 
 static void *em_callback;
@@ -148,7 +148,10 @@ PUBLIC void SetupIsFreezerEventEnding(IsFreezerEventEndingType orig)
 
 PUBLIC int IsFreezerEventEndingPatched(void *pthis)
 {
-	static uint8_t patch2[10] = { 0xBB, 0x01, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90 }; // mov ebx, 1; fill with nop; (ORIGINAL CODE: test eax, eax; mov eax, 0; cmovz ebx, eax)
+	// 1.26 moved the opened flag into ecx, stored at [rsi+0Ch].
+	// original bytes there: mov eax,1; mov [rsi+8],eax; mov [rsi+0Ch],ecx  =  B8 01 00 00 00 89 46 08 89 4E 0C
+	// i just swap that last store to write eax (which is 1) instead of ecx, so the flag is forced on. one byte, 4E -> 46.
+	static uint8_t patch2[11] = { 0xB8, 0x01, 0x00, 0x00, 0x00, 0x89, 0x46, 0x08, 0x89, 0x46, 0x0C };
 	
 	switch (event_state)
 	{

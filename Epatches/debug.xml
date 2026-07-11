@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <EternityPatchFile name="Debug" enabled="debug" comment="This file enables miscellaneous debug patches">
 
-	<!-- Address 1.16 -->
-	<Patch name="Dprintf1Hook" type="hook" search_start="0x89D04C" search_down="0x800000" >
+	<!-- Address 1.26 -->
+	<Patch name="Dprintf1Hook" type="hook" search_start="0x9F5878" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
 		<Instruction code="C3" comment="retn" />	
 		
 		<Hook value="DprintfPatched" />		
 	</Patch>
 
-	<!-- Address 1.16 -->
-	<Patch name="Dprintf2Hook" type="hook" search_start="0x89D068" search_down="0x800000" >
+	<!-- Address 1.26 -->
+	<Patch name="Dprintf2Hook" type="hook" search_start="0x9F5894" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
 		<Instruction code="C3" comment="retn" />	
 		
 		<Hook value="DprintfPatched" />		
 	</Patch>
 	
-	<!-- Address 1.16 -->
-	<Patch name="Dprintf3Hook" type="hook" search_start="0x89D080" search_down="0x800000" >
+	<!-- Address 1.26 -->
+	<Patch name="Dprintf3Hook" type="hook" search_start="0x9F58AC" search_down="0x800000" >
 		<Instruction code="48 83 EC 38" comment="sub rsp, 38h" />
 		<Instruction code="48 83 64 24 20 00" comment="and [rsp+20h], 0" />
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="48 83 C4 38" comment="add rsp, 38h" />
 		<Instruction code="C3" comment="retn" />	
 		
@@ -38,7 +38,7 @@
 	</Patch>
 	
 	<!-- Address 1.22.1 -->
-	<Patch name="Dprintf4Hook" type="hook" search_start="0x177B30" search_down="0x800000" search_up="0x700000" >
+	<Patch name="Dprintf4Hook" type="hook" search_start="0x183F30" search_down="0x800000" search_up="0x700000" >
 		<Instruction code="48 89 54 24 10" comment="mov [rsp+10h], rdx" />
 		<Instruction code="4C 89 44 24 18" comment="mov [rsp+18h], r8" />
 		<Instruction code="4C 89 4C 24 20" comment="mov [rsp+20h], r9" />
@@ -47,8 +47,8 @@
 		<Hook value="DprintfPatched2" />
 	</Patch>
 
-	<!-- Signature 1.19.1 -->
-	<Patch name="LogOldOpenCpkFile" type="log" search_start="0x8F3B58" enabled="log_old_open_cpk_file" comment="Enables the log of the old OpenCpkFile, which is still used for some few files" >
+	<!-- Signature 1.26 -->
+	<Patch name="LogOldOpenCpkFile" type="log" search_start="0xA01180" enabled="log_old_open_cpk_file" comment="Enables the log of the old OpenCpkFile, which is still used for some few files" >
 		<Instruction code="48 89 5C 24 20" comment="mov [rsp+20h], rbx" />
 		<Instruction code="55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12-15" />		
 		<Instruction code="48 8D AC 24 70 F8 FF FF" comment="lea rbp, [rsp-790h]" />
@@ -58,8 +58,8 @@
 		
 	</Patch>
 	
-	<!-- Signature 1.19.1 -->
-	<Patch name="LogEncryption" type="log" search_start="0x96E200" enabled="log_encryption" >
+	<!-- Signature 1.26 -->
+	<Patch name="LogEncryption" type="log" search_start="0xA4FBA0" enabled="log_encryption" >
 		<Instruction code="40 55 53 56 57 41 54 41 56 41 57" comment="push rbp, rbx, rsi, rdi, r12, r14, r15" />
 		<Instruction code="48 8D AC 24 D0 FE FF FF" comment="lea rbp, [rsp-130h]" />
 		<Instruction code="48 81 EC 30 02 00 00" comment="sub rsp, 230h" />
