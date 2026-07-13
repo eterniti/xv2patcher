@@ -2,23 +2,15 @@
 <EternityPatchFile name="PseudoCacs" enabled="new_chara" comment="This file enables patches to allow Cac2x2m features. This was sadly needed since version 1.08 of the game" >	
 
 	<!-- Note: if the signature breaks, check the 120 (address of skin color), since that needs to be changed in the dll aswell -->
-	<Patch name="StopPCColors" type="hook" search_start="0x2688C0" comment="addr 1.22.1" >
-		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12, r13, r14, r15" />
+	<Patch name="StopPCColors" type="hook" search_start="0x284C40" >
+		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12-r15" />
 		<Instruction code="48 83 EC 50" comment="sub rsp, 50h" />
 		<Instruction code="48 C7 44 24 20 FE FF FF FF" comment="mov qword ptr[rsp+20h], -2" />
 		<Instruction code="48 89 9C 24 A8 00 00 00" comment="mov [rsp+0A8h], rbx" />
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, XXXXXXXX" />
 		<Instruction code="48 33 C4" comment="xor rax, rsp" />
 		<Instruction code="48 89 44 24 48" comment="mov [rsp+48h], rax" />
-		<Instruction code="49 8B F0" comment="mov rsi, r8" />
-		<Instruction code="44 8B EA" comment="mov r13d, edx" />
-		<Instruction code="4C 8B F1" comment="mov r14, rcx" />
-		<Instruction code="33 ED" comment="xor ebp, ebp" />
-		<Instruction code="45 33 E4" comment="xor r12d, r12d" />
-		<Instruction code="41 BF 20 01 00 00" comment="mov r15d, 120h; address of skin color1" />
-		<Instruction code="0F 1F 40 00 0F 1F 84 00 00 00 00 00" comment="very large nop" />
-		<Instruction code="49 8B 4E 30" comment="mov rcx, [r14+30h]" />
-		
+
 		<Hook value="ApplyCacMatsPatched" setup="ApplyCacMats_Setup" />
 	</Patch>
 	
@@ -39,17 +31,23 @@
 	</Patch>-->
 	
 	<!-- New signature since 1.19. Current: 1.25.1 -->
+	<!-- 1.26: this one's dead, nothing to hook. it used to flip a hardcoded r9d=-1 to 0 right before
+	     Battle_Mob::Transform. they rewrote the function (was 0xCDDA0, now around 0xFD37C), it's a switch on
+	     partset type now (cx 0xE, 0xF, 0x10, 0x11...) and r9d is a computed value instead of -1. i searched the
+	     whole thing, no or r9d,-1 and no -1 sentinel anywhere, so there's no byte to write to. looks like they
+	     just fixed it. if the pseudo-cac transform portrait color still comes out wrong it'd have to be a hook off
+	     the new code, not this write. leaving the old patch below in case i need to look at it again. -->
+	<!--
 	<Patch name="FixPCTransColorPortrait" type="write" search_start="0xCDD4A" >
 		<Instruction code="BA 64 00 00 00" comment="mov edx, 64h" />
 		<Instruction code="48 8B 4C 24 XX" comment="mov rcx, [rsp+XX]" />
 		<Instruction code="41 83 C9 FF" comment="or r9d, FFFFFFFF" />
 		<Instruction code="C7 44 24 XX 00 00 00 00" comment="mov [rsp+XX], 0" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
-		<Instruction code="C7 44 24 XX 01 00 00 00" comment="mov [rsp+XX], 1" />		
+		<Instruction code="C7 44 24 XX 01 00 00 00" comment="mov [rsp+XX], 1" />
 		<Instruction code="E8 XXXXXXXX" comment="call Battle_Mob::Transform" />
-		
-		<!-- r9: -1 to 0 -->
 		<Write inst_index="2" value="45 31 C9 90" />
-	</Patch>	
+	</Patch>
+	-->	
 
 </EternityPatchFile>

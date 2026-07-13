@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <EternityPatchFile name="UnlockStages" comment="This file enables the unlock of stages without modifying save data or any other files.">
 
-	<Patch name="UnlockStagesAll" type="write" search_start="0x616299" enabled="unlock_stage_all" comment="Signature is 1.25.1" >
-		<Instruction code="E8 XXXXXXXX" comment="call check_unlock" />
-		<Instruction code="44 8B C0" comment="mov r8d, eax" />
+	<!-- 1.26: the old single check_unlock flip is gone, the whole thing was inlined into the stage-list builder
+	     and split into two paths that both land on one send (mov r8d,ebx; call at 0x5E97F3, ebx = unlocked flag).
+	     take two edits to force ebx=1 on both:
+	       - special/NX stages: nop the je that skips the unlock (0x5E97EC 74 05 -> 90 90)
+	       - story stages: point their jmp at the mov ebx,1 instead of past it (0x5E97C6 jmp 0x5E97F3 -> jmp 0x5E97EE)
+	     with both in, every stage sends unlocked. -->
+	<Patch name="UnlockStagesAll" type="nop" search_start="0x5E97DD" enabled="unlock_stage_all" comment="signature 1.26; special-stage path">
+		<Instruction code="BA 01 00 00 00" comment="mov edx, 1" />
+		<Instruction code="E8 XXXXXXXX" comment="call is_unlocked (func73)" />
+		<Instruction code="41 8B DC" comment="mov ebx, r12d; locked default" />
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="74 05" comment="je; skips the unlock, nop it" />
+		<Instruction code="BB 01 00 00 00" comment="mov ebx, 1; unlocked" />
+		<Instruction code="44 8B C3" comment="mov r8d, ebx" />
 		<Instruction code="8B D6" comment="mov edx, esi" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call as3_send_flag" />
-		<Instruction code="48 8B 4C 24 70" comment="mov rcx, [rsp+70h]" />
-		<Instruction code="E8 XXXXXXXX" comment="call dummy_returns_rcx" />
-		<Instruction code="48 8B C8" comment="mov rcx, rax" />
-		<Instruction code="41 8B D6" comment="mov edx, r14d" />
-		<Instruction code="E8 XXXXXXXX" comment="call stage_seen_before" />
-		<Instruction code="8D 56 4C" comment="lea edx, [rsi+4Ch]" />
-		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="48 8B CF" comment = "mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call as3_send_flag" />
-					
-		<Write value="B8 01 00 00 00" comment="mov eax, 1" />
+		<Instruction code="E8 XXXXXXXX" comment="call send_stage_flag" />
+
+		<Nop inst_index="4" size="2" />
+	</Patch>
+
+	<Patch name="UnlockStagesAll2" type="write" search_start="0x5E97C6" enabled="unlock_stage_all" comment="signature 1.26; story-stage path">
+		<Instruction code="EB 2B" comment="jmp send (0x5E97F3), skips mov ebx,1" />
+		<Instruction code="BB 01 00 00 00" comment="mov ebx, 1" />
+		<Instruction code="89 9C 24 C8 00 00 00" comment="mov [rsp+0C8h], ebx" />
+		<Instruction code="EB B8" comment="jmp back into item loop" />
+
+		<!-- retarget the jmp so it lands on mov ebx,1 (0x5E97EE) instead of the send -->
+		<Write inst_index="0" value="EB 26" />
 	</Patch>
 
 </EternityPatchFile>

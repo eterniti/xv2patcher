@@ -9,8 +9,8 @@
 		<Write value="XX XX 64" />
 	</Patch>
 	
-	<Patch name="jun194" type="log" search_start="0x1B4DB0" comment="addr 1.24.01" >	
-		<Instruction code="83 FA 02 0F 87 35 01 00  00" />
+	<Patch name="jun194" type="log" search_start="0x1B8D80" comment="addr 1.26" >	
+		<Instruction code="83 FA 02 0F 87 65 01 00 00" />
 		<Log ra="true" when="before" function="bhd_met_func" value="a1,a2,a3,a4,a5,a6,a7,a8" types="ptr,s32,s32,s32,ptr,ptr,ptr,ptr" select="01110000" extra="?,d,d,d,?,?,?,?" />
 	</Patch>
 	
@@ -1156,7 +1156,7 @@
 	</Patch>-->
 	
 	
-	<Patch name="apply_body_shape_log" type="log" search_start="0x27E0F0" enabled="false" >
+	<Patch name="apply_body_shape_log" type="log" search_start="0x27DCC0" enabled="false" >
 		<Instruction code="48 8B C4 57 41 54 41 55  41 56 41 57 48 83 EC 70" />
 		<Instruction code="48 C7 40 88 FE FF FF FF  48 89 58 08 48 89 68 10" />
 		<Instruction code="48 89 70 18 0F 29 70 C8  0F 28 F3 41 8B D8" />
@@ -1499,7 +1499,7 @@
 		<Write value="XX XX XX 42" />	
 	</Patch>-->
 	
-	<Patch name="jun1" type="log" search_start="0x671B4" enabled="false" >
+	<Patch name="jun1" type="log" search_start="0x54FB0" enabled="false" >
 		<Instruction code="48 89 5C 24 08" />
 		<Instruction code="48 89 6C 24 10" />
 		<Instruction code="48 89 74 24 18" />

@@ -3,7 +3,7 @@
 
 	<!-- Notice: in 1.16 the library was rearranged to a much larger address. Increasing search size for this patch -->
 	<!-- Address 1.16. Common signature -->
-	<Patch name="LoadTocHook" type="hook" search_start="0x8B03D2" search_down="0x8000000">
+	<Patch name="LoadTocHook" type="hook" search_start="0xA08AB6" search_down="0x8000000">
 		<Instruction code="49 8B D2" comment="mov rdx, r10; buf" />
 		<Instruction code="49 8B CB" comment="mov rcx, r11; unk param" />
 		<Instruction code="E8 XX XX XX XX" comment="call LoadTable" />
@@ -13,50 +13,50 @@
 		<Instruction code="21 43 58" comment="and [rbx+58h], eax" />
 		<Instruction code="EB E4" comment="jmp -1C" />
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		
 		<Hook type="call" inst_index="2" value="LoadToc" setup="LoadToc_Setup" />		
 	</Patch>	
 	
 	<!-- Notice: in 1.16 the library was rearranged to a much larger address. Increasing search size for this patch -->
 	<!-- Sginature 1.16 -->
-	<Patch name="DisableSort" type="write" search_start="0x8AEE41" search_down="0x8000000" comment="This patch makes CPK sorted flag always false. Without this, the previous patch would cause a mess on cpk with that feature enabled." >
+	<Patch name="DisableSort" type="write" search_start="0xA0752D" search_down="0x8000000" comment="This patch makes CPK sorted flag always false. Without this, the previous patch would cause a mess on cpk with that feature enabled." >
 		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, #sorted#" />
 		<Instruction code="66 89 83 80 00 00 00" comment="mov [rbx+80h], ax" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="66 89 83 82 00 00 00" comment="mov [rbx+82h], ax" />
 		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, #eid#" />		
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="4C 8D 05 XX XX XX XX" comment="lea r8, #comment#" />
 		<Instruction code="66 89 83 84 00 00 00" comment="mov [rbx+84h], ax" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
-		<Instruction code="E8 XX XX XX XX" comment="call XXXXXXXX" />
+		<Instruction code="E8 XX XX XX XX" comment="call" />
 				
 		<Write inst_index="4" value="4831C0 90 90" comment="xor rax, rax; nop; nop" /> 
 	</Patch>	
 	
-	<Patch name="CpkGetFileInfoHook" type="hook" search_start="0x31994B" comment="signature 1.15" >
+	<Patch name="CpkGetFileInfoHook" type="hook" search_start="0x2DFD18" comment="signature 1.26" >
 		<Instruction code="48 8B D0" comment="mov rdx, rax; path" />
-		<Instruction code="4C 8D 4C 24 40" comment="lea r9, [rsp+040h]; result_ptr" />
+		<Instruction code="4C 8D 4C 24 48" comment="lea r9, [rsp+040h]; result_ptr" />
 		<Instruction code="4C 8D 44 24 70" comment="lea r8, [rsp+070h]; ret_entry" />
 		<Instruction code="48 8B 4D 60" comment="mov  rcx, [rbp+60h]; cpk_object" />		
 		<Instruction code="E8 XX XX XX XX" comment="call CpkGetFileInfo" />
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="0F 85 99 00 00 00" comment="jnz +99" />
-		<Instruction code="44 39 74 24 40" comment="cmp  [rsp+40h], r14d; result_ptr==0" />
-		<Instruction code="0F 84 8E 00 00 00" comment="jz +8E" />
+		<Instruction code="0F 85 9B 00 00 00" comment="jnz +99" />
+		<Instruction code="44 39 74 24 48" comment="cmp  [rsp+40h], r14d; result_ptr==0" />
+		<Instruction code="0F 84 90 00 00 00" comment="jz +8E" />
 		<Instruction code="8B 84 24 90 00 00 00" comment="mov  eax, [rsp+90h]; eax = file_size" />
 		<Instruction code="89 47 10" comment="mov [rdi+10h], eax; [rdi+10h] = file_size" />
 		
 		<Hook type="call" inst_index="4" value="CpkGetFileInfo_Patched" setup="CpkGetFileInfo_Setup" />
 	</Patch>
 	
-	<Patch name="CpkGetFileInfoHook2" type="hook" search_start="0x2C9D79" >
+	<Patch name="CpkGetFileInfoHook2" type="hook" search_start="0x2DF6C4" >
 		<Instruction code="48 8B 49 68" comment="mov rcx, [rcx+68h]; cpk_object" />
 		<Instruction code="4C 8D 4C 24 20" comment="lea r9, [rsp+20h] result_ptr" />
 		<Instruction code="4C 8D 44 24 28" comment="lea r8, [rsp+28h]; ret_entry" />

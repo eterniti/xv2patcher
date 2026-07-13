@@ -5,30 +5,33 @@
 	<!-- In most cases, the only change needed to the patches is to change the instruction with the number of patches to match the number of auras -->
 	<!-- Note: starting from game version 1.18, the number of auras in the patch has been masked to reduce the possibility of the patch signature getting broken by updates -->
 	
-	<Patch name="RemoveAuraLimit1" type="nop" search_start="0xDF5F4" comment="signature based on 1.17" >
-		<Instruction code="0F BF 40 08" comment="mov eax, word ptr [rax+8]; eax = chara_link.aura_id" />
-		<Instruction code="83 F8 XX" comment="cmp eax, fixed_num_auras" />
-		<Instruction code="0F 4D C3" comment="cmovge eax, ebx" />
-		<Instruction code="8B D8" comment="mov ebx, eax" />		
-		<Instruction code="48 8B 6C 24 30" comment="mov rbx, [rsp+30h]" />
+	<Patch name="RemoveAuraLimit1" type="nop" search_start="0x103B76" comment="signature 1.26" >
+		<Instruction code="0F B7 40 08" comment="movzx eax, word ptr [rax+8]; eax = chara_link.aura_id" />
+		<Instruction code="0F BF C8" comment="movsx ecx, eax" />
+		<Instruction code="83 F9 XX" comment="cmp ecx, fixed_num_auras" />
+		<Instruction code="0F 4D CB" comment="cmovge ecx, ebx" />
+		<Instruction code="8B D9" comment="mov ebx, ecx" />
+		<Instruction code="48 8B 6C 24 30" comment="mov rbp, [rsp+30h]" />
 		<Instruction code="48 8B 74 24 38" comment="mov rsi, [rsp+38h]" />
-		<Instruction code="8B C3" comment="mov eax, ebx" />
 		<Instruction code="48 8B 7C 24 40" comment="mov rdi, [rsp+40h]" />
-		
-		<Nop inst_index="2" size="3" />
+
+		<Nop inst_index="3" size="3" />
 	</Patch>
 	
-	<Patch name="RemoveAuraLimit2" type="nop" search_start="0x392478" comment="signature based on 1.25.1" >
+	<Patch name="RemoveAuraLimit2" type="nop" search_start="0x36C808" comment="signature 1.26" >
 		<Instruction code="83 FE XX" comment="cmp esi, fixed_num_auras" />
-		<Instruction code="73 06" comment="jnb +6" />
-		<Instruction code="41 3B 76 08" comment="cmp esi, [r14+8]" />		
-		<Instruction code="72 02" comment="jb +2" />		
+		<Instruction code="73 0A" comment="jnb (skip actual-count check)" />
+		<Instruction code="41 8B 47 08" comment="mov eax, [r15+8]; actual aura count" />
+		<Instruction code="3B F0" comment="cmp esi, eax" />
+		<Instruction code="72 08" comment="jb" />
+		<Instruction code="EB 04" comment="jmp" />
+		<Instruction code="41 8B 47 08" comment="mov eax, [r15+8]" />
 		<Instruction code="8B F7" comment="mov esi, edi" />
-		
+
 		<Nop inst_index="1" size="2" />
 	</Patch>
 	
-	<Patch name="RemoveAuraLimit3" type="nop" search_start="0x40645E" comment="signature based on 1.17" >
+	<Patch name="RemoveAuraLimit3" type="nop" search_start="0x495BA0" comment="signature based on 1.26" >
 		<Instruction code="74 0C" comment="je +0xC" />
 		<Instruction code="0F BF 49 08" comment="mov ecx, word ptr [rcx+8]; ecx = chara_link.aura_id" />
 		<Instruction code="83 F9 XX" comment="cmp ecx, fixed_num_auras" />
