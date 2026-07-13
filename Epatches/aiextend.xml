@@ -2,29 +2,84 @@
 <!-- This file enables extensions to the AI -->
 <EternityPatchFile name="AIExtend" enabled="ai_extend" >
 
-	<!-- 
-	
-		A change in the signature may indicate changes in the structure of params XG::Game::Battle::Core::MainSystem(rcx) and "SelectCharInfo"(rdx), 
-		which would need to update the code in the DLL. 
-		
-		XG::Game::Battle::Core::MainSystem: 0x3A58 (mobs), unk_mob_data (0xE0)
-		"SelectCharInfo": 0, (char_index), 0x4 (char_index2), 0xC (is_cpu), 0x10(team) 
-		UnkMobStruct: sizeof() = 0x1F0
-	-->
-	<Patch name="PatchOnBattleCreateChar" type="hook" search_start="0x158D20" comment="signature 1.26">
-		<Instruction code="40 55 41 54 41 55 41 56 41 57" comment="push rbp,r12,r13,r14,r15" />
-		<Instruction code="48 8D AC 24 F0 F9 FF FF" comment="lea rbp, [rsp-610h]" />
-		<Instruction code="48 81 EC 10 07 00 00" comment="sub rsp, 710h" />
-		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, [rip+canary]" />
+	<Patch name="PatchOnBattleCreateChar" type="hook" search_start="0x159C30" comment="signature 1.26">
+		<Instruction code="40 55 56 57 41 54 41 55 41 56 41 57" comment="push rbp,rsi,rdi,r12,r13,r14,r15" />
+		<Instruction code="48 8D AC 24 00 FD FF FF" comment="lea rbp, [rsp-300h]" />
+		<Instruction code="48 81 EC 00 04 00 00" comment="sub rsp, 400h" />
+		<Instruction code="48 C7 45 80 FE FF FF FF" comment="mov qword ptr[rbp-80h], -2" />	
+		<Instruction code="48 89 9C 24 XXXXXXXX" comment="mov [rsp+XXXX], rbx" />		
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, [rip+canary]" />		
 		<Instruction code="48 33 C4" comment="xor rax, rsp" />
-		<Instruction code="48 89 85 F0 05 00 00" comment="mov [rbp+5F0h], rax" />
+		<Instruction code="48 89 85 F0 02 00 00" comment="mov [rbp+2F0h], rax" />
 
 		<Hook value="OnBattleCreateCharPatched" setup="SetupAIExtend" />
 	</Patch>
 	
+	<!-- 
+		This patch is to ensure Battle_Core_MainSystem structure is correct 
+		Takes place in some function as PatchOnBattleCreateChar 
+		3A58: mobs 
+	-->
+	<Patch name="ProtectMainsystem1" type="notify" search_start="0x159C91" comment="signature 1.26">
+		<Instruction code="4A 83 BC E9 58 3A 00 00 00" comment="cmp qword ptr [rcx+r13*8+3A58h], 0" />
+		<Instruction code="0F 85 XXXXXXXX" comment="jne XXXXXXXX" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!-- 
+		This patch is to ensure Battle_Core_MainSystem structure is correct 
+		Takes place in some function as PatchOnBattleCreateChar 		
+		0x1F0: sizeof(UnkMobStruct)
+		0xE0: offset of unk_mob_data 
+	-->
+	<Patch name="ProtectMainsystem2" type="notify" search_start="0x159CC5" comment="signature 1.26">
+		<Instruction code="49 69 CF F0 01 00 00" comment="imul rcx, r15, 1F0h" />
+		<Instruction code="49 8D BE E0 00 00 00" comment="lea rdi, [r14+0E0h]" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!-- 
+		This patch is to ensure SelectCharInfo is correct.
+		Takes place in some function as PatchOnBattleCreateChar 
+		0: char_index
+		4: char_index2
+	-->
+	<Patch name="ProtectSelectCharInfo1" type="notify" search_start="0x159C7C" comment="signature 1.26">
+		<Instruction code="4C 63 2A" comment="movsxd r13, dword ptr [rdx]" />
+		<Instruction code="44 89 6C 24 40" comment="mov [rsp+40], r13d" />
+		<Instruction code="41 83 FD 0D" comment="cmp r13d, 0Dh" />
+		<Instruction code="0F 87 XXXXXXXX" comment="ja XXXXXXXX" />
+		<Instruction code="4D 8B FD" comment="mov r15, r13" />
+		<Instruction code="4A 83 BC E9 58 3A 00 00 00" comment="cmp qword ptr [rcx+r13*8+3A58h], 0" />
+		<Instruction code="0F 85 XXXXXXXX" comment="jne XXXXXXXX" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="8B 52 04" comment="mov edx, [rdx+4]" />
+		
+		<Notify value="NULL" />
+	</Patch>
+	
+	<!-- 
+		This patch is to ensure SelectCharInfo is correct.
+		Takes place in some function as PatchOnBattleCreateChar 
+		r12+0xC: is_cpu
+		r12+0x10: team
+	-->
+	<Patch name="ProtectSelectCharInfo2" type="notify" search_start="0x159CE3" comment="signature 1.26">
+		<Instruction code="8B 8B D4 00 00 00" comment="mov ecx, [rbx+0D4h]" />
+		<Instruction code="89 4F 04" comment="mov [rdi+4], ecx" />
+		<Instruction code="41 8B 44 24 08" comment="mov eax, [r12+8]" />		
+		<Instruction code="89 47 10" comment="mov [rdi+10h], eax" />		
+		<Instruction code="41 8B 44 24 0C" comment="mov eax, [r12+0Ch]" />		
+		<Instruction code="89 47 14" comment="mov [rdi+14h], eax" />
+		<Instruction code="41 8B 44 24 10" comment="mov eax, [r12+10h]" />
+		<Notify value="NULL" />
+	</Patch>
+	
 	<!-- A signature change here could mean that the AIDef struct/r8 needs update -->
-	<!-- 0x30: mob -->	
-	<Patch name="PatchAISpecial" type="hook" search_start="0x8D830" >
+	<!-- 0x40: mob -->	
+	<Patch name="PatchAISpecial" type="hook" search_start="0x8D830" comment="signature 1.26" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="48 89 6C 24 10" comment="mov [rsp+10h], rbp" />
 		<Instruction code="48 89 74 24 20" comment="mov [rsp+20h], rsi" />
@@ -41,9 +96,9 @@
 	
 	<!-- This patch has been detached from above, because the function has grown too much in 1.22 and the signature was unbearable -->
 	<!-- (Function is same as in above patch)
-	<!-- 0x174: type  (AIDef struct) -->
-	<!-- Signature: 1.25.1 -->
-	<Patch name="PatchAISpecialCheckType" type="notify" search_start="0x8D95C" comment="signature 1.26">
+	<!-- 0x184: type  (AIDef struct) -->
+	<!-- Signature: 1.26 -->
+	<Patch name="PatchAISpecialCheckType" type="notify" search_start="0x8D95C" >
 		<Instruction code="44 8B 83 84 01 00 00" comment="mov r8d, [rbx+184h]" />
 		<Instruction code="8B D5" comment="mov edx, ebp" />
 		<Instruction code="BE 02 00 00 00" comment="mov esi, 2" />
@@ -53,7 +108,7 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- Signature 1.24.1 -->
+	<!-- Signature 1.26 -->
 	<Patch name="PatchSkillCommand" type="hook" search_start="0xF3CE0" >
 		<Instruction code="48 8B C4" comment="mov rax, rsp" />
 		<Instruction code="53 41 56" comment="push rbx, r14" />
@@ -67,7 +122,7 @@
 		<Hook value="SkillCommandPatched" setup="SetupSkillCommand" />
 	</Patch>
 	
-	<!-- New patch for 1.25.1. Same function as above. This patch has been added to ensure the offset where mob is matches the DLL. 
+	<!-- New patch since 1.25.1. Same function as above. This patch has been added to ensure the offset where mob is matches the DLL. 
 	     This had been stable at offset 0 since beginning of game, suddenly it changed to 0x10.
 	     On change of the offset, update the value in SkillCommandPatched -->
 	<Patch name="CheckSkillCommandMob" type="notify" search_start="0xF4011" comment="signature 1.26">
@@ -81,13 +136,14 @@
 	
 	<!-- Patches below are only to ensure struct definitions in the dll are correct -->
 	
-	<!-- Add 0xB0 to the rcx of memset to get the address of bcm field -->
+	<!-- Add 0xB0 to the rcx of memset to get the address of bcm field. Eg: E10+B0 = EC0 (offset in game_defs: Battle_Command must match)  -->
 	<Patch name="CheckBattleCommandAlign" type="notify" search_start="0x1F7810" comment="signature 1.26">
 		<Instruction code="89 81 B0 0D 00 00" comment="mov [rcx+0DB0h], eax" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="C7 81 B4 0D 00 00 FF FF FF FF" comment="mov dword [rcx+0DB4h], -1" />
 		<Instruction code="48 C7 81 B8 0D 00 00 00 00 00 00" comment="mov qword [rcx+0DB8h], 0" />
 		<Instruction code="48 C7 81 C0 0D 00 00 00 00 00 00" comment="mov qword [rcx+0DC0h], 0" />
+		<Instruction code="48 81 C1 10 0E 00 00" comment="add rcx, 0E10h" />
 
 		<Notify value="NULL" />
 	</Patch>
@@ -119,17 +175,17 @@
 	
 	<!-- 0x100: hp -->
 	<!-- 0x10C: ki -->
-	<!--
-	<Patch name="CheckBattleMobAlign3" type="notify" search_start="0xCBABC" >
+	<!-- Signature 1.26 -->
+	<Patch name="CheckBattleMobAlign3" type="notify" search_start="0xDE9DF" >
 		<Instruction code="8B 83 00 01 00 00" comment="mov eax, [rbx+100h]" />
-		<Instruction code="48 8D 93 0C 01 00 00" comment="lea rdx, [rbx+10Ch]" />
-		<Instruction code="33 ED" comment="xor ebp, ebp" />
-		<Instruction code="89 83 XXXX 00 00" comment="mov [rbx+XXXXh], eax" />
-		<Instruction code="48 8D 8B XXXX 00 00" comment="lea rcx, [rbx+XXXXh]" />
-		<Instruction code="66 89 AB XXXX 00 00" comment="mov [rbx+XXXXh], bp" />
+		<Instruction code="89 83 XXXXXXXX" comment="mov [rbx+XXXXh], eax" />		
+		<Instruction code="66 44 89 AB XXXXXXXX" comment="mov [rbx+XXXXh], r13w" />		
+		<Instruction code="48 8D 8B XXXX 00 00" comment="lea rcx, [rbx+XXXXh]" />		
+		<Instruction code="41 B8 01 00 00 00" comment="mov r8d, 1" />
+		<Instruction code="48 8D 93 0C 01 00 00" comment="lea rdx, [rbx+10Ch]" />	
+		
 		<Notify value="NULL" />
-	</Patch>
-	-->
+	</Patch>	
 	
 	<!-- 0x16C: stamina -->
 	<!-- Note: patch located just a little below previous one -->
@@ -146,19 +202,17 @@
 	</Patch>
 	
 	<!-- 0x268: skills -->	
-	<!--
-	<Patch name="CheckBattleMobAlign5" type="notify" search_start="0xAF8CE" >
-		<Instruction code="BD 09 00 00 00" comment="mov ebp, 9" />
-		<Instruction code="8B CD" comment="mov ecx, ebp" />
-		<Instruction code="48 8D 86 68 02 00 00" comment="lea rax, [rsi+268h]" />
+	<!-- 1.26: moved the patch to other function where it is easy to check it is the field -->
+	<Patch name="CheckBattleMobAlign5" type="notify" search_start="0xC569B" comment="takes place in constructor, address 1.26" >
+		<Instruction code="4C 8B 84 C7 68 02 00 00" comment="mov r8, [rdi+rax*8+268h]" />
+		<Instruction code="4D 85 C0" comment="test r8, r8" />
+		
 		<Notify value="NULL" />
 	</Patch>
-	-->
 	
-	<!-- 1.18: This patch was split from CheckBattleMobAlign5 to avoid the multiple bytes nop from breaking the signature all the time -->
 	<!-- 0x4D8: common_chara -->
 	<!-- 0x4E8: battle_command -->
-	<Patch name="CheckBattleMobAlign55" type="notify" search_start="0xBF286" comment="takes place in constructor, a bit below above patch, address 1.26" >	
+	<Patch name="CheckBattleMobAlign55" type="notify" search_start="0xBF286" comment="takes place in constructor, address 1.26" >	
 		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="4C 89 A6 D0 04 00 00" comment="mov [rsi+4D0h], r13" />
 		<Instruction code="4C 89 A6 D8 04 00 00" comment="mov [rsi+4D8h], r13" /> <!-- this -->
@@ -169,9 +223,9 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 0x22CC: trans_control -->
+	<!-- 0x22EC: trans_control -->
 	<Patch name="CheckBattleMobAlign6" type="notify" search_start="0xC391F" comment="addr 1.26" >
-		<Instruction code="83 BF EC 22 00 00 0C" comment="cmp dword ptr [rdi+22CCh], 0Ch" />
+		<Instruction code="83 BF EC 22 00 00 0C" comment="cmp dword ptr [rdi+22ECh], 0Ch" />
 		<Instruction code="75 XX" comment="jnz +0xXX" />
 		<Instruction code="48 8B 06" comment="mov rax, [r14]" />
 		<Instruction code="48 8B CE" comment="mov rcx, r14" />
@@ -180,9 +234,9 @@
 		<Notify value="NULL" />	
 	</Patch>
 	
-	<!-- rdx+0x48: ai_decision. Signature: 1.25.1  -->
+	<!-- rdx+0x58: ai_decision. Signature: 1.26  -->
 	<Patch name="CheckAIDef" type="notify" search_start="0x8EFD0" >
-		<Instruction code="8B 42 58" comment="mov eax, [rdx+48h]" />
+		<Instruction code="8B 42 58" comment="mov eax, [rdx+58h]" />
 		<Instruction code="83 C0 FB" comment="add eax, -5" />
 		<Instruction code="83 F8 5B" comment="cmp eax, 5Bh" />
 		<Instruction code="77 4A" comment="ja +0x4A" />
@@ -201,16 +255,5 @@
 		<Notify value="NULL" />
 	</Patch>
 	
-	<!-- 1F0: size of object UnkMobStruct -->
-	<!-- E0: offset of unk_mob_data in core mainsystem" -->
-	<Patch name="CheckCoreMSAlign" type="notify" search_start="0xDA42E" comment="signature 1.26">
-		<Instruction code="49 69 C1 F0 01 00 00" comment="imul rax, r9, 1F0h" />
-		<Instruction code="4A 8D 0C 20" comment="lea rcx, [rax+r12]" />
-		<Instruction code="83 FD 04" comment="cmp ebp, 4" />
-		<Instruction code="75 0B" comment="jne" />
-		<Instruction code="41 0F B7 84 08 F2 00 00 00" comment="movzx eax, word [r8+rcx+0F2h]" />
-
-		<Notify value="NULL" />
-	</Patch>
-	
+	<!-- Patch CheckCoreMSAlign deleted. The checks are now done by ProtectMainsystem2 -->	
 </EternityPatchFile>

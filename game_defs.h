@@ -125,9 +125,9 @@ struct Battle_Mob
 	Battle_Command *battle_command; // 04E8
 	uint8_t unk_4F0[0x2114-0x4F0]; 
 	int32_t loaded_var; // 2114 ; if >= 0, char is loaded
-	uint8_t unk_2118[0x22C8-0x2118];
-	uint32_t trans_partset; // 22C8
-	int32_t trans_control; // 22CC
+	uint8_t unk_2118[0x22E8-0x2118];
+	uint32_t trans_partset; // 22E8
+	int32_t trans_control; // 22EC
 	// ...
 	// ...
 	
@@ -185,8 +185,8 @@ CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
 CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4D8);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4E8);
 CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2114);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x22C8);
-CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x22CC);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x22E8);
+CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x22EC);
 
 // 1.20. size 0x180 -> 0x190
 // 1.21 size 0x190 -> 0x1A0
@@ -282,25 +282,20 @@ struct AIBehaviourSpecial
 
 // (Game object)
 // Size unknown
-// 1.20.1 mob, 0x10 -> 0x28
-// 1.20.1 ai_decision, 0x28 -> 0x40
-// 1.20.1 type, 0x154 -> 0x174
-//
-// 1.25.1 mob 0x28->0x30
-// 1.25.1 ai_decision 0x40->0x48
+// 1.26 mob 0x30->040 (and several other +0x10 displacement)
 struct AIDef
 {
-	uint8_t unk_00[0x30]; 
-	Battle_Mob *mob; // 0030
-	uint8_t unk_38[0x48-0x38]; 
-	uint32_t ai_decision; // 0048
-	uint8_t unk_4C[0x174-0x4C]; 
-	uint32_t type;	// 0x174 - A number between [0-10], both included. Seem to be 2 when long range attack? or maybe means a single-step attack.
+	uint8_t unk_00[0x40]; 
+	Battle_Mob *mob; // 0040
+	uint8_t unk_48[0x58-0x48]; 
+	uint32_t ai_decision; // 0058
+	uint8_t unk_5C[0x184-0x5C]; 
+	uint32_t type;	// 0x184 - A number between [0-10], both included. Seem to be 2 when long range attack? or maybe means a single-step attack.
 	//...
 };
-CHECK_FIELD_OFFSET(AIDef, mob, 0x30);
-CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x48);
-CHECK_FIELD_OFFSET(AIDef, type, 0x174);
+CHECK_FIELD_OFFSET(AIDef, mob, 0x40);
+CHECK_FIELD_OFFSET(AIDef, ai_decision, 0x58);
+CHECK_FIELD_OFFSET(AIDef, type, 0x184);
 
 struct BattleInterface
 {
