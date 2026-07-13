@@ -56,8 +56,8 @@ static constexpr const int PlayerNumFri = 2;
 static constexpr const int SkillMax = 8;
 static constexpr const int CharaVarIndexNum = 32;
 static constexpr const int CharacterMax = 256; // 1.17: 128->256
-static constexpr const int CustomListMax = 512; // 1.17: 256->512
-static constexpr const int CharacterTableData = 17;  // 1.23: 15->17
+static constexpr const int CustomListMax = 640; // 1.17: 256->512; 1.26: 512->640
+static constexpr const int CharacterTableData = 18;  // 1.23: 15->17; 1.26: 17->18
 static constexpr const int CharacterTableMax = 512; // 1.10: 350->512
 static constexpr const int ReceiveType_FlagUseCancel = 0;
 static constexpr const int ReceiveType_PlayerFriNum = 1;
@@ -71,78 +71,79 @@ static constexpr const int ReceiveType_Time = 8;
 static constexpr const int ReceiveType_CharaNameStr = 9;
 static constexpr const int ReceiveType_NameOption_GK2 = 10;
 static constexpr const int ReceiveType_NameOption_CGK = 11; // 1.22: new
-static constexpr const int ReceiveType_NameOption_LvText = 12; // 1.10: new
-static constexpr const int ReceiveType_NameOption_LvNum = 13; // 1.10: new
-static constexpr const int ReceiveType_VariationNameStr = 14;  
-static constexpr const int ReceiveType_TarismanHeaderStr = 15; 
-static constexpr const int ReceiveType_TarismanNameStr = 16; 
-static constexpr const int ReceiveType_ImageStrStart = 17; 
-static constexpr const int ReceiveType_ImageStrEnd = ReceiveType_ImageStrStart + CharacterMax - 1; // 0x110
-static constexpr const int ReceiveType_UnlockVarStart = ReceiveType_ImageStrEnd + 1; // 0x111 (pre 1.22: 0x110)
-static constexpr const int ReceiveType_UnlockVarEnd = ReceiveType_UnlockVarStart + CharaVarIndexNum * CharacterMax - 1; // 0x2110
-static constexpr const int ReceiveType_KeyStrL1 = ReceiveType_UnlockVarEnd + 1; // 0x2111 (pre 1.22: 0x2110)
-static constexpr const int ReceiveType_KeyStrR1 = ReceiveType_KeyStrL1 + 1; // 0x2112
-static constexpr const int ReceiveType_KeyStrL2 = ReceiveType_KeyStrR1 + 1; // 0x2113
-static constexpr const int ReceiveType_KeyStrR2 = ReceiveType_KeyStrL2 + 1; // 0x2114
-static constexpr const int ReceiveType_KeyStrRU = ReceiveType_KeyStrR2 + 1; // 0x2115
-static constexpr const int ReceiveType_KeyStrRD = ReceiveType_KeyStrRU + 1; // 0x2116
-static constexpr const int ReceiveType_KeyStrRL = ReceiveType_KeyStrRD + 1; // 0x2117
-static constexpr const int ReceiveType_KeyStrRR = ReceiveType_KeyStrRL + 1; // 0x2118
-static constexpr const int ReceiveType_KeyStrSingleLS = ReceiveType_KeyStrRR + 1; // 0x2119
-static constexpr const int ReceiveType_KeyStrSingleRS = ReceiveType_KeyStrSingleLS + 1; // 0x211A
-static constexpr const int ReceiveType_KeyStrSingleU = ReceiveType_KeyStrSingleRS + 1; // 0x211B
-static constexpr const int ReceiveType_KeyStrSingleD = ReceiveType_KeyStrSingleU + 1; // 0x211C
-static constexpr const int ReceiveType_KeyStrSingleL = ReceiveType_KeyStrSingleD + 1; // 0x211D
-static constexpr const int ReceiveType_KeyStrSingleR = ReceiveType_KeyStrSingleL + 1; // 0x211E
-static constexpr const int ReceiveType_SkillNameStrStart = ReceiveType_KeyStrSingleR + 1; // 0x211F
-static constexpr const int ReceiveType_SkillNameStrEnd = ReceiveType_SkillNameStrStart + SkillMax - 1; // 0x2126
-static constexpr const int ReceiveType_ImageStrNpcStart = ReceiveType_SkillNameStrEnd + 1; // 0x2127
-static constexpr const int ReceiveType_ImageStrNpcEnd = ReceiveType_ImageStrNpcStart + PlayerNumFri - 1; // 0x2128
-static constexpr const int ReceiveType_CharaSelectedStart = ReceiveType_ImageStrNpcEnd + 1; // 0x2129 (pre 1.22: 0x2128)
-static constexpr const int ReceiveType_CharaSelectedEnd = ReceiveType_CharaSelectedStart + CharacterMax - 1; // 0x2228
-static constexpr const int ReceiveType_CharaVariationStart = ReceiveType_CharaSelectedEnd + 1; // 0x2229
-static constexpr const int ReceiveType_CharaVariationEnd = ReceiveType_CharaVariationStart + CharaVarIndexNum - 1; // 0x2248
-static constexpr const int ReceiveType_DLCUnlockFlag = ReceiveType_CharaVariationEnd + 1; // 0x2249
-static constexpr const int ReceiveType_DLCUnlockFlag2 = ReceiveType_DLCUnlockFlag + 1; // 0x224A
-static constexpr const int ReceiveType_CharaSingleUnlock = ReceiveType_DLCUnlockFlag2 + 1; // 0x224B     
-static constexpr const int ReceiveType_CharaSingleUnlock2 = ReceiveType_CharaSingleUnlock + 1;  // 0x224C    
-static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_CharaSingleUnlock2 + 1; // 0x224D
-static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224D
+static constexpr const int ReceiveType_NameOption_KFK = 12; // 1.26: new
+static constexpr const int ReceiveType_NameOption_LvText = 13; // 1.10: new
+static constexpr const int ReceiveType_NameOption_LvNum = 14; // 1.10: new
+static constexpr const int ReceiveType_VariationNameStr = 15;  
+static constexpr const int ReceiveType_TarismanHeaderStr = 16; 
+static constexpr const int ReceiveType_TarismanNameStr = 17; 
+static constexpr const int ReceiveType_ImageStrStart = 18; 
+static constexpr const int ReceiveType_ImageStrEnd = ReceiveType_ImageStrStart + CharacterMax - 1; // 0x111
+static constexpr const int ReceiveType_UnlockVarStart = ReceiveType_ImageStrEnd + 1; // 0x112
+static constexpr const int ReceiveType_UnlockVarEnd = ReceiveType_UnlockVarStart + CharaVarIndexNum * CharacterMax - 1; // 0x2111
+static constexpr const int ReceiveType_KeyStrL1 = ReceiveType_UnlockVarEnd + 1; // 0x2112
+static constexpr const int ReceiveType_KeyStrR1 = ReceiveType_KeyStrL1 + 1; // 0x2113
+static constexpr const int ReceiveType_KeyStrL2 = ReceiveType_KeyStrR1 + 1; // 0x2114
+static constexpr const int ReceiveType_KeyStrR2 = ReceiveType_KeyStrL2 + 1; // 0x2115
+static constexpr const int ReceiveType_KeyStrRU = ReceiveType_KeyStrR2 + 1; // 0x2116
+static constexpr const int ReceiveType_KeyStrRD = ReceiveType_KeyStrRU + 1; // 0x2117
+static constexpr const int ReceiveType_KeyStrRL = ReceiveType_KeyStrRD + 1; // 0x2118
+static constexpr const int ReceiveType_KeyStrRR = ReceiveType_KeyStrRL + 1; // 0x2119
+static constexpr const int ReceiveType_KeyStrSingleLS = ReceiveType_KeyStrRR + 1; // 0x211A
+static constexpr const int ReceiveType_KeyStrSingleRS = ReceiveType_KeyStrSingleLS + 1; // 0x211B
+static constexpr const int ReceiveType_KeyStrSingleU = ReceiveType_KeyStrSingleRS + 1; // 0x211C
+static constexpr const int ReceiveType_KeyStrSingleD = ReceiveType_KeyStrSingleU + 1; // 0x211D
+static constexpr const int ReceiveType_KeyStrSingleL = ReceiveType_KeyStrSingleD + 1; // 0x211E
+static constexpr const int ReceiveType_KeyStrSingleR = ReceiveType_KeyStrSingleL + 1; // 0x211F
+static constexpr const int ReceiveType_SkillNameStrStart = ReceiveType_KeyStrSingleR + 1; // 0x2120
+static constexpr const int ReceiveType_SkillNameStrEnd = ReceiveType_SkillNameStrStart + SkillMax - 1; // 0x2127
+static constexpr const int ReceiveType_ImageStrNpcStart = ReceiveType_SkillNameStrEnd + 1; // 0x2128
+static constexpr const int ReceiveType_ImageStrNpcEnd = ReceiveType_ImageStrNpcStart + PlayerNumFri - 1; // 0x2129
+static constexpr const int ReceiveType_CharaSelectedStart = ReceiveType_ImageStrNpcEnd + 1; // 0x212A
+static constexpr const int ReceiveType_CharaSelectedEnd = ReceiveType_CharaSelectedStart + CharacterMax - 1; // 0x2229
+static constexpr const int ReceiveType_CharaVariationStart = ReceiveType_CharaSelectedEnd + 1; // 0x222A
+static constexpr const int ReceiveType_CharaVariationEnd = ReceiveType_CharaVariationStart + CharaVarIndexNum - 1; // 0x2249
+static constexpr const int ReceiveType_DLCUnlockFlag = ReceiveType_CharaVariationEnd + 1; // 0x224A
+static constexpr const int ReceiveType_DLCUnlockFlag2 = ReceiveType_DLCUnlockFlag + 1; // 0x224B
+static constexpr const int ReceiveType_CharaSingleUnlock = ReceiveType_DLCUnlockFlag2 + 1; // 0x224C     
+static constexpr const int ReceiveType_CharaSingleUnlock2 = ReceiveType_CharaSingleUnlock + 1;  // 0x224D    
+static constexpr const int ReceiveType_JoyConSingleFlag = ReceiveType_CharaSingleUnlock2 + 1; // 0x224E
+static constexpr const int ReceiveType_WaitLoadNum = ReceiveType_JoyConSingleFlag; // 0x224E
 
-static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224E
-static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x224F
-static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x224F
-static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x2250
-static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x2251
-static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x2252
-static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2253
-static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2254
-static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2255
-static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2256
-static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2257
-static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2258
-static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x2259
-static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x225A
-static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x225B
-static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x225C
-static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225D (New in 1.22)
-static constexpr const int ReceiveType_CharaSingleUnlockKey = ReceiveType_ChouGokuaku + 1; // 0x225E (New in 1.23) 
-static constexpr const int ReceiveType_CharaSingleUnlockKey2 = ReceiveType_CharaSingleUnlockKey + 1; // 0x225F (New in 1.23) 
-static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x444F
+static constexpr const int ReceiveType_CostumeNum = ReceiveType_JoyConSingleFlag + 1; // 0x224F
+static constexpr const int ReceiveType_CharacterTableStart = ReceiveType_CostumeNum + 1; // 0x2250
+static constexpr const int ReceiveType_CostumeID = ReceiveType_CharacterTableStart; // 0x2250
+static constexpr const int ReceiveType_CID = ReceiveType_CostumeID + 1; // 0x2251
+static constexpr const int ReceiveType_MID = ReceiveType_CID + 1; // 0x2252
+static constexpr const int ReceiveType_PID = ReceiveType_MID + 1; // 0x2253
+static constexpr const int ReceiveType_UnlockNum = ReceiveType_PID + 1; // 0x2254
+static constexpr const int ReceiveType_Gokuaku = ReceiveType_UnlockNum + 1; // 0x2255
+static constexpr const int ReceiveType_SelectVoice1 = ReceiveType_Gokuaku + 1; // 0x2256
+static constexpr const int ReceiveType_SelectVoice2 = ReceiveType_SelectVoice1 + 1; // 0x2257
+static constexpr const int ReceiveType_DlcKey = ReceiveType_SelectVoice2 + 1; // 0x2258
+static constexpr const int ReceiveType_DlcKey2 = ReceiveType_DlcKey + 1; //  0x2259
+static constexpr const int ReceiveType_CustomCostume = ReceiveType_DlcKey2 + 1; // 0x225A
+static constexpr const int ReceiveType_AvatarSlotID = ReceiveType_CustomCostume + 1; // 0x225B
+static constexpr const int ReceiveType_AfterTU9Order = ReceiveType_AvatarSlotID + 1; // 0x225C
+static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Order + 1; // 0x225D
+static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225E (New in 1.22)
+static constexpr const int ReceiveType_CharaSingleUnlockKey = ReceiveType_ChouGokuaku + 1; // 0x225F (New in 1.23) 
+static constexpr const int ReceiveType_CharaSingleUnlockKey2 = ReceiveType_CharaSingleUnlockKey + 1; // 0x2260 (New in 1.23) 
+static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x4650
 
-static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x4450
-static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x4451
-static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x4452;
-static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x4651
-static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x4652
-static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x4851
-static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x4852
-static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 04A51
-static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x4A52
-static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x4C51
-static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x4C52
+static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x4651
+static constexpr const int ReceiveType_CustomListNum = ReceiveType_UseCustomList + 1; // 0x4652
+static constexpr const int ReceiveType_CustomList_CID_Start = ReceiveType_CustomListNum + 1; // 0x4653;
+static constexpr const int ReceiveType_CustomList_CID_End = ReceiveType_CustomList_CID_Start + CustomListMax - 1; // 0x48D2
+static constexpr const int ReceiveType_CustomList_MID_Start = ReceiveType_CustomList_CID_End + 1; // 0x48D3
+static constexpr const int ReceiveType_CustomList_MID_End = ReceiveType_CustomList_MID_Start + CustomListMax - 1; // 0x4B52
+static constexpr const int ReceiveType_CustomList_PID_Start = ReceiveType_CustomList_MID_End + 1; // 0x4B53
+static constexpr const int ReceiveType_CustomList_PID_End = ReceiveType_CustomList_PID_Start + CustomListMax - 1; // 04DD2
+static constexpr const int ReceiveType_CustomList_PartnerJudge_Start = ReceiveType_CustomList_PID_End + 1; // 0x4DD3
+static constexpr const int ReceiveType_CustomList_PartnerJudge_End = ReceiveType_CustomList_PartnerJudge_Start + CustomListMax - 1; // 0x5052
+static constexpr const int ReceiveType_Num = ReceiveType_CustomList_PartnerJudge_End + 1; // 0x5053
 
-static_assert(ReceiveType_Num == 0x4C52, "Error (ReceiveType_Num)");
+static_assert(ReceiveType_Num == 0x5053, "Error (ReceiveType_Num)");
 
 extern "C" 
 {
@@ -760,27 +761,8 @@ PUBLIC void IncreaseChaselSlotsArray2(void *arg1, uint32_t arg2, uint32_t size, 
 	func2(arg1, arg2, size, arg4);	
 }
 
-// This irregular patch is for 1.10v2 due to the 0x5E0 = 0x2F << 5 optimization. It will likely be gone in next version if the address 0x5E0 changes.
+// This irregular patch is for 1.10v2 due to the 0x5E0 = 0x2F << 5 optimization. It will likely be gone in next version if the address 0x5E0 changes. Years later note: it never went away.
 // When it happens, delete this, and the asm code.
-/*extern void ModifyArrayOffset4Asm();
-PUBLIC void ModifyArrayOffset4(uint8_t *buf)
-{
-	PatchUtils::Write16((uint16_t *)buf, 0xB848); // mov rax, XXXXXXXXXXXXXX
-	
-	uintptr_t asm_addr = (uintptr_t) ModifyArrayOffset4Asm;
-	PatchUtils::Write64((uint64_t *)(buf+2), asm_addr);
-	PatchUtils::Write16((uint16_t *)(buf+10), 0xE0FF); // jmp rax
-	PatchUtils::Write32(buf+12, 0x90909090); // nops  (not really necessary, code wont reach here, but to not destroy asm view in a debugger)
-	
-	uint64_t *ret_addr = (uint64_t *)(asm_addr+0x1B);
-	if (*ret_addr != 0x123456789ABCDEF)
-	{
-		UPRINTF("Internal error in ModifyArrayOffset4\n");
-		exit(-1);
-	}
-	
-	PatchUtils::Write64(ret_addr, (uint64_t)(buf+0x10)); // buf+0x10 -> address to return to
-}*/
 PUBLIC void ModifyArrayOffset4(uint8_t *addr, size_t size)
 {
 	EXECBUFFER(code_buf, addr); 
@@ -790,12 +772,12 @@ PUBLIC void ModifyArrayOffset4(uint8_t *addr, size_t size)
 	{
 		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
 		{
-			// r8 = CHASEL_SIZE + (r14 << 5) + rsi
+			// r8 = CHASEL_SIZE + (rbp << 5) + rdi
 			mov(r8, CHASEL_SIZE);
-			mov(r9, r14);
+			mov(r9, rbp);
 			shl(r9, 5);
 			add(r8, r9);
-			add(r8, rsi);
+			add(r8, rdi);
 			cmp(qword[r8+0x18], 8);
 			// Return
 			jmp(ptr[rip]);
