@@ -21,7 +21,7 @@
 		<Hook value="VCControl_Ctor_Patched" setup="SetupFsEventOffline" />
 	</Patch>
 	
-	<!-- Signature 1.21 -->
+	<!-- Signature 1.26 -->
 	<Patch name="HookIsDemoEventHappening" type="hook" search_start="0x3E579C" comment="signature 1.26">
 		<Instruction code="49 8D 8E 80 02 00 00" comment="lea rcx, [r14+280h]" />
 		<Instruction code="E8 XXXXXXXX" comment="call IsDemoEventHappening" />
@@ -51,26 +51,28 @@
 	
 	<!-- This happens in the function that inits the fs event structure (which is called from VCControl ctor) 
 		 Probably a sub-class/struct of the VCControl object -->
-	<Patch name="LocateSetIsFsEventHappening" type="notify" search_start="0x4015C8" comment="signature 1.15" >
-		<Instruction code="48 89 6C 24 68" comment="mov [rsp+58h], rbx" />
+	<!-- This patch is very dependent of the DLL side. In concrete, fs_event_online.cpp: sizeof(orig_ins1) and patch_addr1 in IsFreezerEventEndingPatched  (the two jz will be noped at runtime) -->
+	<Patch name="LocateSetIsFsEventHappening" type="notify" search_start="0x4015C8" comment="signature 1.26" >
+		<Instruction code="48 89 6C 24 68" comment="mov [rsp+68h], rbx" />
 		<Instruction code="E8 XX XX XX XX" comment="call is_logged_in" />
 		<Instruction code="85 C0" comment="test eax, eax" />
 		<Instruction code="74 14" comment="jz +0x14" />
 		<Instruction code="83 FD FF" comment="cmp ebx, -1" />
 		<Instruction code="74 0F" comment="jz +0xF" />
 		<Instruction code="C7 83 14 01 00 00 01 00 00 00" comment="mov object->is_freezer_event_happening = 1" />
-		<Instruction code="BF 01 00 00 00" comment="mov esi, 1" />
+		<Instruction code="BF 01 00 00 00" comment="mov edi, 1" />
 		
 		<Notify inst_index="3" value="OnSetIsFsEventHappeningLocated" />
 	</Patch>
 	
 	<!-- When there is change in this event, review if the patch in the dll needs update -->
-	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x3CEA2E" comment="signature 1.26">
-		<Instruction code="B8 01 00 00 00" comment="mov eax, 1" />
-		<Instruction code="89 46 08" comment="mov [rsi+8], eax" />
-		<Instruction code="89 4E 0C" comment="mov [rsi+0Ch], ecx; opened flag" />
-		<Instruction code="48 8D 4D F8" comment="lea rcx, [rbp-8]" />
-		<Instruction code="E8 XXXXXXXX" comment="call" />
+	<Patch name="LocatePatchLobbyScriptIsOpenedEvent" type="notify" search_start="0x3CE9BC" comment="signature 1.26" >
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="41 0F 44 DF" comment="cmovz ebx, r15d" />
+		
+		<!-- This won't be changed by the dll -->
+		<Instruction code="89 5E 0C" comment="mov [rsi+0Ch], ebx" />
+		
 		<Notify value="OnPatchLobbyScriptIsOpenedEventLocated" />
 	</Patch>
 	
@@ -101,7 +103,7 @@
 		<Hook type="call" inst_index="2" value="GetStatueTypePatched" setup="SetupGetStatueType" />
 	</Patch>
 	
-	<Patch name="LocateGetResistancePoints" type="notify" search_start="0x2A8D10" >
+	<Patch name="LocateGetResistancePoints" type="notify" search_start="0x2A8D10" comment="addr 1.26" >
 		<Instruction code="48 83 EC 28" comment="sub rsp, 28h" />
 		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, resistance_points_encoded" />
 		<Instruction code="3B 05 XXXXXXXX" comment="cmp rax, resistance_points_encoded2" />
@@ -116,7 +118,7 @@
 	</Patch>
 	
 	<!-- Important: if signature breaks, check if assignment of resistance points to rdi/edi register changes to another register, the code in the DLL will modify edi -->
-	<!-- Address: 1.25.1 -->
+	<!-- Address: 1.26 -->
 	<Patch name="HookAddResistancePoints" type="hook" search_start="0x7B783F" >
 		<Instruction code="0F 44 C1" comment="cmovz eax, ecx" />
 		<Instruction code="8B F8" comment="mov edi, eax" />
@@ -145,14 +147,14 @@
 		<Notify value="OnChangeMedalsLocated" />
 	</Patch>-->
 	
-	<Patch name="LocateQuestFunction" type="notify" search_start="0x250B0" comment="addr 1.26" >
-		<Instruction code="48 8B C4" comment="mov rax, rsp" />
-		<Instruction code="57 4154 4155 4156 4157" comment="push rdi, r12-r15" />
-		<Instruction code="48 83 EC 40" comment="sub rsp, 40h" />
-		<Instruction code="48 C7 40 D0 FE FF FF FF" comment="mov qword ptr [rax-30h], -2" />
-		<Instruction code="48 89 58 08" comment="mov [rax+8], rbx" />
-		<Instruction code="48 89 68 10" comment="mov [rax+10h], rbp" />
-		<Instruction code="48 89 70 18" comment="mov [rax+18h], rsi" />
+	<!-- 1.26: the first case of old signature resolving to the wrong function-->
+	<Patch name="LocateQuestFunction" type="notify" search_start="0x2338C0" comment="addr 1.26" >
+		<Instruction code="40 53 55 56 57 41 54 41 55 41 56 41 57" comment="push rbx, rbp, rsi, rdi, r12-r15" />
+		<Instruction code="48 81 EC A8 01 00 00" comment="sub rsp, 01A8H" />
+		<Instruction code="48 C7 44 24 68 FE FF FF FF" comment="mov qword ptr [rsp+68h], -2" />
+		<Instruction code="48 8B 05 XXXXXXXX" comment="mov rax, [rip+canary]" />		
+		<Instruction code="48 33 C4" comment="xor rax, rsp" />
+		<Instruction code="48 89 84 24 98 01 00 00" comment="mov [rsp+0198h], rax" />
 		
 		<Notify value="OnQuestFunctionLocated" />
 	</Patch>

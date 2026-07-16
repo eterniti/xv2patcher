@@ -123,9 +123,9 @@ struct Battle_Mob
 	CommonChara *common_chara; // 4D8 - XG::Game::Common::Chara, the one that has the BCS file content inside
 	uint64_t unk_4E0;
 	Battle_Command *battle_command; // 04E8
-	uint8_t unk_4F0[0x2114-0x4F0]; 
-	int32_t loaded_var; // 2114 ; if >= 0, char is loaded
-	uint8_t unk_2118[0x22E8-0x2118];
+	uint8_t unk_4F0[0x2134-0x4F0]; 
+	int32_t loaded_var; // 2134 ; if >= 0, char is loaded
+	uint8_t unk_2138[0x22E8-0x2138];
 	uint32_t trans_partset; // 22E8
 	int32_t trans_control; // 22EC
 	// ...
@@ -184,7 +184,7 @@ CHECK_FIELD_OFFSET(Battle_Mob, skills, 0x268);
 CHECK_FIELD_OFFSET(Battle_Mob, unk_interface_var, 0x3B0);
 CHECK_FIELD_OFFSET(Battle_Mob, common_chara, 0x4D8);
 CHECK_FIELD_OFFSET(Battle_Mob, battle_command, 0x4E8);
-CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2114);
+CHECK_FIELD_OFFSET(Battle_Mob, loaded_var, 0x2134);
 CHECK_FIELD_OFFSET(Battle_Mob, trans_partset, 0x22E8);
 CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x22EC);
 

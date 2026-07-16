@@ -4,7 +4,7 @@
 	<!-- Addresses 1.08 unless stated otherwise -->	
 	
 	<!-- ui_enemy_portrait group -->
-	<!-- Signature 1.21. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
+	<!-- Signature 1.26. Signature and patch method were widely changed in 1.11 due to previous if-elseif logic being converted into a switch table. -->
 	<!-- Note: since 1.21, the switch table changed to a 8 bits index table (a table for the actually jump table) -->
 	<Patch name="PortraitEnemyForEMB" enabled="ui_enemy_portrait" type="notify" search_start="0x1E68E1" >
 		<Instruction code="83 F9 01" comment="cmp ecx, 1" />
@@ -35,14 +35,14 @@
 		<Instruction code="4B 8B 8C F1 XX XX XX XX" comment="mov rcx, [rdi+r14*8+XXXXXXXX]" />
 		<Instruction code="4C 8B C5" comment="mov r8, rbp" />
 		<Instruction code="4C 2B C1" comment="sub r8, rcx" />
-		<Instruction code="BA 3E 00 00 00" comment="mov edx, 3Ah" />
+		<Instruction code="BA 3E 00 00 00" comment="mov edx, 3E" />
 			
 		<Notify inst_index="0" inst_offset="4" value="ShowTheRedRing" />
 	</Patch>
 	<!-- end of ui_enemy_portrait group -->
 	
 	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
-	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD09" >
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD09" comment="signature 1.26" >
 		<Instruction code="4C 8D 44 24 60" comment="lea r8, [rsp+60h]" />
 		<Instruction code="49 8B D5" comment="mov rdx, r13" />
 		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />
@@ -56,7 +56,7 @@
 	
 	<!-- Patch introduced in 1.21 -->
 	<!-- Note: a change in the signature of this patch may need an update on the dll part -->
-	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD91" >
+	<Patch name="LocateToggleBattleUIPatch" enabled="hide_battle_ui" type="notify" search_start="0x1BDD91" comment="signature 1.26" >
 		<Instruction code="4C 8D 45 80" comment="lea r8, [rbp-80h]" />
 		<Instruction code="49 8B D5" comment="mov rdx, r13" />
 		<Instruction code="89 44 24 20" comment="mov [rsp+20h], eax" />

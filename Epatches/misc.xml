@@ -105,8 +105,8 @@
 		<Notify inst_index="0" inst_offset="2" value="OnE74Located" />
 	</Patch>-->
 
-	<!-- Address 1.21 -->
-	<Patch name="UnlimitedItemInfo" type="hook" search_start="0x674A30" comment="signature 1.26">
+	<!-- Address 1.26 -->
+	<Patch name="UnlimitedItemInfo" type="hook" search_start="0x674A30" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="57" comment="push rdi" />
 		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
@@ -121,8 +121,8 @@
 		<Hook value="GetItemInfoPatched" setup="SetupGetItemInfo" />
 	</Patch>
 
-	<!-- Address 1.21 -->
-	<Patch name="GetUnknownItemAddress" type="notify" search_start="0x6749FC" comment="signature 1.26">
+	<!-- Address 1.26 -->
+	<Patch name="GetUnknownItemAddress" type="notify" search_start="0x6749FC" comment="Takes place in get_item_information" >
 		<Instruction code="8B D3" comment="mov edx, ebx" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call get_item_info_inner" />
@@ -134,7 +134,7 @@
 		<Notify inst_index="4" inst_offset="3" value="OnUnknownItemAddressLocated" />
 	</Patch>
 
-	<!-- Address 1.22.1 -->
+	<!-- Address 1.26 -->
 	<Patch name="LocateGameLanguageVar_Item" type="notify" search_start="0x2BB516">
 		<Instruction code="C7 05 XXXXXXXX 09 00 00 00" comment="mov game_language, 9" />
 		<Instruction code="8B C7" comment="mov eax, edi" />
@@ -142,8 +142,8 @@
 		<Notify inst_index="0" inst_offset="2" value="OnGameLanguageLocated_Item" />
 	</Patch>
 
-	<!-- Signature 1.25.1 -->
-	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x184186" comment="signature 1.26">
+	<!-- Signature 1.26 -->
+	<Patch name="PatchUntransformCutScenes" type="hook" enabled="dont_untransform_cut_scenes" search_start="0x184186" >
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 8B CD" comment="mov rcx, rbp ; mob" />
 		<Instruction code="41 8D 50 01" comment="lea edx, [r8+1] ; =1" />
@@ -157,9 +157,9 @@
 		<Hook type="call" inst_index="3" value="PatchUntransform" setup="SetupUntransform" />
 	</Patch>
 
-	<!-- Signature 1.25.1 -->
+	<!-- Signature 1.26 -->
 	<!-- Note: starting from 1.25.1: detected change in game code, they now use a switch case -->
-	<Patch name="PatchUntransformCutScenes2" type="hook" enabled="dont_untransform_cut_scenes" search_start="0xD5918" comment="signature 1.26">
+	<Patch name="PatchUntransformCutScenes2" type="hook" enabled="dont_untransform_cut_scenes" search_start="0xD5918" >
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi ; mob" />
 		<Instruction code="41 8D 50 01" comment="lea edx, [r8+1] ; =1" />
@@ -167,14 +167,14 @@
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
 		<Instruction code="E8 XXXXXXXX" comment="call" />
-		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, singleton" />
+		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, vfx manager singleton" />
 		<Instruction code="48 8D 97 E0 09 00 00" comment="lea rdx, [rdi+9E0h]" />
 		<Instruction code="41 B9 FF FF FF FF" comment="mov r9d, 0FFFFFFFFh" />
 
 		<Hook type="call" inst_index="3" value="PatchUntransform" />
 	</Patch>
 
-	<!-- Signature 1.26 -->
+	<!-- Address 1.26 -->
 	<Patch name="MultiSelectExpert_CS_Ctor" type="hook" enabled="enable_multiselect_expert" search_start="0x3AB354">
 		<Instruction code="44 8B 44 24 50" comment="mov r8d, dword ptr[rsp+50h]" />
 		<Instruction code="41 8B D5" comment="mov edx, r13d" />
@@ -203,17 +203,19 @@
 
 	<!-- 1.26: the old hook + SetupAllies doesn't work anymore. the fill loop keeps num_allies in a
 	     register now (r13d = edi+1 = 2) instead of the [rbp-0x28] stack local the DLL used to write, so
-	     the hook can't touch it. just bump the constant instead: lea r13d,[rdi+1] (=2) becomes [rdi+4] (=5).
-	     loop is at 0x3AB952, one ally per pass, slot stride 0x1F0, decrements r13. -->
-	<Patch name="MultiSelectExpert_Patch_NumAllies" type="write" enabled="enable_multiselect_expert" search_start="0x3AB937" comment="signature 1.26; sets battle ally count to 5">
+	     the hook can't touch it. 
+		 
+		 Note: this patch can't be static, it has to be evaluated at runtime. Even when enable_multiselect_expert=true, 
+		 the patch is only done on some modes of the CSS, based on info gathered by ChaselCtorHooked.
+		 New implementation uses xbyak. IMPORTANT: the whole code in the signature will be wiped and reimplemented/restored. The code must be the part prior to the loop. -->
+	<Patch name="MultiSelectExpert_Patch_NumAllies" type="notify" enabled="enable_multiselect_expert" search_start="0x3AB937" comment="signature 1.26">
 		<Instruction code="BF 01 00 00 00" comment="mov edi, 1 ; first ally index" />
 		<Instruction code="4C 8D BD 44 01 00 00" comment="lea r15, [rbp+144h]" />
 		<Instruction code="4C 8B 65 C8" comment="mov r12, [rbp-38h]" />
 		<Instruction code="49 81 C4 74 02 00 00" comment="add r12, 274h" />
 		<Instruction code="44 8D 6F 01" comment="lea r13d, [rdi+1] ; num_allies = 2" />
 
-		<!-- lea r13d,[rdi+1] -> lea r13d,[rdi+4] : ally count 2 -> 5 -->
-		<Write inst_index="4" inst_offset="3" value="04" />
+		<Notify value="PatchNumAllies" />
 	</Patch>
 
 
@@ -243,7 +245,7 @@
 		<Instruction code="48 89 01" comment="mov [rcx], rax" />
 		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="90" comment="nop" />
-		<Instruction code="48 8D 8F 78 66 00 00" comment="mov r8, [rdi+6648h]" />
+		<Instruction code="48 8D 8F 78 66 00 00" comment="mov r8, [rdi+6678h]" />
 
 		<Hook value="MobDtorPatched" setup="SetupMobDtor" />
 	</Patch>
@@ -288,7 +290,7 @@
 	<Patch name="FindGetAuraFile" type="notify" search_start="0x103B1A" comment="addr 1.26">
 		<Instruction code="48 8B 0D XX XX XX XX" comment="mov rax, SystemResourceManager::singleton" />
 		<Instruction code="48 89 74 24 38" comment="mov [rsp+38h], rsi" />
-		<Instruction code="E8 XX XX XX XX" comment="call" />
+		<Instruction code="E8 XX XX XX XX" comment="call get_aura_file" />
 		<Instruction code="48 8B F0" comment="mov rsi, rax" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
 		<Instruction code="74 57" comment="jz +XX" />
@@ -340,19 +342,15 @@
 		<!-- cmp ebx,0x0; jz XX-->
 		<!-- (I removed the jump offset from the write, since that one is unchanged from the ja) -->
 		<Write value="83 F8 00 74 XX" />
->
 	</Patch>
 
-	<!-- This patch may be used for more than one functionality. Signature: 1.23 -->
-	<Patch name="LocateStdVector32Reserve" type="notify" search_start="0xA8AEE5" comment="signature 1.26">
-		<Instruction code="48 3B CA" comment="cmp rcx, rdx" />
-		<Instruction code="48 0F 43 D1" comment="cmovae rdx, rcx" />
-		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call std::vector&lt;u32&gt;::reserve" />
-		<Instruction code="90" comment="nop" />
-		<Instruction code="48 8B 4F 08" comment="mov rcx, [rdi+8]" />
+	<!-- This patch may be used for more than one functionality. Signature: 1.26 -->
+	<Patch name="LocateStdVector32Reserve" type="notify" search_start="0x4988CB" >
+		<Instruction code="BA 09 00 00 00" comment="mov edx, 9" />
+		<Instruction code="E8 XXXXXXXX" comment="call std::vector::reserve" />
+		<Instruction code="48 8D 8B C8 03 00 00" comment="lea rcx, [rbx+3C8h]" />
 
-		<Notify inst_index="3" inst_offset="1" value="OnStdVector32ReserveLocated" />
+		<Notify inst_index="1" inst_offset="1" value="OnStdVector32ReserveLocated" />
 	</Patch>
 
 </EternityPatchFile>

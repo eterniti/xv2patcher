@@ -3,17 +3,17 @@
 	<!-- Signature 1.26 -->
 	<Patch name="LocateChangeBody" type="notify"  search_start="0x158D20" >
 		<Instruction code="40 55 41 54 41 55 41 56 41 57" comment="push rbp, r12-r15" />
-		<Instruction code="48 8D AC 24 F0 F9 FF FF" comment="lea rbp, [rsp-620h]" />
-		<Instruction code="48 81 EC 10 07 00 00" comment="sub rsp, 720h" />
+		<Instruction code="48 8D AC 24 F0 F9 FF FF" comment="lea rbp, [rsp-610h]" />
+		<Instruction code="48 81 EC 10 07 00 00" comment="sub rsp, 710h" />
 		<Instruction code="48 8B 05 XX XX XX XX" comment="mov rax, XXXXXXXX" />
 		<Instruction code="48 33 C4" comment="xor rax, rsp" />
-		<Instruction code="48 89 85 F0 05 00 00" comment="mov [rbp+600h], rax" />
+		<Instruction code="48 89 85 F0 05 00 00" comment="mov [rbp+5F0h], rax" />
 		<Instruction code="48 63 C2" comment="movsxd rax, r8d" />
 		
 		<Notify value="SetupChangeBody" />
 	</Patch>	
 	
-	<Patch name="PatchUsesMobControl" type="hook" search_start="0x117A11" >
+	<Patch name="PatchUsesMobControl" type="hook" search_start="0x117A11" comment="addr 1.26" >
 		<Instruction code="E8 XXXXXXXX" comment="call uses_mob_control" />
 		<Instruction code="48 8B 1E" comment="mov rbx, [rsi]" />
 		<Instruction code="85 C0" comment="test eax, eax" />
@@ -26,7 +26,7 @@
 		<Hook type="call" value="UsesMobControlPatched" setup="SetupUsesMobControl" />
 	</Patch>
 	
-	<!-- Signature 1.25.1 -->
+	<!-- Signature 1.26 -->
 	<Patch name="PatchGetMobControl" type="hook" search_start="0x161C49" >
 		<Instruction code="E8 XXXXXXXX" comment="call get_mob_control" />
 		<Instruction code="4C 8B F0" comment="mov r14, rax" />
@@ -51,7 +51,7 @@
 	</Patch>
 	
 	<!-- This patch will break on the dll side if the address of the virtual method changes -->
-	<!-- Signature: 1.25.2 -->
+	<!-- Signature: 1.26 -->
 	<Patch name="PatchMobControlDialogueIsPlayer" type="notify" search_start="0x7A8CB9" >
 		<Instruction code="8B B5 C8 00 00 00" comment="mov esi, [rbp+0C8h]; original cms" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
@@ -59,24 +59,25 @@
 		<Instruction code="48 8B 10" comment="mov rdx, [rax]" />
 		<Instruction code="48 8B C8" comment="mov rcx, rax" />
 		<Instruction code="FF 92 F0 02 00 00" comment="call qword ptr[rdx+2F0h]" />
+		
 		<Notify inst_index="5" value="OnDialogueIsPlayerLocated" />
 	</Patch>
 	
-	<!-- Signature: 1.25.2. Patch is a bit below the above one. -->
-	<Patch name="PatchMobControlDialogueGetEventCastCom" type="hook" search_start="0x158357" >
-		<Instruction code="24 40" comment="mov ecx, ebx" />
+	<!-- Signature: 1.26. Patch is a bit below the above one. -->
+	<Patch name="PatchMobControlDialogueGetEventCastCom" type="hook" search_start="0x7A8D30" >
+		<Instruction code="41 8B CC" comment="mov ecx, r12d" />
 		<Instruction code="E8 XX XX XX XX" comment="call GetEventCastComFromIndex" />
-		<Instruction code="4C 8B F0" comment="mov r14, rax" />
+		<Instruction code="48 8B F8" comment="mov rdi, rax" />
 		<Instruction code="48 85 C0" comment="test rax, rax" />
-		<Instruction code="74 2B" comment="jz +0x2B" />
+		<Instruction code="74 75" comment="jz +0x75" />
 		<Instruction code="48 8B 00" comment="mov rax, [rax]" />
-		<Instruction code="49 8B CE" comment="mov rcx, r14" />
-		<Instruction code="FF 90 90 02 00 00" comment="call qword ptr[rax+2E8]" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="FF 90 F0 02 00 00" comment="call qword ptr[rax+2E8]" />
 		
 		<Hook type="call" inst_index="1" value="GetEventCastComFromIndexPatched" setup="SetupGetEventCastComFromIndex" />
 	</Patch>
 	
-	<!-- Signature 1.11 -->
+	<!-- Signature 1.26 -->
 	<Patch name="PatchMobControlPatchUntr1" type="hook" search_start="0x158E1B" >
 		<Instruction code="41 F6 87 B0 00 00 00 10" comment="test byte ptr [r15+0B0h], 10h; if transformed" />
 		<Instruction code="74 12" comment="jz +0x12" />
@@ -93,7 +94,7 @@
 		<Hook type="call" inst_index="7" value="DummyMobUntransformForMobControl" setup="SetupMobUntransformForMobControl" />
 	</Patch>
 	
-	<!-- Signature 1.25.1 -->
+	<!-- Signature 1.26 -->
 	<Patch name="PatchMobControlPatchUntr2" type="hook" search_start="0x158E47" >
 		<Instruction code="41 F6 85 B0 00 00 00 10" comment="test byte ptr [r13+0B0h], 10h; if transformed" />
 		<Instruction code="74 12" comment="jz +0x12" />
@@ -110,16 +111,14 @@
 		<Hook type="call" inst_index="7" value="DummyMobUntransformForMobControl" />
 	</Patch>
 
-	<!-- Just to protect the index 0x20A4 (loaded_var) in the Battle_Mob object -->
-	<!-- Signature 1.25.1 -->
-	<!--
-	<Patch name="ProtectMobLoadedVar" type="notify" search_start="0x845E20" >
-		<Instruction code="83 B8 14 21 00 00 01" comment="cmp dword ptr [rax+2114h], 1" />
-		<Instruction code="77 30" comment="ja +0x30" />
-		<Instruction code="48 83 B8 00 20 00 00 00" comment="cmp qword ptr [rax+2000h], 0" />
-		<Instruction code="74 26" comment="je +0x26" />
-		<Instruction code="8B 88 14 21 00 00" comment="mov ecx, [rax+2114h]" />
-		<Notify value="NULL" />
+	<!-- Just to protect the index 0x2134 (loaded_var) in the Battle_Mob object -->
+	<!-- Signature 1.26 -->
+	<Patch name="ProtectMobLoadedVar" type="notify" search_start="0x7E097D" comment="Takes place in inlined qed cond 30" >
+		<Instruction code="83 B8 34 21 00 00 01" comment="cmp dword ptr [rax+2134h], 1" />
+		<Instruction code="77 18" comment="ja +0x18" />
+		<Instruction code="48 8B 88 20 20 00 00" comment="mov rcx, [rax+2020h]" />
+		<Instruction code="48 85 C9" comment="test rcx, rcx" />
+		
+		<Notify value="NULL" />		
 	</Patch>
-	-->
 </EternityPatchFile>

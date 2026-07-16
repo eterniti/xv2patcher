@@ -1,5 +1,8 @@
 #include <windows.h>
 #include <wininet.h>
+
+#include <xbyak.h>
+
 #include "IniFile.h"
 #include "EPatchFile.h"
 #include "PatchUtils.h"
@@ -213,7 +216,7 @@ static uint32_t *pE74;
 
 static ChaselCtorType ChaselCtor;
 static ChaselDtorType ChaselDtor;
-static SetupAlliesType SetupAllies;
+//static SetupAlliesType SetupAllies;
 
 // Removed in 1.15 due to the patch change
 // static uint8_t *cs_num_allies;
@@ -420,6 +423,7 @@ PUBLIC void *ChaselCtorHooked(void *pthis, uint32_t mode, uint32_t r8d, void *r9
 	return ret;
 }
 
+/* Obsolete in 1.26
 PUBLIC bool SetupAlliesPatched(void *pthis, void *rbp)
 {
 	int num = 2;
@@ -436,6 +440,48 @@ PUBLIC bool SetupAlliesPatched(void *pthis, void *rbp)
 PUBLIC void SetupSetupAllies(SetupAlliesType orig)
 {
 	SetupAllies = orig;
+}*/
+
+PUBLIC void PatchNumAllies(uint8_t *addr, size_t size)
+{
+	EXECBUFFER(code_buf, addr); 
+	uintptr_t return_addr = (uintptr_t)addr + size;
+	
+	struct Code : Xbyak::CodeGenerator 
+	{
+		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
+		{
+			mov(rax, (uintptr_t)&patch_num_allies);
+			cmp(byte[rax], 0);			
+			je("P2");
+			
+			mov(r13d, 5); // num allies = 5
+			jmp("ORIG");
+			
+			L("P2");
+			mov(r13d, 2); // num allies = 2
+			
+			// Original code minus r13d
+			L("ORIG");
+			mov(edi, 1);
+			lea(r15, ptr[rbp+0x144]);
+			mov(r12, ptr[rbp-0x38]);
+			add(r12, 0x274);
+			// Return
+			jmp(ptr[rip]);
+			dq(ra);
+		}
+	};	
+	
+	Code c(code_buf, return_addr);	
+
+	if (c.hasUndefinedLabel())
+	{
+		UPRINTF("%s: CRITICAL, undefined label.\n", FUNCNAME);
+		exit(-1);
+	}
+	
+	PatchUtils::HookGenericCode(addr, (void *)c.getCode(), size);
 }
 
 PUBLIC void OnStdVector32ReserveLocated(void *address)

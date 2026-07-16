@@ -2,7 +2,7 @@
 <EternityPatchFile name="QuestPatches" comment="This file enables patches related with quest mods" >
 
 	<!-- This is an irregular patch. Implementation in the exe must be changed on any signature change -->	
-	<!-- Signature: 1.25.1 -->
+	<!-- Signature: 1.26 -->
 	<Patch name="ModHLQInGlobalOrb" enabled="mod_hlq_always_in_global_orb" type="notify" search_start="0x59B97C" >
 		<Instruction code="48 8B 03" comment="mov rax, [rbx]" />
 		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
@@ -15,7 +15,7 @@
 		<Notify value="OnModHlqPatchLocated" />
 	</Patch>
 	
-	<Patch name="ExtendQEDConditions" type="hook" search_start="0x7DFCB0" >
+	<Patch name="ExtendQEDConditions" type="hook" search_start="0x7DFCB0" comment="addr 1.26" >
 		<Instruction code="48 8B C4" comment="mov rax, rsp" />
 		<Instruction code="55 56 57 41 54 41 55 41 56 41 57" comment="push rbp, rsi, rdi, r12-r15" />
 		<Instruction code="48 83 EC 70" comment="sub rsp, 70h" />
@@ -30,6 +30,7 @@
 
 		<Hook value="QedCondHooked" setup="SetupQedCond" />
 	</Patch>
+	
 	<Patch name="LocateQmlIdToEventCast" type="notify" search_start="0x8067A0" comment="addr 1.26" >
 		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
 		<Instruction code="57" comment="push rdi" />

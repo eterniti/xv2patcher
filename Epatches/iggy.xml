@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <EternityPatchFile name="IggyPatches" comment="This file contains patches for iggy" >	
 
-	<!-- Added in version 1.08, signature updated in 1.13v2 
+	<!-- Added in version 1.08, address 1.26
 	     Note: in 1.13v2, the value they used is identical to the default ini setting, so it looks they applied same fix.
 	-->
 	<Patch name="ModifyGDrawSetting2A" enabled="gdraw_limits_patch" type="notify" search_start="0x78463C" >
@@ -14,18 +14,20 @@
 		<Notify inst_index="0" inst_offset="1" value="ModifyGDrawSetting2A" />
 	</Patch>
 	
-	<!-- Added in version 1.08 -->
-	<Patch name="PatchExternalAS3Callback" enabled="new_chara" type="hook" search_start="0xA3EC50" >
-		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
-		<Instruction code="48 89 74 24 10" comment="mov [rsp+10], rsi" />
-		<Instruction code="57" comment="push rdi" />
-		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
-		<Instruction code="49 8B F8" comment="mov rdi, r8" />
-		<Instruction code="48 8B F2" comment="mov rsi, rdx" />
+	<!-- Added in version 1.08. Signature 1.26 -->
+	<!-- This function have prologue that resemble lot of functions. The signature is long on purpose to avoid mismatch.
+	     They key to confirm it is this one in the disassembler is to check this function pointer is the parameter to IggySetAS3ExternalFunctionCallbackUTF8 -->
+	<Patch name="PatchExternalAS3Callback" enabled="new_chara" type="hook" search_start="0x785D10" >
+		<Instruction code="48 89 5C 24 18" comment="mov [rsp+18], rbx" />
+		<Instruction code="48 89 6C 24 20" comment="mov [rsp+20], rsi" />
+		<Instruction code="41 56" comment="push r14" />
+		<Instruction code="48 83 EC 30" comment="sub rsp, 30h" />
+		<Instruction code="4D 8B F0" comment="mov r14, r8" />
+		<Instruction code="48 8B EA" comment="mov rbp, rdx" />
 		<Instruction code="48 8B D9" comment="mov rbx, rcx" />
 		<Instruction code="E8 XX XX XX XX" comment="call" />
 		<Instruction code="85 C0" comment="test eax, eax" />
-		<Instruction code="74 2D" comment="jz +0x2D" />
+		<Instruction code="0F 84 D1 00 00 00" comment="jz +0xD1" />
 		
 		<Hook value="ExternalAS3CallbackPatched" setup="SetupExternalAS3Callback" />	
 	</Patch>
