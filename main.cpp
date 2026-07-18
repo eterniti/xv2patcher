@@ -1,14 +1,19 @@
 #include <windows.h>
 #include <wininet.h>
-
+#include <algorithm>
+#include <cstring>
+#include <cstdlib>
+#include <ctime>
+#include <unordered_map>
+#include <vector>
 #include <xbyak.h>
-
 #include "IniFile.h"
 #include "EPatchFile.h"
 #include "PatchUtils.h"
 #include "Mutex.h"
 #include "DBXV2/QsfFile.h"
 #include "DBXV2/IdbFile.h"
+#include "Xv2PreBakedFile.h"
 #include "xv2patcher.h"
 #include "chara_patch.h"
 #include "stage_patch.h"
@@ -39,6 +44,162 @@ static bool in_game_process()
 	
 	// A very poor aproach, I know
 	return (strstr(szPath, PROCESS_NAME) != NULL);
+}
+
+struct DynamicIggyInterface
+{
+	IggyInterface::Type type = IggyInterface::FILE;
+	std::string key;
+	std::string path;
+	std::string data;
+	time_t mtime = 0;
+};
+
+struct DynamicIggyPrefixInterface
+{
+	std::string prefix;
+	DynamicIggyInterface entry;
+};
+
+static std::unordered_map<std::string, DynamicIggyInterface> dynamic_iggy_exact_interfaces;
+static std::vector<DynamicIggyPrefixInterface> dynamic_iggy_prefix_interfaces;
+static std::unordered_map<std::string, std::string> dynamic_iggy_string_state;
+static time_t dynamic_iggy_interfaces_mtime = 0;
+
+static void init_dynamic_iggy_state(const IggyInterface &iggy_interface)
+{
+	switch (iggy_interface.type)
+	{
+		case IggyInterface::GET:
+		case IggyInterface::SET:
+			if (dynamic_iggy_string_state.find(iggy_interface.key) == dynamic_iggy_string_state.end())
+				dynamic_iggy_string_state[iggy_interface.key] = iggy_interface.default_value;
+
+			return;
+
+		default:
+			return;
+	}
+}
+
+static DynamicIggyPrefixInterface build_dynamic_iggy_prefix_interface(const IggyInterface &iggy_interface, const DynamicIggyInterface &dynamic_interface)
+{
+	DynamicIggyPrefixInterface prefix_interface;
+	prefix_interface.prefix = iggy_interface.name;
+	prefix_interface.entry = dynamic_interface;
+	return prefix_interface;
+}
+
+static std::string resolve_dynamic_iggy_path(const std::string &path)
+{
+	if ((path.length() >= 2 && path[1] == ':') || (path.length() >= 1 && (path[0] == '\\' || path[0] == '/')))
+		return path;
+
+	const size_t relative_offset = (path.compare(0, 2, "./") == 0 || path.compare(0, 2, ".\\") == 0) ? 2 : 0;
+
+	return myself_path + CONTENT_ROOT + "data/" + path.substr(relative_offset);
+}
+
+static void load_dynamic_iggy_interfaces()
+{
+	const std::string pbk_path = myself_path + CONTENT_ROOT + "data/pre-baked.xml";
+	time_t current_mtime; // Last modified time of pre-baked.xml, used to skip reloads when the file did not change.
+
+	if (!Utils::GetFileDate(pbk_path, &current_mtime))
+	{
+		dynamic_iggy_exact_interfaces.clear();
+		dynamic_iggy_prefix_interfaces.clear();
+		dynamic_iggy_interfaces_mtime = 0;
+		return;
+	}
+
+	if (current_mtime == dynamic_iggy_interfaces_mtime)
+		return;
+
+	Xv2PreBakedFile pbk;
+	if (!pbk.CompileFromFile(pbk_path, false))
+	{
+		UPRINTF("Compilation of \"%s\" failed.\n", pbk_path.c_str());
+		exit(-1);
+	}
+
+	dynamic_iggy_exact_interfaces.clear();
+	dynamic_iggy_prefix_interfaces.clear();
+
+	// Keep state maps across reloads so XML edits do not wipe values that were already set by iggy.
+	for (const IggyInterface &iggy_interface : pbk.GetIggyInterfaces())
+	{
+		DynamicIggyInterface dynamic_interface;
+		dynamic_interface.type = iggy_interface.type;
+		dynamic_interface.key = iggy_interface.key;
+
+			switch (iggy_interface.type)
+		{
+			case IggyInterface::FILE:
+				dynamic_interface.path = resolve_dynamic_iggy_path(iggy_interface.path);
+				dynamic_iggy_exact_interfaces[iggy_interface.name] = dynamic_interface;
+				break;
+
+			case IggyInterface::GET:
+				init_dynamic_iggy_state(iggy_interface);
+				dynamic_iggy_exact_interfaces[iggy_interface.name] = dynamic_interface;
+				break;
+
+			case IggyInterface::SET:
+				init_dynamic_iggy_state(iggy_interface);
+				dynamic_iggy_prefix_interfaces.push_back(build_dynamic_iggy_prefix_interface(iggy_interface, dynamic_interface));
+				break;
+		}
+	}
+
+	dynamic_iggy_interfaces_mtime = current_mtime;
+}
+
+typedef void *(* IggyPlayerCallbackResultPathType)(void *unk0);
+typedef void (* IggyValueSetStringUTF8RSType)(void *arg1, void *unk2, void *unk3, const char *str, size_t length);
+typedef void (* IggyValueSetS32RSType)(void *arg1, uint32_t unk2, uint32_t unk3, uint32_t value);
+
+static IggyPlayerCallbackResultPathType IggyPlayerCallbackResultPath;
+static IggyValueSetStringUTF8RSType IggyValueSetStringUTF8RS;
+static IggyValueSetS32RSType IggyValueSetS32RS;
+
+static void *get_dynamic_iggy_result(void *iggy_obj)
+{
+	void *ret = IggyPlayerCallbackResultPath(iggy_obj);
+	if (!ret)
+		DPRINTF("IggyPlayerCallbackResultPath returned NULL\n");
+
+	return ret;
+}
+
+static int set_dynamic_iggy_string_result(void *iggy_obj, const std::string &value)
+{
+	void *ret = get_dynamic_iggy_result(iggy_obj);
+	if (!ret)
+		return 0;
+
+	IggyValueSetStringUTF8RS(ret, nullptr, nullptr, value.c_str(), value.length());
+	return 1;
+}
+
+static const std::string *get_dynamic_iggy_file_string(DynamicIggyInterface *dynamic_interface)
+{
+	time_t current_mtime;
+	if (!Utils::GetFileDate(dynamic_interface->path, &current_mtime))
+	{
+		dynamic_interface->data.clear();
+		dynamic_interface->mtime = 0;
+		return &dynamic_interface->data;
+	}
+
+	if (current_mtime != dynamic_interface->mtime)
+	{
+		// Re-read only when the source file changed so iggy can poll this cheaply.
+		Utils::ReadTextFile(dynamic_interface->path, dynamic_interface->data, false);
+		dynamic_interface->mtime = current_mtime;
+	}
+
+	return &dynamic_interface->data;
 }
 
 extern "C"
@@ -492,16 +653,57 @@ PUBLIC void OnStdVector32ReserveLocated(void *address)
 #define XV2_PATCHER_TAG	0x50325658 /* XV2P */
 
 typedef int (* ExternalAS3CallbackType)(void *custom_arg, void *iggy_obj, const char **pfunc_name);
-typedef void *(* IggyPlayerCallbackResultPathType)(void *unk0);
-typedef void (* IggyValueSetStringUTF8RSType)(void *arg1, void *unk2, void *unk3, const char *str, size_t length);
-typedef void (* IggyValueSetS32RSType)(void *arg1, uint32_t unk2, uint32_t unk3, uint32_t value);
 typedef void (* _Battle_Mob_Destructor)(void *);
 
 static ExternalAS3CallbackType ExternalAS3Callback;
-static IggyPlayerCallbackResultPathType IggyPlayerCallbackResultPath;
-static IggyValueSetStringUTF8RSType IggyValueSetStringUTF8RS;
-static IggyValueSetS32RSType IggyValueSetS32RS;
 static _Battle_Mob_Destructor Battle_Mob_Destructor;
+
+static int dispatch_dynamic_iggy_interface(const char *func_name, void *iggy_obj)
+{
+	load_dynamic_iggy_interfaces();
+
+	auto exact_it = dynamic_iggy_exact_interfaces.find(func_name);
+	if (exact_it != dynamic_iggy_exact_interfaces.end())
+	{
+		DynamicIggyInterface &dynamic_interface = exact_it->second;
+
+		switch (dynamic_interface.type)
+		{
+			case IggyInterface::FILE:
+			{
+				const std::string *dynamic_result = get_dynamic_iggy_file_string(&dynamic_interface);
+				return set_dynamic_iggy_string_result(iggy_obj, *dynamic_result);
+			}
+
+			case IggyInterface::GET:
+				return set_dynamic_iggy_string_result(iggy_obj, dynamic_iggy_string_state[dynamic_interface.key]);
+
+			default:
+				break;
+		}
+	}
+
+	for (DynamicIggyPrefixInterface &prefix_interface : dynamic_iggy_prefix_interfaces)
+	{
+		if (strstr(func_name, prefix_interface.prefix.c_str()) != func_name)
+			continue;
+
+		// "set" interfaces are prefix-based. Everything after the prefix becomes the stored value.
+		const char *suffix = func_name + prefix_interface.prefix.length();
+
+		switch (prefix_interface.entry.type)
+		{
+			case IggyInterface::SET:
+				dynamic_iggy_string_state[prefix_interface.entry.key] = suffix;
+				return 1;
+
+			default:
+				break;
+		}
+	}
+
+	return 0;
+}
 
 PUBLIC int ExternalAS3CallbackPatched(void *custom_arg, void *iggy_obj, const char **pfunc_name)
 {
@@ -552,7 +754,7 @@ PUBLIC int ExternalAS3CallbackPatched(void *custom_arg, void *iggy_obj, const ch
 				IggyValueSetStringUTF8RS(ret, nullptr, nullptr, slots.c_str(), slots.length());			
 				return 1;
 			}
-			
+
 			else if (strcmp(func_name, "IsBattleUIHidden") == 0)
 			{
 				void *ret = IggyPlayerCallbackResultPath(iggy_obj);
@@ -779,7 +981,12 @@ PUBLIC int ExternalAS3CallbackPatched(void *custom_arg, void *iggy_obj, const ch
 				static const char *hello_world = "Hello world from the native side";			
 				IggyValueSetStringUTF8RS(ret, nullptr, nullptr, hello_world, strlen(hello_world));			
 				return 1;
-			}			
+			}
+			else
+			{
+				if (dispatch_dynamic_iggy_interface(func_name, iggy_obj))
+					return 1;
+			}
 		}
 	}
 	
