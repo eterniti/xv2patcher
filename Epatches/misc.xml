@@ -40,14 +40,14 @@
 	</Patch>-->
 
 	<!-- New patch implementation for 1.24+, provided by HAWGT, fixed for 3+ players by Pemdas -->
-	<Patch name="Pollution, go away! 1" type="write" search_start="0x2C34F8" comment="signature 1.26;">
+	<Patch name="Pollution, go away! 1" type="write" enabled="excessive_air_contamination" search_start="0x2C34F8" comment="signature 1.26;">
 		<Instruction code="48 8B CA" comment="mov rcx, rdx" />
 		<Instruction code="E8 00 83 F8 FF" comment="call 0x24B800 ; zero-stub: mov dword[rcx],0; mov rax,rcx; ret" />
 
 		<Write value="C7 02 00 00 00 00 90 90" comment="mov dword ptr [rdx], 0 ; nop ; nop" />
 	</Patch>
 
-	<Patch name="Pollution, go away! 2" type="nop" search_start="0x2C3E89" comment="signature 1.26; neutralize EOS anti-cheat RemovePeer">
+	<Patch name="Pollution, go away! 2" type="nop" enabled="excessive_air_contamination" search_start="0x2C3E89" comment="signature 1.26; neutralize EOS anti-cheat RemovePeer">
 		<Instruction code="3B 9E 7C 01 00 00" comment="cmp ebx, peer_count [rdi+17Ch]" />
 		<Instruction code="73 XX" comment="jae skip_kick" />
 		<Instruction code="4C 8B 0F" comment="mov r9, [r14] ; net mgr vtable" />
@@ -59,7 +59,7 @@
 		<Nop inst_index="6" size="7" />
 	</Patch>
 
-	<Patch name="Pollution, go away! 3" type="write" search_start="0x2C3150" comment="signature 1.26; stub EOS PeerActionRequired handler">
+	<Patch name="Pollution, go away! 3" type="write" enabled="excessive_air_contamination" search_start="0x2C3150" comment="signature 1.26; stub EOS PeerActionRequired handler">
 		<Instruction code="4C 8B DC" comment="mov r11, rsp" />
 		<Instruction code="56" comment="push rsi" />
 		<Instruction code="57" comment="push rdi" />
@@ -71,6 +71,20 @@
 		<Instruction code="48 8B 05 XX XX XX XX" comment="mov rax, singleton" />
 
 		<Write inst_index="0" inst_offset="0" value="C3" />
+	</Patch>
+
+	<Patch name="Pollution, go away! 4" type="hook" enabled="excessive_air_contamination" search_start="0x46D990" comment="signature 1.26">
+		<Instruction code="48 89 5C 24 08" comment="mov [rsp+8], rbx" />
+		<Instruction code="57" comment="push rdi" />
+		<Instruction code="48 83 EC 20" comment="sub rsp, 20h" />
+		<Instruction code="48 8B FA" comment="mov rdi, rdx" />
+		<Instruction code="E8 XXXXXXXX" comment="call CRankManager singleton getter" />
+		<Instruction code="48 8B D8" comment="mov rbx, rax" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
+		<Instruction code="48 8B 00" comment="mov rax, [rax]" />
+		<Instruction code="FF 50 30" comment="call qword ptr [rax+30h]" />
+
+		<Hook value="PollutionGoAwayParticipantValuePatched" setup="PollutionGoAwayParticipantValueSetup" />
 	</Patch>
 
 	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x2B9BF0" comment="signature 1.26">
