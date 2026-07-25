@@ -18,7 +18,8 @@ struct StdString
 	{
 		str.ptr = nullptr;
 		length = 0;
-		allocation_size = 0;
+		allocation_size = BUF_SIZE_STR-1; // IMPORTANT in 1.26
+		str.buf[0] = 0;
 	}
 	
 	inline const char *CStr() const
@@ -102,7 +103,8 @@ struct StdU16String
 	{
 		str.ptr = nullptr;
 		length = 0;
-		allocation_size = 0;
+		allocation_size = BUF_SIZE_U16STR-1;
+		str.buf[0] = 0;
 	}
 	
 	inline const char16_t *CStr() const

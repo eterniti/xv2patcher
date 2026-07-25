@@ -45,6 +45,8 @@ typedef void (* AurBpeType)(void *, uint32_t, uint32_t, uint32_t);
 typedef void (* RequestPartsetsType)(void *, CharaResourcePartsetsRequest *, uint32_t);
 typedef void (* MobFunc1Type)(Battle_Mob *, void *);
 typedef void (* HpDamageType)(Battle_Mob *, float, float, uint32_t);
+typedef int32_t (* UnkFunc1Type)(Battle_Mob *);
+typedef bool (* IsGbbModeType)(); 
 typedef void (* ChangePartsetType)(CommonChara *, uint32_t partset);
 typedef void (* MobTransformType)(Battle_Mob *, uint32_t, int32_t, int32_t);
 
@@ -129,6 +131,7 @@ static constexpr const int ReceiveType_CustomCostumeEx = ReceiveType_AfterTU9Ord
 static constexpr const int ReceiveType_ChouGokuaku = ReceiveType_CustomCostumeEx + 1; // 0x225E (New in 1.22)
 static constexpr const int ReceiveType_CharaSingleUnlockKey = ReceiveType_ChouGokuaku + 1; // 0x225F (New in 1.23) 
 static constexpr const int ReceiveType_CharaSingleUnlockKey2 = ReceiveType_CharaSingleUnlockKey + 1; // 0x2260 (New in 1.23) 
+static constexpr const int ReceiveType_Kokuhuku = ReceiveType_CharaSingleUnlockKey2 + 1; // 0x2261 (New in 1.26 
 static constexpr const int ReceiveType_CharacterTableEnd = ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; // 0x4650
 
 static constexpr const int ReceiveType_UseCustomList = ReceiveType_CharacterTableEnd + 1; // 0x4651
@@ -202,6 +205,7 @@ static int n_ReceiveType_CustomCostumeEx;
 static int n_ReceiveType_ChouGokuaku;
 static int n_ReceiveType_CharaSingleUnlockKey;
 static int n_ReceiveType_CharaSingleUnlockKey2;
+static int n_ReceiveType_Kokuhuku;
 static int n_ReceiveType_CharacterTableEnd;
 
 static int n_ReceiveType_UseCustomList;
@@ -235,7 +239,9 @@ static ApplyCacMatsType ApplyCacMats;
 static AurBpeType AurBpe;
 static RequestPartsetsType RequestPartsets;
 static MobFunc1Type MobFunc1;
-static HpDamageType HpDamage;
+//static HpDamageType HpDamage;
+static UnkFunc1Type UnkFunc1;
+static IsGbbModeType IsGbbMode;
 static ChangePartsetType CommonChara_ChangePartset;
 static MobTransformType MobTransform;
 
@@ -304,7 +310,7 @@ static uint32_t guess_character_max()
 				return CharacterMax;
 			}
 			
-			uint32_t ret = lrint(ImageStrEnd_double) - 16;
+			uint32_t ret = lrint(ImageStrEnd_double) - 17; // 1.26: 16->17
 			DPRINTF("Auto character max has been estimated: %d\n", ret);
 			return ret;
 		}
@@ -391,6 +397,7 @@ PUBLIC void CharaSetup(IggyBaseCtorType orig)
 	n_ReceiveType_ChouGokuaku = n_ReceiveType_CustomCostumeEx + 1;
 	n_ReceiveType_CharaSingleUnlockKey = n_ReceiveType_ChouGokuaku + 1;
 	n_ReceiveType_CharaSingleUnlockKey2 = n_ReceiveType_CharaSingleUnlockKey + 1;
+	n_ReceiveType_Kokuhuku = n_ReceiveType_CharaSingleUnlockKey2 + 1;
 	n_ReceiveType_CharacterTableEnd = n_ReceiveType_CharacterTableStart + CharacterTableMax * CharacterTableData; 
 	
 	n_ReceiveType_UseCustomList = n_ReceiveType_CharacterTableEnd + 1;	
@@ -585,6 +592,11 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 			maped = n_ReceiveType_CharaSingleUnlockKey2;
 			special = true;
 		}
+		else if (code == ReceiveType_Kokuhuku)
+		{
+			maped = n_ReceiveType_Kokuhuku;
+			special = true;
+		}
 		else if (code == ReceiveType_UseCustomList)
 			maped = n_ReceiveType_UseCustomList;
 		else if (code == ReceiveType_CustomList_CID_Start)
@@ -605,7 +617,7 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 		uint64_t value = ((uint64_t)code << 32) | maped;
 		if (special) value |= 0x8000000000000000ULL;
 		send_map[ra] = value;
-		//DPRINTF("Ret 1 0x%x -> 0x%x\n", code, maped);
+		//DPRINTF("Ret 1 0x%x -> 0x%x (ra=%I64x)\n", code, maped, PatchUtils::RelAddress(ra));
 		return maped;
 	}
 	else
@@ -639,7 +651,7 @@ static int32_t ResolveCode(void *pthis, void *ra, int32_t code)
 			ret = maped + n*CharacterTableData;			
 		}
 		
-		//DPRINTF("Ret 2 0x%x -> 0x%x (base=0x%x)\n", code, ret, base);
+		//DPRINTF("Ret 2 0x%x -> 0x%x (base=0x%x)  (ra=%I64x)\n", code, ret, base, PatchUtils::RelAddress(ra));
 		return ret;
 	}
 	
@@ -688,8 +700,10 @@ PUBLIC void PatchReceiveTypeUnlockVar(void *pthis, int32_t code, uint64_t data)
 	}
 	else
 	{
+		//DPRINTF("unlock var 0x%x, ra=%I64x ", code, PatchUtils::RelAddress(BRA(0)));
 		code = (code - ReceiveType_UnlockVarStart) + n_ReceiveType_UnlockVarStart;
-	}
+		//DPRINTF("unlock var mapped to 0x%x", code);
+	}	
 	
 	SendToAS3Flag(pthis, code, data);
 }
@@ -702,7 +716,9 @@ PUBLIC void PatchReceiveTypeCharaSelected(void *pthis, int32_t code, uint64_t da
 	}
 	else
 	{
+		//DPRINTF("CharaSelectedStart 0x%x, ra=%I64x ", code, PatchUtils::RelAddress(BRA(0)));
 		code = (code - ReceiveType_CharaSelectedStart) + n_ReceiveType_CharaSelectedStart;
+		//DPRINTF("CharaSelectedStart mapped to 0x%x", code);
 	}
 	
 	SendToAS3Flag(pthis, code, data);
@@ -1065,21 +1081,24 @@ PUBLIC void PreBakeSetup(size_t)
 	// 1.26: new base cus-auras
 	cus_aura_lookup[38] = 0x42;
 	cus_aura_lookup[39] = 0x43;
-	cus_aura_lookup[40] = 0x46;
-	cus_aura_lookup[41] = 0x46;
+	cus_aura_lookup[40] = cus_aura_lookup[41] = 0x46;
 	cus_aura_lookup[42] = 0x47;
 	// Original behaviour_11 values: nothing (the 0xFF init will ensure that)
 	// Original int 2 values (only non zero)
-	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = 1; 
-	cus_aura_int2_lookup[2] = cus_aura_int2_lookup[3] = cus_aura_int2_lookup[6] = 2;
+	cus_aura_int2_lookup[1] = cus_aura_int2_lookup[5] = cus_aura_int2_lookup[21] = cus_aura_int2_lookup[23] = cus_aura_int2_lookup[40] = 1; 
+	cus_aura_int2_lookup[2] = cus_aura_int2_lookup[3] = cus_aura_int2_lookup[6] = cus_aura_int2_lookup[41] = 2;
 	// Original behaviour_10 values: nothing (the 0xFF init will ensure that)
 	// Original int 3 values (only non zero)
 	cus_aura_int3_lookup[0] = 1;
 	for (int i = 11; i <= 19; i++)
 		cus_aura_int3_lookup[i] = 1;
+	cus_aura_int3_lookup[27] = 1;
+	for (int i = 30; i<= 35; i++)
+		cus_aura_int3_lookup[i] = 1;
+	cus_aura_int3_lookup[38] = 1;
 	
-	cus_aura_int3_lookup[1] = cus_aura_int3_lookup[7] = cus_aura_int3_lookup[8] = cus_aura_int3_lookup[9] = 2;
-	cus_aura_int3_lookup[2] = cus_aura_int3_lookup[3] = 3;
+	cus_aura_int3_lookup[1] = cus_aura_int3_lookup[7] = cus_aura_int3_lookup[8] = cus_aura_int3_lookup[9] = cus_aura_int3_lookup[36] = 2;
+	cus_aura_int3_lookup[2] = cus_aura_int3_lookup[3] = cus_aura_int3_lookup[37] = 3;
 	// Default force_teleport are all 0
 	// Original behaviour_13 values: nothing (the 0xFF init will ensure that)
 	// Original cus_aura_bh66_lookup values: nothing (the 0xFF init will ensure that)
@@ -1101,10 +1120,12 @@ PUBLIC void PreBakeSetup(size_t)
 	aur_bpe_map[51] = 280;
 	aur_bpe_map[52] = 281;
 	aur_bpe_map[53] = 302;
-	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = aur_bpe_map[60] = 320;
+	aur_bpe_map[57] = aur_bpe_map[58] = aur_bpe_map[59] = aur_bpe_map[60] = aur_bpe_map[65] = aur_bpe_map[66] = aur_bpe_map[69] = aur_bpe_map[71] = 320;
 	aur_bpe_map[61] = 340;
-	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = true;
-	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = true;
+	aur_bpe_map[63] = aur_bpe_map[67] = aur_bpe_map[68] = aur_bpe_map[70] = 370;
+	aur_bpe_map[64] = 371; 
+	aur_bpe_flag1[39] = aur_bpe_flag1[52] = aur_bpe_flag1[53] = aur_bpe_flag1[67] = aur_bpe_flag1[70] = true;
+	aur_bpe_flag2[36] = aur_bpe_flag2[39] = aur_bpe_flag2[52] = aur_bpe_flag2[53] = aur_bpe_flag2[67] = aur_bpe_flag2[70] = true;
 	// Original Golden Freezer Skin behaviour
 	cus_aura_gfs_bh[13] = true;
 	// / Original ki requirement
@@ -1552,7 +1573,7 @@ PUBLIC void CusAuraPatchBH11(uint8_t *addr, size_t size)
 	{
 		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
 		{
-			mov(edx, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			mov(edx, dword[rdi+offsetof(Battle_Mob, trans_control)]);
 			cmp(edx, LOOKUP_SIZE);
 			jae("LORIG");
 			mov(rcx, (uintptr_t)&cus_aura_bh11_lookup[0]); 
@@ -1664,13 +1685,13 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *addr, size_t fill_size)
 {
 	EXECBUFFER(code_buf, addr); 
 	uintptr_t teleport_addr = (uintptr_t)addr + 0x14; // Update this on any change!!!
-	uintptr_t no_teleport_addr = (uintptr_t)addr + 0x9C5; // Update this on any change!!!
+	uintptr_t no_teleport_addr = (uintptr_t)addr + 0x9A5; // Update this on any change!!!
 	
 	struct Code : Xbyak::CodeGenerator 
 	{
 		Code(void *buf, uintptr_t teleport, uintptr_t no_teleport) : Xbyak::CodeGenerator(4096, buf)
 		{
-			mov(ecx, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			mov(ecx, dword[rdi+offsetof(Battle_Mob, trans_control)]);
 			cmp(ecx, LOOKUP_SIZE);
 			jae("DEFAULT_TELEPORT");
 			
@@ -1690,7 +1711,7 @@ PUBLIC void CusAuraPatchTeleport(uint8_t *addr, size_t fill_size)
 			
 			// Default teleport
 			L("DEFAULT_TELEPORT");
-			cmp(dword[rbx+offsetof(Battle_Mob, trans_control)], eax);
+			cmp(dword[rdi+offsetof(Battle_Mob, trans_control)], eax);
 			jne("NO_TELEPORT");
 			
 			// Teleport
@@ -1826,40 +1847,40 @@ void SetBcsColorsUntransform(void *pthis, Battle_Mob *mob, uint64_t, const char 
 PUBLIC void ApplyBcsHairColorPatchUntransform(uint8_t *addr)
 {
 	// First patch, destroy the conditional
-	PatchUtils::Write16(addr+7, 0x9090);
+	PatchUtils::Write16(addr+3, 0x9090);
 	
 	// Second patch, replace edx=60 by rdx=rdi=Battle_Mob ptr 
-	PatchUtils::Write32(addr+0x1D, 0x90FA8948); // mov rdx, rdi; nop
+	PatchUtils::Write32(addr+0x19, 0x90FA8948); // mov rdx, rdi; nop
 		
 	// Third patch, hook the method 
-	PatchUtils::Write16(addr+0x21, 0xE890);
-	PatchUtils::HookCall(addr+0x21+1, nullptr, (void *)SetBcsColorsUntransform);
+	PatchUtils::Write16(addr+0x1D, 0xE890);
+	PatchUtils::HookCall(addr+0x1D+1, nullptr, (void *)SetBcsColorsUntransform);
 	
 	// Fourth patch, skip eyes call
-	PatchUtils::Nop(addr+0x3F, 6);
+	PatchUtils::Nop(addr+0x3B, 6);
 	
 	// Fifth patch, skip SSJ blue evolution code 
-	PatchUtils::Write8(addr+0x4C, 0xEB); // jne to jmp	
+	PatchUtils::Write8(addr+0x4A, 0xEB); // jne to jmp	
 }
 
 PUBLIC void ApplyBcsHairColorPatchTransform(uint8_t *addr)
 {
 	// First patch, destroy the conditional
-	PatchUtils::Write16(addr+7, 0x9090);
+	PatchUtils::Write16(addr+3, 0x9090);
 	
-	// Second patch, replace edx=60 by rdx=rbx=Battle_Mob ptr 
-	PatchUtils::Write32(addr+0x1A, 0x90DA8948); // mov rdx, rbx; nop
-	PatchUtils::Write8(addr+0x1A+4, 0x90);
+	// Second patch, replace edx=60 by rdx=rdi=Battle_Mob ptr 
+	PatchUtils::Write32(addr+0x16, 0x90FA8948); // mov rdx, rdi; nop
+	PatchUtils::Write8(addr+0x16+4, 0x90);
 		
 	// Third patch, hook the method 	
-	PatchUtils::Write16(addr+0x23, 0xE890);
-	PatchUtils::HookCall(addr+0x23+1, nullptr, (void *)SetBcsColorsTransform);
+	PatchUtils::Write16(addr+0x1F, 0xE890);
+	PatchUtils::HookCall(addr+0x1F+1, nullptr, (void *)SetBcsColorsTransform);
 	
 	// Fourth patch, skip eyes call
-	PatchUtils::Nop(addr+0x43, 6);
+	PatchUtils::Nop(addr+0x3F, 6);
 	
 	// Fifth patch, skip SSJ blue evolution code 
-	PatchUtils::Write8(addr+0x50, 0xEB); // jne to jmp	
+	PatchUtils::Write8(addr+0x4E, 0xEB); // jne to jmp	
 }
 
 PUBLIC void Behaviour10Setup(Behaviour10FuncType orig)
@@ -1932,18 +1953,18 @@ void RemoveAccessoriesPatched(void *pthis, Battle_Mob *mob)
 PUBLIC void ApplyConditionalRemoveHairAccessories(uint8_t *addr)
 {
 	// First patch, destroy first conditional
-	PatchUtils::Write16(addr+7, 0x9090);
+	PatchUtils::Write16(addr+3, 0x9090);
 	
 	// Second patch, destroy the second conditional
-	PatchUtils::Write16(addr+16, 0x9090);
+	PatchUtils::Write16(addr+0xC, 0x9090);
 	
-	// Third patch, replace edx=5 by rdx=rbx=Battle_Mob ptr
-	PatchUtils::Write32(addr+28, 0x90DA8948); // mov rdx, rbx; nop
-	PatchUtils::Write8(addr+28+4, 0x90);
+	// Third patch, replace edx=5 by rdx=rdi=Battle_Mob ptr
+	PatchUtils::Write32(addr+0x18, 0x90FA8948); // mov rdx, rdi; nop
+	PatchUtils::Write8(addr+0x18+4, 0x90);
 	
-	// Fourth patch, hook the method +0x398
-	PatchUtils::Write16(addr+33, 0xE890);
-	PatchUtils::HookCall(addr+33+1, nullptr, (void *)RemoveAccessoriesPatched);
+	// Fourth patch, hook the virtual method
+	PatchUtils::Write16(addr+0x1D, 0xE890);
+	PatchUtils::HookCall(addr+0x1D+1, nullptr, (void *)RemoveAccessoriesPatched);
 }
 
 typedef void (* UntransformType)(Battle_Mob *, int);
@@ -2045,17 +2066,17 @@ PUBLIC void AnyDualSkillPatch(uint8_t *buf)
 PUBLIC void AnyDualSkillPatch(uint8_t *addr)
 {
 	EXECBUFFER(code_buf, addr); 
-	size_t fill_size = 0xD;
+	size_t fill_size = 0xD; // Update this on any change!!!
 	uintptr_t default_addr = (uintptr_t)addr + fill_size;
-	uintptr_t any_dual_skill_addr = (uintptr_t)addr + 0xBD; // Update this on any change!!!
+	uintptr_t any_dual_skill_addr = (uintptr_t)addr + 0x11D; // Update this on any change!!!
 	
 	struct Code : Xbyak::CodeGenerator 
 	{
 		Code(void *buf, uintptr_t default_ra, uintptr_t any_dual_skill_ra) : Xbyak::CodeGenerator(4096, buf)
 		{
-			test(byte[rbx+0xB0], 1);
+			test(byte[rdi+0xB0], 1);
 			jnz("ANY_DUAL_SKILL");
-			mov(edx, dword[rbx+offsetof(Battle_Mob, cms_id)]); 
+			mov(edx, dword[rdi+offsetof(Battle_Mob, cms_id)]); 
 			cmp(edx, LOOKUP_SIZE);
 			jae("DEFAULT_USAGE");
 			mov(rax, (uintptr_t)&any_dual_skill_lookup[0]);
@@ -2124,8 +2145,8 @@ PUBLIC void AurToBpePatch(uint8_t *addr)
 {
 	EXECBUFFER(code_buf, addr); 
 	size_t fill_size = 6; // First instruction  (the ja, remember that the notify patch has inst_index=2)
-	uintptr_t if_bpe_addr = (uintptr_t)addr + 0x67; // Update this on any change!!!
-	uintptr_t ifnot_bpe_addr = (uintptr_t)addr + 0xE1; // Address of original default case. Update this on any change!!!
+	uintptr_t if_bpe_addr = (uintptr_t)addr + 0x75; // Update this on any change!!!
+	uintptr_t ifnot_bpe_addr = (uintptr_t)addr + 0xE7; // Address of original default case. Update this on any change!!! (Fastest method: just add 6 to the rel jump of the ja)
 	
 	struct Code : Xbyak::CodeGenerator 
 	{
@@ -2172,10 +2193,13 @@ static void AurBpeCase1(void *pthis, uint32_t aur, uint32_t flags, uint32_t unk)
 
 PUBLIC void AurBpeFlag1Patch(uint8_t *buf)
 {
-	// First patch, bye to the conditional
-	PatchUtils::Nop(buf+0xB, 6);
-	// Second patch hook call to the function
-	if (!PatchUtils::HookCall((void *)(buf+0x2A), (void **)&AurBpe, (void *)AurBpeCase1))
+	// First patch, destroy first conditional
+	PatchUtils::Nop(buf+6, 6);
+	// Second patch, destroy second conditional
+	PatchUtils::Nop(buf+0x14, 6);
+	
+	// Third patch hook call to the function
+	if (!PatchUtils::HookCall((void *)(buf+0x2E), (void **)&AurBpe, (void *)AurBpeCase1))
 	{
 		UPRINTF("Internal error in AurBpeFlag1Patch.\n");
 		exit(-1);
@@ -2216,7 +2240,7 @@ PUBLIC void CusAuraPatchBH64(uint8_t *addr, size_t size)
 	{
 		Code(void *buf, uintptr_t ra) : Xbyak::CodeGenerator(4096, buf)
 		{
-			mov(eax, dword[rbx+offsetof(Battle_Mob, trans_control)]);
+			mov(eax, dword[rsi+offsetof(Battle_Mob, trans_control)]);
 			cmp(eax, LOOKUP_SIZE);
 			jae("ORIG");
 			mov(rcx, (uintptr_t)&cus_aura_bh64_lookup[0]);
@@ -2229,7 +2253,7 @@ PUBLIC void CusAuraPatchBH64(uint8_t *addr, size_t size)
 			// Orig
 			L("ORIG");
 			add(eax, 0xFFFFFFFC);
-			cmp(eax, 0x1A);
+			cmp(eax, 0x24);
 			// Return
 			jmp(ptr[rip]);
 			dq(ra);
@@ -2351,10 +2375,10 @@ void GoldenFreezerSkinBehaviourUntransform(void *common_chara, Battle_Mob *mob)
 
 PUBLIC void OnGoldenFreezerSkinBehaviourLocated(uint8_t *addr, size_t size)
 {
-	// mov rcx, [rbx+4D8h]; nop
-	PatchUtils::Write64(addr, 0x90000004D88B8B48); addr += 8; size -= 8;
-	// mov rdx, rbx; nop
-	PatchUtils::Write32(addr, 0x90DA8948); addr += 4; size -= 4;
+	// mov rcx, [rdi+4D8h]; nop
+	PatchUtils::Write64(addr, 0x90000004D88F8B48); addr += 8; size -= 8;
+	// mov rdx, rdi; nop
+	PatchUtils::Write32(addr, 0x90FA8948); addr += 4; size -= 4;
 	// Set call to my code
 	PatchUtils::Write8(addr, 0xE8);
 	PatchUtils::HookCall(addr, nullptr, (void *)GoldenFreezerSkinBehaviour); addr += 5; size -= 5;
@@ -2387,9 +2411,20 @@ PUBLIC void SetupMobFunc1(MobFunc1Type orig)
 	MobFunc1 = orig;
 }
 
-PUBLIC void SetupHpDamage(HpDamageType orig)
+// 1.26: was inlined
+/*PUBLIC void SetupHpDamage(HpDamageType orig)
 {
 	HpDamage = orig;
+}*/
+
+PUBLIC void SetupUnkFunc1(UnkFunc1Type orig)
+{
+	UnkFunc1 = orig;
+}
+
+PUBLIC void SetupIsGbbMode(IsGbbModeType orig)
+{
+	IsGbbMode = orig;
 }
 
 PUBLIC void OnMobTransformLocated(void *address)
@@ -2537,14 +2572,9 @@ void OnDeleteMob_Destruction(Battle_Mob *pthis)
 	mob_to_ds.erase(pthis);
 }
 
-PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
+static void ProcessHpDamage(Battle_Mob *pthis, float c_dmg)
 {
-	float prev_hp = pthis->hp;
-	HpDamage(pthis, dmg, f3, u4);
-	float c_dmg = prev_hp - pthis->hp;
-	
 	//DPRINTF("Hp damage %f\n", c_dmg);
-	
 	if (c_dmg > 0.0f)
 	{
 		auto it = mob_to_ds.find(pthis);
@@ -2564,6 +2594,34 @@ PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
 			}
 		}
 	}
+}
+
+// 1.26: was inlined
+/*PUBLIC void HpDamagePatched(Battle_Mob *pthis, float dmg, float f3, uint32_t u4)
+{
+	float prev_hp = pthis->hp;
+	HpDamage(pthis, dmg, f3, u4);
+	float c_dmg = prev_hp - pthis->hp;
+	
+	ProcessHpDamage(pthis, c_dmg);	
+}*/
+
+// These two assume the game code in the patch will be somewhere protected by a mutex or something alike, which is usually the case of code like this. Otherwise, this may be a disaster.
+static Battle_Mob *saved_mob;
+static float saved_hp; 
+
+PUBLIC int32_t UnkFunc1Hooked(Battle_Mob *pthis)
+{
+	saved_mob = pthis;
+	saved_hp = pthis->hp;
+	
+	return UnkFunc1(pthis);
+}
+
+PUBLIC bool IsGbbModeHooked()
+{
+	ProcessHpDamage(saved_mob, saved_hp - saved_mob->hp);
+	return IsGbbMode();
 }
 
 // Not needed: 1.25.1

@@ -190,6 +190,8 @@ CHECK_FIELD_OFFSET(Battle_Mob, trans_control, 0x22EC);
 
 // 1.20. size 0x180 -> 0x190
 // 1.21 size 0x190 -> 0x1A0
+// 1.26 size 0x1A0 -> 0x1B0
+// TODO WARNING: it hasn't been checked that offsets in 1.26 remain valid
 struct Battle_HudCharInfo
 {
 	uint32_t unk_00;
@@ -201,7 +203,7 @@ struct Battle_HudCharInfo
 	
 	uint8_t unk_30[0x3C-0x30];
 	uint32_t cms_entry2; // 03C  WHY there is another one?
-	uint8_t unk_40[0x1A0-0x40];
+	uint8_t unk_40[0x1B0-0x40];
 	
 	inline const char16_t *GetName() const
 	{
@@ -209,7 +211,7 @@ struct Battle_HudCharInfo
 	}
 	
 };
-CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x1A0);
+CHECK_STRUCT_SIZE(Battle_HudCharInfo, 0x1B0);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, is_cac, 4);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, index, 8);
 CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry, 0xC);
@@ -220,14 +222,14 @@ CHECK_FIELD_OFFSET(Battle_HudCharInfo, cms_entry2, 0x3C);
 // Size unknown
 struct Battle_HudCockpit
 {
-	uint8_t unk_00[0x590]; 
-	Battle_HudCharInfo char_infos[MAX_MOBS]; 
-	uint8_t unk_1C40[0x1F2F0-0x1C50]; 
+	uint8_t unk_00[0xBA0]; 
+	Battle_HudCharInfo char_infos[MAX_MOBS];  // 1.26: address got an unexpected high change: from 0x590 to 0xBA0. What did they add before it...
+	uint8_t unk_2340[0x23640-0x2340]; 
 	int32_t portrait_cms[MAX_PORTRAITS];
 	// ...
 };
-CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0x590);
-CHECK_FIELD_OFFSET(Battle_HudCockpit, portrait_cms, 0x1F2F0);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, char_infos, 0xBA0);
+CHECK_FIELD_OFFSET(Battle_HudCockpit, portrait_cms, 0x23640);
 
 // 1.10 structure grow from 0x1D0 to 0x1D4. team variable went from offset 0x10 to 0x14
 // 1.13v2 structure grow from 0x1D4 to 0x1D8

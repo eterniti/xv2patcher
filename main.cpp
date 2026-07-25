@@ -1161,10 +1161,10 @@ static bool idb_check_visitor(const std::string &path, bool, void *)
 		{
 			size -= sizeof(IDBHeader);
 			
-			if ((size % sizeof(IDBEntry122)) != 0)
+			if ((size % sizeof(IDBEntry126)) != 0)
 			{
 				std::string partial_path = path.substr(std::string(myself_path + CONTENT_ROOT).length());
-				std::string msg = "The file \"" + partial_path + "\" is not compatible with this version of the game (idb format changed in 1.22).\n\nAbort load? If you press no, a crash or undefined behavior can happen in game.";
+				std::string msg = "The file \"" + partial_path + "\" is not compatible with this version of the game (idb format changed in 1.26).\n\nAbort load? If you press no, a crash or undefined behavior can happen in game.";
 				
 				if (MessageBoxA(NULL, msg.c_str(), "xv2patcher", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 				{
@@ -1201,19 +1201,20 @@ static void start()
 	{
 		UPRINTF("This game version (%.3f) is not compatible with this version of the patcher.\nMin version required is: %.3f\n", version, MINIMUM_GAME_VERSION);
 		exit(-1);
-	}
+	}	
 	
-	/*
-	 This was used in version 1.11-1.13 because those tards forgot to update the version in the exe data.
-	if (version == 1.10f)
+	// There they go again, forgetting to update the exe version...
+	if (Utils::CompareFloat(version, 1.252))
 	{
-		uint8_t *ptr = (uint8_t *)GetModuleHandle(nullptr) + 0x6F7080;
-		if (*ptr != 0x48)
+		if (PatchUtils::Read64(0x5E071E) != 0x53B84100000002BA) 
 		{
 			UPRINTF("This version of the patcher doesn't support this version of the game.\n");
 			exit(-1);
 		}
-	}*/
+		
+		version = 1.26f;		
+		DPRINTF("Real version is %.3f\n", version);
+	}
 	
 	load_patches();	
 	qsf_crash_fix();

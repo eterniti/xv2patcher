@@ -18,7 +18,7 @@
 
 // Address of stagegt within XG::Game::Battle::Core::MainSystem 
 #define STAGEGT_ADDRESS	0x6F38
-#define MAINSYSTEM_SIZE	0xF400
+#define MAINSYSTEM_SIZE	0xF410
 
 static uint8_t *orig_stage_defs1;
 static uint8_t *new_stage_defs1;
@@ -746,6 +746,12 @@ PUBLIC void StageGtDefaultReimplemented(uint8_t *pthis)
 	
 	uint8_t *ptr = ((uint8_t *)defs2) + num*sizeof(XV2StageDef2);
 	memset(ptr, 0, sizeof(uint32_t)*XV2_STA_NUM_GATES*num);
+}
+
+PUBLIC void StageGtResetReimplemented(uint8_t *pthis)
+{
+	StageGtClearReimplemented(pthis);
+	StageGtDefaultReimplemented(pthis);
 }
 
 PUBLIC XV2StageGate *StageGtFindGateReimplemented(uint8_t *pthis, int32_t stage, int32_t gate)
