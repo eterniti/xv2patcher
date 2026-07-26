@@ -4,7 +4,7 @@ CXX = g++
 OUTPUT := xinput1_3.dll
 OUTPUT_COPY := "/c/Program Files (x86)/Steam/steamapps/common/DB Xenoverse 2/bin/xinput1_3.dll"
 
-OBJS=main.o debug.o cpk_patch.o UtfLowLevel.o chara_patch.o stage_patch.o autogenportrait_dumper.o ai_patch.o ui_patch.o fs_event_offline.o item_patch.o lobby_patch.o
+OBJS=main.o debug.o cpk_patch.o UtfLowLevel.o chara_patch.o stage_patch.o autogenportrait_dumper.o ai_patch.o ui_patch.o fs_event_offline.o item_patch.o lobby_patch.o pollution_go_away.o
 OBJS += mob_control.o quest.o fs_event_offline_asm.o
 OBJS += ../eternity_common/crypto/sha1.o ../eternity_common/crypto/md5.o ../eternity_common/crypto/rijndael.o
 OBJS += ../eternity_common/UtilsStr.o ../eternity_common/UtilsFS.o ../eternity_common/UtilsXML.o ../eternity_common/UtilsMisc.o ../eternity_common/UtilsCrypto.o
