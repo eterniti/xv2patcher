@@ -8,8 +8,8 @@
 namespace
 {
 
-// Packet 1 gets this participant value and resumes here in v1.26.
-constexpr std::size_t PARTICIPANT_UPDATE_VALUE_RETURN = 0x478912;
+// Packet 1 gets this participant value and resumes here
+size_t PARTICIPANT_UPDATE_VALUE_RETURN;
 
 typedef std::uint32_t (*ParticipantValueGetterType)(void *, std::int32_t *);
 
@@ -45,6 +45,11 @@ PUBLIC std::uint32_t PollutionGoAwayParticipantValuePatched(
 	}
 
 	return result;
+}
+
+PUBLIC void OnLocateParticipateUpdateValueReturn(size_t addr)
+{
+	PARTICIPANT_UPDATE_VALUE_RETURN = addr;
 }
 
 } // extern "C"

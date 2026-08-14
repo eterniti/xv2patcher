@@ -41,10 +41,12 @@
 
 	<!-- New patch implementation for 1.24+, provided by HAWGT, fixed for 3+ players by Pemdas -->
 	<Patch name="Pollution, go away! 1" type="write" enabled="excessive_air_contamination" search_start="0x2C34F8" comment="signature 1.26;">
+		<Instruction code="48 8B F9" comment="mov rdi, rcx" />
+		<Instruction code="75 13" comment="jz 13" />
 		<Instruction code="48 8B CA" comment="mov rcx, rdx" />
-		<Instruction code="E8 00 83 F8 FF" comment="call 0x24B800 ; zero-stub: mov dword[rcx],0; mov rax,rcx; ret" />
+		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX ; zero-stub: mov dword[rcx],0; mov rax,rcx; ret" />
 
-		<Write value="C7 02 00 00 00 00 90 90" comment="mov dword ptr [rdx], 0 ; nop ; nop" />
+		<Write inst_index="2" value="C7 02 00 00 00 00 90 90" comment="mov dword ptr [rdx], 0 ; nop ; nop" />
 	</Patch>
 
 	<Patch name="Pollution, go away! 2" type="nop" enabled="excessive_air_contamination" search_start="0x2C3E89" comment="signature 1.26; neutralize EOS anti-cheat RemovePeer">
@@ -85,6 +87,15 @@
 		<Instruction code="FF 50 30" comment="call qword ptr [rax+30h]" />
 
 		<Hook value="PollutionGoAwayParticipantValuePatched" setup="PollutionGoAwayParticipantValueSetup" />
+	</Patch>
+	
+	<Patch name="Pollution, go away! 5" type="notify" enabled="excessive_air_contamination" search_start="0x478912" comment="signature 1.26">
+		<Instruction code="85 C0" comment="test eax, eax" />
+		<Instruction code="0F 84 XXXXXXXX" comment="jz" />
+		<Instruction code="C6 45 B0 01" comment="mov byte ptr[rbp-50], 1" />
+		<Instruction code="49 8D 4D 78" comment="lea rcx, [r13+78h]" />
+		
+		<Notify value="OnLocateParticipateUpdateValueReturn" />
 	</Patch>
 
 	<Patch name="UnlockNXExclusive" type="hook" enabled="XV1CpkExists()" search_start="0x2B9BF0" comment="signature 1.26">
