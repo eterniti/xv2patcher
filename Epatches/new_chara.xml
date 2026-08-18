@@ -31,98 +31,83 @@ Also, the size must be patched.
 
 -->
 
-	<!-- Signature 1.23 -->
+	<!-- Signature 1.26 -->
 	<!-- Note: if there were a change in the r8d parameter, this means that charasele.iggy changed and the .dll side has to be updated too to match -->
-	<Patch name="ChaselMainPatch" type="Hook" search_start="0x5D3BF3" comment="Takes place in chasel_ctor." >
-		<Instruction code="41 B8 52 4C 00 00" comment="mov r8d, 4C52h; r8d = ReceiveType_Num" />
+	<Patch name="ChaselMainPatch" type="Hook" search_start="0x5E0723" comment="Takes place in chasel_ctor." >
+		<Instruction code="41 B8 53 50 00 00" comment="mov r8d, 5053h; r8d = ReceiveType_Num" />
 		<Instruction code="E8 XXXXXXXX" comment="call base::ctor" />
 		<Instruction code="90" comment="nop" />
 		<Instruction code="48 8D 05 XX XX XX XX" comment="lea rax, chasel_vtable" />
-		<Instruction code="48 89 07" comment="mov [rdi], rax; this->vtable = chasel_vtable" />
-		<Instruction code="48 8D 8F F0 01 00 00" comment="lea rcx, [rdi+1F0h]" />
 		
 		<Hook type="call" inst_index="1" value="ChaselMainPatch" setup="CharaSetup" />
 	</Patch>
 
 
 	<!-- Signature 1.22.1 -->
-	<Patch name="PatchReceiveTypeInt" type="hook" search_start="0x5C245B" comment="Takes place in chasel_func14" >
-		<Instruction code="4C 8B C3" comment="mov r8, rbx" />
-		<Instruction code="8D 97 11 21 00 00" comment="lea edx, [rdi+2111h]" />
-		<Instruction code="49 8B CE" comment="mov rcx, r14" />
+	<Patch name="PatchReceiveTypeInt" type="hook" search_start="0x5E6402" comment="Takes place in chasel_func13" >
+		<Instruction code="41 8D 96 28 21 00 00" comment="lea edx, [r14+2128]" />
+		<Instruction code="4C 8B C7" comment="mov r8, rdi" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_int" />
-		<Instruction code="E9 07020000" comment="jmp +0x207" />
 		
 		<Hook type="resolve_target" inst_index="3" value="AS3SendInt_Hook" setup="AS3SendIntSetup" />
 	</Patch>	
 	
-	<!-- Signature 1.22.1 -->
-	<Patch name="PatchReceiveTypeFlag" type="hook" search_start="0x5C4CBB" comment="Takes place in chasel_func7" >
-		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 96 29 21 00 00" comment="lea edx, [rsi+2129h]" />
-		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
+	<!-- Signature 1.26 -->
+	<Patch name="PatchReceiveTypeFlag" type="hook" search_start="0x5E61C1" comment="Takes place in chasel_func13" >
+		<Instruction code="BA 4B 22 00 00" comment="mov edx, 0x224B" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
-		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />
-		<Instruction code="83 CA FF" comment="or edx, -1" />
 		
-		<Hook type="resolve_target" inst_index="3" value="AS3SendFlag_Hook" setup="AS3SendFlagSetup"/>
+		<Hook type="resolve_target" inst_index="2" value="AS3SendFlag_Hook" setup="AS3SendFlagSetup"/>
 	</Patch>
 	
-	<!-- Signature 1.23 -->
-	<Patch name="PatchReceiveTypeString" type="hook" search_start="0x5D9F6C" comment="Takes place in chasel_func13." >
-		<Instruction code="8D 97 00 FE FF FF" comment="lea edx, [rdi-200h]" />
+	<!-- Signature 1.26 -->
+	<Patch name="PatchReceiveTypeString" type="hook" search_start="0x5E649C" comment="Takes place in chasel_func13." >
+		<Instruction code="41 8D 96 80 FD FF FF" comment="lea edx, [r14-280h]" />
 		<Instruction code="4C 8B C0" comment="mov r8, rax" />
-		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="48 8B CB" comment="mov rcx, rbx" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_string" />
-		<Instruction code="48 8B 86 88 03 00 00" comment="mov rax, [rsi+388h]" />
+		<Instruction code="48 8B 83 88 03 00 00" comment="mov rax, [rsi+388h]" />
 		
 		<Hook type="resolve_target" inst_index="3" value="AS3SendString_Hook" setup="AS3SendStringSetup" />
 	</Patch>	
 	
 	<!-- Begin: exceptional handling -->
-	<!-- Signature 1.22.1 -->
-	<Patch name="PatchReceiveTypeUnlockVar" type="hook" search_start="0x5C64F1" comment="Takes place in chasel_func6" >
+	<!-- Signature 1.26 -->
+	<Patch name="PatchReceiveTypeUnlockVar" type="hook" search_start="0x5E4A77" comment="Takes place in inlined_chasel_func6" >
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 93 11 01 00 00" comment="lea edx, [rbx+111h]" />
+		<Instruction code="8D 95 12 01 00 00" comment="lea edx, [rbp+112h]" />
 		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="48 8B 5C 24 30" comment="mov rbx, [rsp+30h]" />
-		<Instruction code="48 83 C4 20" comment="add rsp, 20h" />
-		<Instruction code="5F" comment="pop rdi" />
+		<Instruction code="48 8B B4 24 88 00 00 00" comment="mov rsi, [rsp+88h]" />
+		<Instruction code="48 83 C4 68" comment="add rsp, 68h" />
+		<Instruction code="5F 5D" comment="pop rdi, rbp" />
 		<Instruction code="E9 XXXXXXXX" comment="jmp send_flag" />
 		
 		<Hook type="call" inst_index="6" value="PatchReceiveTypeUnlockVar" />
-	</Patch>
-	<!-- Same signature as PatchReceiveTypeFlag -->
-	<Patch name="PatchReceiveTypeCharaSelected" type="hook" search_start="0x5C4CBB" comment="Takes place in chasel_func7" >
+	</Patch>	
+	<!-- Signature 1.26 -->
+	<Patch name="PatchReceiveTypeCharaSelected" type="hook" search_start="0x5E4DEF" comment="Takes place in chasel_func7" >
 		<Instruction code="44 8B C0" comment="mov r8d, eax" />
-		<Instruction code="8D 96 29 21 00 00" comment="lea edx, [rsi+2129h]" />
+		<Instruction code="8D 96 2A 21 00 00" comment="lea edx, [rsi+212Ah]" />
 		<Instruction code="48 8B CD" comment="mov rcx, rbp" />
 		<Instruction code="E8 XXXXXXXX" comment="call send_flag" />
-		<Instruction code="48 8B 0D XXXXXXXX" comment="mov rcx, cs:XXXXXXXX" />
-		<Instruction code="83 CA FF" comment="or edx, -1" />
 		
 		<Hook type="call" inst_index="3" value="PatchReceiveTypeCharaSelected" />
 	</Patch>	
 	<!-- End: exceptional handling -->
 	
-	<!-- Patch added in 1.10v2. Signature 1.14 -->
-	<Patch name="NoNewStarIconInCharsAfter160" type="write" search_start="0x7477AE" >
-		<Instruction code="41 8B C2" comment="mov eax, r10d" />
-		<Instruction code="8B D0" comment="mov edx, eax" />
-		<Instruction code="41 8B C9" comment="mov ecx, r9d" />
-		<Instruction code="C1 E2 06" comment="shl edx, 6" />
-		<Instruction code="2B CA" comment="sub ecx, edx" />
-		<Instruction code="44 0F B6 C1" comment="mov r8d, cl" />
-		<Instruction code="8B C8" comment="mov ecx, eax" />
-		<Instruction code="49 8B 94 CB 70 05 00 00" comment="mov rdx, [r11+rcx*8+570h]" />
-		<Instruction code="4C 0F A3 C2" comment="bt rdx, r8" />
-		<Instruction code="41 0F 92 C2" comment="setb r10" />
-		<Instruction code="41 8B C2" comment="mov eax, r10d" />
+	<!-- Patch added in 1.10v2. Signature 1.26 -->	
+	<Patch name="NoNewStarIconInCharsAfter160" type="write" search_start="0x84107C" >
+		<Instruction code="4B 8B 8C C2 70 05 00 00" comment="mov rcx, [r10+r8*8+570h]" />
+		<Instruction code="48 0F A3 D1" comment="bt rcx, rdx" />		
+		<Instruction code="0F 92 C0" comment="setb al" />
 		<Instruction code="C3" comment="ret" />
-		<Instruction code="33 C0" comment="xor eax, eax" />
 		
-		<!-- Replace the xor eax, eax, with a mov eax, edx. Since edx is guaranteed to be >= 160, it is non-zero, thus condition reverted -->
-		<Write inst_index="12" value="89 D0" />
+		<!-- 1.26: new approach, since they moved the xor eax, eax before. -->
+		<!-- WARNING: this is currently using the CC align space between functions. Could be problematic later, but since this is supossed to be last xv2 update... -->
+		<!-- Replace "retn" with "inc eax; retn" -->
+		<Write inst_index="3" value="FF C0 C3" />
 	</Patch>
 	
 
@@ -167,28 +152,28 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 	<!-- Signature updated in 1.25.1 -->
 	<!-- Don't forget to update CHASEL_SIZE in the dll code too on signature change -->
 	<!-- IF SIZE CHANGES, PATCHES BELOW THAT HAVE "It is important to update this when the size of the object change" need to have the size changed too -->
-	<!-- Remember size is also in chara_patch_asm.S, in ModifyArrayOffset4Asm function -->
-	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x3D0BF4" >
+	<Patch name="IncreaseChaselMemory" type="notify" search_start="0x3AB2F4" >
 		<Instruction code="45 33 C9" comment="xor r9d, r9d" />
-		<Instruction code="41 83 C8 FF" comment="or r8d, 0FFFFFFFFh" />
 		<Instruction code="33 D2" comment="xor edx, edx" />
 		<Instruction code="B9 30290000" comment="mov ecx, 2930h" />
+		<Instruction code="45 8D 41 FF" comment="lea r8d, [r9-1]" />
 		<Instruction code="FF 15 XXXXXXXX" comment="call operator new" />
 		<Instruction code="4C 8B D0" comment="mov r10, rax" />
 		
-		<Notify inst_index="3" inst_offset="1" value="IncreaseChaselMemory" />
+		<Notify inst_index="2" inst_offset="1" value="IncreaseChaselMemory" />
 	</Patch>
 	
-	<!-- Signature updated in 1.17 -->
-	<Patch name="IncreaseChaselSlotsArray" type="hook" search_start="0x4F1129" comment="Takes place in chasel_ctor." >
-		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
-		<Instruction code="4C 89 6C 24 20" comment="mov [rsp+20h], r13" />
+	<!-- Signature updated in 1.26 -->
+	<Patch name="IncreaseChaselSlotsArray" type="hook" search_start="0x5E0936" comment="Takes place in chasel_ctor." >
+		<Instruction code="49 8D 8E E0 05 00 00" comment="lea rcx, [r14+5E0h]" />		
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, some_function_ptr" />
+		<Instruction code="48 89 44 24 20" comment="mov [rsp+20h], rax" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
 		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
 		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
 		
-		<Hook type="call" inst_index="5" value="IncreaseChaselSlotsArray" setup="SetupIncreaseChaselSlotsArray" />
+		<Hook type="call" inst_index="6" value="IncreaseChaselSlotsArray" setup="SetupIncreaseChaselSlotsArray" />
 	</Patch>
 	
 	<!-- Signature updated in 1.17-->
@@ -204,9 +189,10 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 	</Patch>
 	
 	<!-- The following two patches signature are identical to the above two one, that is not an error -->
-	<Patch name="ModifyArrayOffset1" type="write" search_start="0x4F1129" comment="Takes place in chasel_ctor." >
-		<Instruction code="48 8D 8F E0 05 00 00" comment="lea rcx, [rdi+5E0h]" />
-		<Instruction code="4C 89 6C 24 20" comment="mov [rsp+20h], r13" />
+	<Patch name="ModifyArrayOffset1" type="write" search_start="0x5E0936" comment="Takes place in chasel_ctor." >
+		<Instruction code="49 8D 8E E0 05 00 00" comment="lea rcx, [r14+5E0h]" />		
+		<Instruction code="48 8D 05 XXXXXXXX" comment="lea rax, some_function_ptr" />
+		<Instruction code="48 89 44 24 20" comment="mov [rsp+20h], rax" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, some_function_ptr" />
 		<Instruction code="BA 20 00 00 00" comment="mov edx, 20h" />
 		<Instruction code="41 B8 00 01 00 00" comment="mov r8d, 100h" />
@@ -228,36 +214,36 @@ Half of the implementation can be done in the xml. Only the C++ object increase,
 		<Write inst_index="0" inst_offset="3" value="30 29" />
 	</Patch>
 	
-	<!-- Signature updated in 1.21 -->
-	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x6123CD" comment="Takes place in chasel_func5." >
-		<Instruction code="48 8D 96 E0 05 00 00" comment="lea rdx, [rsi+5E0h]" />
-		<Instruction code="48 C7 44 24 30 00 00 00 00" comment="mov qword ptr[rsp+30h], 0" />
-		<Instruction code="48 8D 8E 30 28 00 00" comment="lea rcx, [rsi+2830h]" />
-		<Instruction code="49 8B DE" comment="mov rbx, r14" />
-		<Instruction code="89 6C 24 28" comment="mov [rsp+28h], ebp" />
+	<!-- Signature updated in 1.26 -->
+	<Patch name="ModifyArrayOffset3_Multi" type="write" search_start="0x5E49CD" comment="Takes place in inlined_chasel_func5." >
+		<Instruction code="48 8D 97 E0 05 00 00" comment="lea rdx, [rdi+5E0h]" />
+		<Instruction code="48 89 74 24 30" comment="mov qword ptr[rsp+30h], rsi" />
+		<Instruction code="48 8D 8F 30 28 00 00" comment="lea rcx, [rdi+2830h]" />
+		<Instruction code="48 8B DD" comment="mov rbx, rbp" />
+		<Instruction code="44 89 7C 24 28" comment="mov [rsp+28h], r15d" />
 		<Instruction code="48 C1 E3 05" comment="shl rbx, 5" />
 		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
 		<Instruction code="48 03 D3" comment="add rdx, rbx" />	
-		<Instruction code="48 C7 44 24 20 00 00 00 00" comment="mov qword ptr[rsp+20h], 0" />
+		<Instruction code="48 89 74 24 20" comment="mov qword ptr[rsp+20h], rsi" />
 		<Instruction code="E8 XXXXXXXX" comment="call XXXXXXXX" />
-		<Instruction code="48 83 BC 33 F0 05 00 00 00" comment="cmp qword ptr [rbx+rsi+5F0h], 0" />
+		<Instruction code="48 39 B4 3B F0 05 00 00" comment="cmp qword ptr [rbx+rdi+5F0h], rsi" />
 		
-		<!-- It is important to update this when the size of the object change -->
+		<!-- It is important to update this when the size of the object change. Or when any instruction length or number of instruction change. -->
 		<!-- 2930 = size of object, 2940 = size of object + 0x10 -->
-		<Write value="XXXXXX30290000 XXXXXXXXXXXXXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXXX XXXXXXXX XXXXXX XXXXXX XXXXXXXXXXXXXXXXXX XXXXXXXXXX XXXXXXXX4029"  /> 
+		<Write value="XXXXXX30290000   XXXXXXXXXX   XXXXXXXXXXXXXX   XXXXXX   XXXXXXXXXX   XXXXXXXX   XXXXXX   XXXXXX   XXXXXXXXXX   XXXXXXXXXX   XXXXXXXX4029"  /> 
 	</Patch>
 	
-	<!-- Added in version 1.10v2. 
+	<!-- Added in version 1.10v2. Signature 1.26.
 	     This patch exists because their compiler wrote 0x5E0, as 0x2F << 5. This patch is likely to be gone in the future if the address (0x5E0) changes and
 	     compiler is unable to do such fancy things with other number -_-  
 		 PATCH IS VERY SENSITIVE TO ANY CHANGE!
 		 
 		 THE INSTRUCTION AFTER THIS PATCH WILL BE CONSIDERED THE RETURN ADDRESS OF THE PATCH. THE WHOLE CODE IN THE SIGNATURE WILL BE WIPED
 	-->
-	<Patch name="ModifyArrayOffset4" type="notify" search_start="0x530FC5" comment="Takes place in chasel_func5, just after ModifyArrayOffset3_Multi">
-		<Instruction code="4D 8D 46 2F" comment="lea r8, [r14+2Fh]" />
+	<Patch name="ModifyArrayOffset4" type="notify" search_start="0x5E4A13" comment="Takes place in inlined_chasel_func5, just after ModifyArrayOffset3_Multi">
+		<Instruction code="4C 8D 45 2F" comment="lea r8, [rbp+2Fh]" />
 		<Instruction code="49 C1 E0 05" comment="shl r8, 5" />
-		<Instruction code="4C 03 C6" comment="add r8, rsi" />
+		<Instruction code="4C 03 C7" comment="add r8, rdi" />
 		<Instruction code="49 83 78 18 08" comment="cmp qword ptr [r8+18h], 8" />
 		
 		<Notify value="ModifyArrayOffset4" />
