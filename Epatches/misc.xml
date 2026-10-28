@@ -3,11 +3,11 @@
 
 	<!-- All addreses are 1.08 unless stated otherwise -->
 
-	<Patch name="PatchGameVersionString" type="hook" search_start="0x6070BC" comment="signature 1.26">
-		<Instruction code="4C 8D 87 18 04 00 00" comment="lea r8, [rdi+418h]; version string buffer" />
+	<Patch name="PatchGameVersionString" type="hook" search_start="0x60A39F" comment="signature 1.27">
+		<Instruction code="4C 8D 86 38 04 00 00" comment="lea r8, [rsi+438h]; version string buffer" />
 		<Instruction code="BA 05 00 00 00" comment="mov edx, 5" />
-		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call SendToAS3" />
+		<Instruction code="48 8B CE" comment="mov rcx, rsi" />
+		<Instruction code="E8 XXXXXXXX" comment="call AS3SendInt" />
 
 		<Hook type="call" inst_index="3" value="PatchGameVersionString" setup="SetupPatchGameVersionString" />
 	</Patch>
@@ -245,7 +245,7 @@
 
 
 	<!-- The below patch is MANDATORY for the whole patcher, as the patcher may have other uses for the main core singleton -->
-	<!-- DON'T DELETE/DISABLE the patch below.
+	<!-- DON'T DELETE/DISABLE the patch below. -->
 	
 	<!-- when/if this patch gets broken, the cockpit parameter of the structure may have changed -->
 	<Patch name="LocateBattleCoreMainSystem_singleton" type="notify" search_start="0x7F67FD" comment="addr 1.26">
