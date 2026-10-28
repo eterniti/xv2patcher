@@ -1411,15 +1411,15 @@ static void start()
 	}	
 	
 	// There they go again, forgetting to update the exe version...
-	if (Utils::CompareFloat(version, 1.252))
+	if (Utils::CompareFloat(version, 1.261))
 	{
-		if (PatchUtils::Read64(0x5E071E) != 0x53B84100000002BA) 
+		if (PatchUtils::Read64(0x60A39F) != 0xBA00000438868D4C) 
 		{
 			UPRINTF("This version of the patcher doesn't support this version of the game.\n");
 			exit(-1);
 		}
 		
-		version = 1.26f;		
+		version = 1.27f;		
 		DPRINTF("Real version is %.3f\n", version);
 	}
 	

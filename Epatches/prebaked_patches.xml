@@ -147,7 +147,7 @@
 	<!-- Signature is 1.26 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
 	<!-- If the number of behaviors change, the following changes has to be done in common code and patcher: 
-	* Update BEHAVIOUR_MAX in Xv2PreBakedFile.h
+	<!-- * Update BEHAVIOUR_MAX in Xv2PreBakedFile.h
 		 * Update CusAuraToAurAura in Xenoverse2.cpp with the newer values (new "case:")	
 		 * Update cus_aura_lookup in PreBakeSetup with newer values
 	-->
@@ -194,10 +194,10 @@
 	</Patch>
 	
 	<!-- Signature is 1.27 -->
-	<Patch name="CusAuraPatchBH10" type="hook" search_start="0xC9C4E" >
+	<Patch name="CusAuraPatchBH10" type="hook" search_start="0xC9C4E" >		
 		<Instruction code="4C 8D 45 67" comment="lea r8, [rbp+67h]" />
 		<Instruction code="8B 97 XXXXXXXX" comment="mov edx, [rdi+XXXXh]; edx = cus aura/trans_control" />
-		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
 		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />		
 		
 		<Hook inst_index="3" type="resolve_target" value="Behaviour10FuncPatched" setup="Behaviour10Setup" />
@@ -207,8 +207,8 @@
 	<Patch name="GetBH10UntransformCall" type="notify" search_start="0xC9C4E" >
 		<Instruction code="4C 8D 45 67" comment="lea r8, [rbp+67h]" />
 		<Instruction code="8B 97 XXXXXXXX" comment="mov edx, [rdi+XXXXh]; edx = cus aura/trans_control" />
-		<Instruction code="48 8B CF" comment="mov rcx, rdi" />
-		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />			
+		<Instruction code="48 8B CF" comment="mov rcx, rdi" />		
+		<Instruction code="E8 XXXXXXXX" comment="call behaviour10_func" />		
 		
 		<Notify inst_index="3" value="OnBH10UntransformCallLocated" />
 	</Patch>
@@ -266,13 +266,13 @@
 		<Instruction code="48 8B 8F D8 04 00 00" comment="mov rcx, [rdi+4D8h]; If this one change, update address of 'common_chara' in Battle_Mob" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, 'HAIR_'" />
-		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />		
 		<Instruction code="41 8D 50 3C" comment="lea edx, [r8+3Ch]; edx = 60" />
 		<Instruction code="FF 90 20 04 00 00" comment="call qword ptr [rax+420h]; If this one changes, update address of method in SetBcsColor" />
 		<Instruction code="48 8B 8F D8 04 00 00" comment="mov rcx, [rdi+4D8h]" />
 		<Instruction code="48 8B 01" comment="mov rax, [rcx]" />
 		<Instruction code="4C 8D 0D XXXXXXXX" comment="lea r9, 'eye_'" />
-		<Instruction code="45 33 C0" comment="xor r8d, r8d" />
+		<Instruction code="45 33 C0" comment="xor r8d, r8d" />		
 		<Instruction code="41 8D 50 3C" comment="lea edx, [r8+3Ch]; edx = 60" />
 		<Instruction code="FF 90 20 04 00 00" comment="call qword ptr [rax+420h]" />
 		<Instruction code="8B 8F XXXXXXXX" comment="mov ecx, [rdi+XXXXh]; trans_control" />
@@ -321,7 +321,7 @@
 	
 	<!-- Signature is 1.26 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. -->
-	<!-- The patch is internally 4 patches, two to destroy the conditionals (the conditionals are done in the dll instead) -->
+	<!-- The patch is internally 4 patches, two to destroy the conditionals (the conditionals are done in the dll instead),
 	<!-- one to change the second parameter to include the Battle_Mob pointer, and the final one to hook the method -->	
 	<Patch name="CusAuraPatchRemoveHairAccessories" type="notify" search_start="0xCA6C3" >
 		<Instruction code="83 F8 02" commment="cmp eax, 2" />
@@ -481,7 +481,7 @@
 	
 	<!-- Address 1.26 -->
 	<!-- This patch is very sensitive and candidate to be broken on game update. Patch implementation in the dll is also very sensitive to changes. -->
-	<!-- Changes in virtual method offset would require code in dll to be updated (GoldenFreezerSkinBehaviour & GoldenFreezerSkinBehaviourUntransform). -->
+	<!-- Changes in virtual method offset would require code in dll to be updated (GoldenFreezerSkinBehaviour & GoldenFreezerSkinBehaviourUntransform). 
 	<!-- THE PATCH MUST HOLD THE WHOLE CONDITIONAL CODE.  -->
 	<Patch name="CusAuraPatchGoldenFreezerSkinBehaviourUntransform" type="notify" search_start="0xC9D4F" >
 		<Instruction code="83 BF XX XX 00 00 0D" comment="cmp dword ptr [rdi+XXXXh], 0Dh; 0xD = golden freezer" />
@@ -523,9 +523,9 @@
 	</Patch>
 	
 	<!-- In 1.26, this call was inlined. We must now do two patches instead.
-	     Leaving old implementation here just in case -->
-	<!-- Signature 1.23 -->
-	<!-- Patch name="HookHpDamage" type="hook" search_start="0xBC7CC" >
+	     Leaving old implementation here just in case 
+	--Signature 1.23 --	
+	<Patch name="HookHpDamage" type="hook" search_start="0xBC7CC" >
 		<Instruction code="45 8B CD" comment="mov r9d, r13d" />		
 		<Instruction code="41 0F 28 D0" comment="movaps xmm2, xmm8" />
 		<Instruction code="0F 28 CE" comment="movaps xmm1, xmm6" />
@@ -533,9 +533,9 @@
 		<Instruction code="E8 XXXXXXXX" comment="call hp_damage" />
 		<Instruction code="E8 XXXXXXXX" comment="call is_gbb_mode" />			
 		
-		 Note: there are other 5 calls to this function, but only hooking this one. The others *may* be used for different damage sources such as debug or script/quest
+		-- Note: there are other 5 calls to this function, but only hooking this one. The others *may* be used for different damage sources such as debug or script/quest --
 		<Hook type="call" inst_index="4" value="HpDamagePatched" setup="SetupHpDamage" />
-	</Patch -->
+	</Patch>-->
 	
 	<!-- Signature 1.26. The new implementation: 
 	     * Patch 1: hook function called early in the inlined HpDamage. Save hp value.
